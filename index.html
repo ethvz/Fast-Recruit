@@ -48,9 +48,16 @@
   .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
   .pmid.pass { pointer-events: none; }
   /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
-  html.port .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
+  html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
-  .pcont { position: absolute; left: 0; top: calc(var(--E, 0px) / 2); width: 1466px; }
+  .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; }
+  /* fill any landscape screen: the canvas grows wider (--FW) or taller (--H); backgrounds stretch, content stays centred,
+     things near the edges stay pinned to the real screen edges */
+  #frame, .layer, .board { width: var(--FW, 1466px) !important; }
+  .board .fx-full { width: var(--FW, 1466px) !important; }
+  .board .fx-c { margin-left: var(--X, 0px) !important; }
+  .board .fx-r { margin-left: var(--X2, 0px) !important; }
+  .board [data-name^="Background (stays"] { width: var(--FW, 1466px) !important; }
   /* phones: glass panels become solid tinted panels (no live blur) */
   html.lite .board [style*="backdrop-filter"] { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   html.lite .board [style*="will-change"] { will-change: auto !important; }
@@ -70,7 +77,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 <script>
 (() => {
   'use strict';
-  const W = 1466; let H = 1024;
+  const W = 1466; let H = 1024, FW = 1466, upright = false;
+  const st2pre = st => { const X = (FW - W) / 2; st.setProperty('--FW', FW + 'px'); st.setProperty('--X', X + 'px'); st.setProperty('--X2', 2 * X + 'px'); };
   const viewport = document.getElementById('viewport'), frame = document.getElementById('frame');
   let P = null, scale = 1, current = null, overlay = null, busy = false, pushFrom = 0;
   const stack = [], cache = {};
@@ -85,16 +93,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // portrait mode is switched off for now: upright screens show the landscape design scaled to fit.
     // (set PORTRAIT = true to bring it back)
     const PORTRAIT = false;
-    const nh = PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : 1024;
+    // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
+    const nh = PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
+    FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
     const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
     H = nh;
-    scale = Math.min(vw / W, vh / H);
+    scale = Math.min(vw / FW, vh / H);
+    st2pre(frame.style);
     document.documentElement.classList.toggle('port', H !== 1024);
+    document.documentElement.classList.toggle('fill', H !== 1024 || FW !== W);
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (H - 1024) + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
     if (oldH !== H) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
     if (oldH !== H) frame.querySelectorAll('.layer').forEach(navFor);
     if (oldH !== H) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
-    viewport.style.width = Math.round(W * scale) + 'px';
+    viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
   }
@@ -230,7 +242,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     return layer;
   }
   const lastTop = {};   // where you were on each page, for swiping back
-  const lowMem = () => H !== 1024 || Math.min(innerWidth, innerHeight) < 600;
+  const lowMem = () => (upright && H !== 1024) || Math.min(innerWidth, innerHeight) < 600;
   const scrollerOf = layer => layer && layer._inst && layer._inst.scroller;
   // ---- portrait scroll mapping: boards think in landscape section positions; sections are taller in portrait ----
   function secMap(sc) {
@@ -268,12 +280,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   window.__vs = vScroll; window.__rs = rScroll;
   // portrait: the section menu starts collapsed to its dots so the bigger content has room (the + still opens it)
-  function navFor(l) { const i = l && l._inst; if (i && i.renderVals && i.sections && i.setState) withOwner(null, () => i.setState({ navOpen: H === 1024 })); }
+  function navFor(l) { const i = l && l._inst; if (i && i.renderVals && i.sections && i.setState) withOwner(null, () => i.setState({ navOpen: !(upright && H !== 1024) })); }
   // portrait: scale each section's content up so it fills the screen width (full-bleed decoration may crop at the sides)
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
     const h = +sec.dataset.h || 1024;
-    if (H === 1024) { wrap.style.transform = ''; wrap.style.top = ''; return; }
+    if (H === 1024 || !upright) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // landscape fill: no rescaling, just centred
     const tall = h > 1100;
     wrap.style.transform = 'none'; wrap.style.top = '0px';
     const r0 = wrap.getBoundingClientRect(), k0 = r0.width / 1466 || 1;
@@ -302,42 +314,61 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const topOf = el => parseFloat((el.getAttribute && (el.getAttribute('style') || '').match(/(?:^|;)\s*top:\s*(-?[\d.]+)px/) || [])[1]);
   const isFull = el => { const st = el.getAttribute && ((el.getAttribute('style') || '') + (el.getAttribute('data-dct-style') || '')); return /width:\s*1466px/.test(st) && /height:\s*(10\d\dpx|var\(--H)/.test(st); };
   function wrapIn(el, cls) { const w = document.createElement('div'); w.className = cls; const z = (el.getAttribute('style') || el.getAttribute('data-dct-style') || '').match(/z-index:\s*(\d+)/); if (z) w.style.zIndex = z[1]; el.parentNode.insertBefore(w, el); w.appendChild(el); return w; }
+  // horizontal fill: full-width strips stretch, things hugging an edge stay on that edge, everything else stays centred
+  const numIn = (st, k) => { const m = st.match(new RegExp('(?:^|;)\\s*' + k + ':\\s*(-?[\\d.]+)px')); return m ? parseFloat(m[1]) : null; };
+  function anchorX(el) {
+    if (!el || !el.getAttribute || el.tagName === 'STYLE' || el.tagName === 'SCRIPT') return;
+    const st = (el.getAttribute('style') || '') + ';' + (el.getAttribute('data-dct-style') || '');
+    if (/display:\s*contents/.test(st)) { [...el.children].forEach(anchorX); return; }   // component/state wrappers: anchor what's inside
+    const l = numIn(st, 'left'), w = numIn(st, 'width'), h = numIn(st, 'height');
+    if (l == null) return;
+    if (l <= 0 && w != null && w >= 1460) { el.classList.add('fx-full'); if (el.tagName !== 'svg' && el.tagName !== 'IMG') [...el.children].forEach(anchorX); return; }   // full-width strip: stretch it, anchor what it holds
+    if (l <= 0 && w != null && h != null && h >= 1000 && !el.getAttribute('data-dct-style')) { el.style.width = 'calc(' + w + 'px + var(--X2, 0px))'; return; }   // full-height side strip
+    const r = l + (w || 0);
+    if (l < 110) return;                    // pinned left (logo, menu, back pill)
+    if (r > 1356) { el.classList.add('fx-r'); return; }   // pinned right (help, next pill, right-hand photos/panels)
+    el.classList.add('fx-c');
+  }
   function portraitize(host, inst) {
     const root = host.firstElementChild; if (!root) return;
+    root.classList.add('fx-full');
     root.style.height = 'var(--H, 1024px)';
     const sc = inst.scroller;
     if (sc) {
-      sc.style.height = 'var(--H, 1024px)';
+      sc.style.height = 'var(--H, 1024px)'; sc.classList.add('fx-full');
       sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(sec => {
-        if (!sec.style.height) return;   // flowing sections (FAQs) keep their natural height and padding
-        const h = parseFloat(sec.style.height) || 1024; sec.dataset.h = h;
+        if (!sec.style.height) { sec.classList.add('fx-c'); return; }   // flowing sections (FAQs) keep their natural height and padding, centred
+        const h = parseFloat(sec.style.height) || 1024; sec.dataset.h = h; sec.classList.add('fx-full');
         const tall = h > 1100;   // long scrolling sections keep their length and start at the top of the screen
         sec.style.height = tall ? h + 'px' : 'calc(' + h + 'px + var(--E, 0px))';
         const wrap = document.createElement('div'); wrap.className = tall ? 'pcont ptall' : 'pcont'; wrap.style.height = h + 'px';
         [...sec.children].forEach(c => { if ((c.dataset.name || '').startsWith('Background (stays')) {
             // the pinned background fills the whole portrait screen
-            [...c.children].forEach(k => { const st = k.getAttribute('style') || ''; if (k.getAttribute('data-dct-style')) return;
+            [...c.children].forEach(k => { anchorX(k); const st = k.getAttribute('style') || ''; if (k.getAttribute('data-dct-style')) return;
               const t = topOf(k), hh = parseFloat((st.match(/height:\s*([\d.]+)px/) || [])[1]);
               if (t <= 0 && hh >= 1000) k.style.height = 'calc(' + hh + 'px + var(--E, 0px))'; else if (t > 0) k.style.marginTop = 'calc(var(--E, 0px) / 2)'; });
             // photos placed at a fixed size become "cover" so they fill the taller screen
             c.querySelectorAll('img').forEach(im => { if (/position:\s*absolute/.test(im.getAttribute('style') || '')) im.classList.add('pbgimg'); });
             return; }
           // plain full-screen tints (no content inside) stretch with the background
-          if (isFull(c) && !c.children.length && topOf(c) === 0) { if (!c.getAttribute('data-dct-style')) c.style.height = 'calc(' + h + 'px + var(--E, 0px))'; return; }
+          if (isFull(c) && !c.children.length && topOf(c) === 0) { c.classList.add('fx-full'); if (!c.getAttribute('data-dct-style')) c.style.height = 'calc(' + h + 'px + var(--E, 0px))'; return; }
           wrap.appendChild(c); });
         sec.appendChild(wrap);
       });
       [...root.children].forEach(c => {
         if (c === sc || c.tagName === 'STYLE') return;
         if (/height:\s*0px/.test(c.getAttribute('style') || '')) {
+          c.classList.add('fx-full'); [...c.children].forEach(anchorX);
           // floating controls layer: prev/next pills and anything else anchored to the bottom
           const low = [...c.children].filter(k => topOf(k) >= 600);
           if (low.length) { const d = document.createElement('div'); d.className = 'pdown'; c.appendChild(d); low.forEach(k => d.appendChild(k)); }
+        } else if (!isFull(c)) { anchorX(c);   // section menu, its toggle: pinned left
         } else if (isFull(c)) {
           // full-screen overlays (product sheet, video player): backdrop fills the tall screen, the card sits centred
           if (!c.getAttribute('data-dct-style')) c.style.height = 'var(--H, 1024px)';
-          const mid = document.createElement('div'); mid.className = 'pmid pass';
-          [...c.children].forEach(k => { if (isFull(k)) k.style.height = 'var(--H, 1024px)'; else mid.appendChild(k); });
+          c.classList.add('fx-full');
+          const mid = document.createElement('div'); mid.className = 'pmid pass'; mid.style.left = 'var(--X, 0px)';
+          [...c.children].forEach(k => { if (isFull(k)) { k.style.height = 'var(--H, 1024px)'; k.classList.add('fx-full'); } else mid.appendChild(k); });
           c.appendChild(mid);
         }
       });
@@ -345,7 +376,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       // single-screen boards: backgrounds stretch to fill, everything else sits centred
       const mid = document.createElement('div'); mid.className = 'pmid'; const low = document.createElement('div'); low.className = 'pdown';
       [...root.children].forEach(c => {
-        if (isFull(c) && topOf(c) === 0 && /(Photo|Background|bg)/i.test(c.dataset.name || '')) { c.style.height = '100%'; return; }
+        if (isFull(c) && topOf(c) === 0 && /(Photo|Background|bg)/i.test(c.dataset.name || '')) { c.style.height = '100%'; c.classList.add('fx-full'); c.querySelectorAll('img').forEach(im => { if (/position:\s*absolute/.test(im.getAttribute('style') || '')) im.classList.add('pbgimg'); }); return; }
+        anchorX(c);
         if (topOf(c) >= 880) { low.appendChild(c); return; }   // bottom buttons stay at the bottom
         mid.appendChild(c);
       });
@@ -429,12 +461,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const T = (x, y) => 'translate(' + x + 'px,' + y + 'px)';
     const o = { duration: ms, easing: ease, fill: 'both' }; const a = [];
     switch (tr) {
-      case 'slide-left': a.push(layer.animate([{ transform: T(W, 0) }, { transform: T(0, 0) }], o)); break;
-      case 'slide-right': a.push(layer.animate([{ transform: T(-W, 0) }, { transform: T(0, 0) }], o)); break;
+      case 'slide-left': a.push(layer.animate([{ transform: T(FW, 0) }, { transform: T(0, 0) }], o)); break;
+      case 'slide-right': a.push(layer.animate([{ transform: T(-FW, 0) }, { transform: T(0, 0) }], o)); break;
       case 'slide-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); break;
       case 'slide-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); break;
-      case 'push-left': a.push(layer.animate([{ transform: T(W + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(-W * 0.35, 0), opacity: 0.25 }], o)); break;
-      case 'push-right': a.push(layer.animate([{ transform: T(-W + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(W * 0.35, 0), opacity: 0.25 }], o)); break;
+      case 'push-left': a.push(layer.animate([{ transform: T(FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(-FW * 0.35, 0), opacity: 0.25 }], o)); break;
+      case 'push-right': a.push(layer.animate([{ transform: T(-FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(FW * 0.35, 0), opacity: 0.25 }], o)); break;
       case 'push-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, -H) }], o)); break;
       case 'push-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, H) }], o)); break;
       case 'none': return Promise.resolve();
@@ -773,7 +805,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const x = ok ? d : d * 0.25;
     current.layer.style.transition = 'none';
     current.layer.style.transform = 'translateX(' + x + 'px)';
-    current.layer.style.opacity = String(1 - Math.min(0.35, Math.abs(x) / W * 0.6));
+    current.layer.style.opacity = String(1 - Math.min(0.35, Math.abs(x) / FW * 0.6));
     return x;
   }
   function snapBack() {
