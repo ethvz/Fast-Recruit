@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fast Recruit (iPad)</title>
+<meta name="description" content="See why top reps choose Vivint: the experience, the culture, and the earning opportunity — in one interactive recruiting guide.">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vivint Recruiting">
+<meta property="og:title" content="Vivint Recruiting">
+<meta property="og:description" content="Why Vivint, the experience, the culture, and the opportunity — in one interactive guide.">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  :root { --bg: #000000; --fg: #ffffff; --accent: #05E5AF; color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: var(--fg); touch-action: manipulation; }
+  #stage { position: fixed; inset: env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px); display: flex; align-items: center; justify-content: center; }
+  #viewport { position: relative; overflow: hidden; background: var(--bg); }
+  #frame { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform-origin: 0 0; }
+  .layer { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; overflow: hidden; }
+  .layer.overlay { background: transparent; z-index: 100; }   /* above z-indexed headers on the page underneath */
+  .board { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; user-select: none; -webkit-user-select: none; }
+  /* only interactive things take the pointer; artwork lets clicks fall through */
+  .board [data-name], .board p, .board svg, .board img { pointer-events: none; }
+  .board .hot, .board svg .hot, .board svg .hot *, .board button, .board a, .board video, .board .sg, .board .tlw, .board input { pointer-events: auto; }
+  .board input::-webkit-outer-spin-button, .board input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .board input::placeholder { color: rgba(17,17,17,0.4); }
+  .board .hot { cursor: pointer; }
+  .board ::-webkit-scrollbar { display: none; }
+  .board div[style*="overflow-y: auto"] { scrollbar-width: none; overscroll-behavior: contain; }
+  .board .sg { cursor: grab; touch-action: pan-y; }
+  /* scroll reveal for copy */
+  .board .rv { opacity: 0; transform: translateY(38px); transition: opacity .9s cubic-bezier(.2,.75,.2,1), transform 1.05s cubic-bezier(.2,.75,.2,1); transition-delay: var(--rvd, 0ms); }
+  .board .rv.rv-in { opacity: 1; transform: none; }
+  /* phones: only render the sections near the screen */
+  .board section[id^="sec-"] { content-visibility: auto; }
+  .layer { touch-action: pan-y; }
+  /* portrait: the canvas grows taller (--H); bottom controls ride down with it, fixed-size screens sit centred */
+  #frame, .layer, .board { height: var(--H, 1024px) !important; }
+  .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(var(--dy, 0px)); }
+  .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
+  .pmid.pass { pointer-events: none; }
+  /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
+  html.port .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
+  .pcont.ptall { top: 0 !important; }
+  .pcont { position: absolute; left: 0; top: calc(var(--E, 0px) / 2); width: 1466px; }
+  /* phones: glass panels become solid tinted panels (no live blur) */
+  html.lite .board [style*="backdrop-filter"] { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  html.lite .board [style*="will-change"] { will-change: auto !important; }
+  html.lite .board :is([data-name="Glass card"], [data-name="Skill tile"], [data-name="Card"], [data-name="Rule card"], [data-name="Stream detail"], [data-name="Position detail"], [data-name="Income chart"], [data-name="Metric toggle"], [data-name="Pay details sheet"], [data-name="Override details sheet"], [data-name="YouTube link sheet"]) { background-color: rgba(14,20,18,0.78) !important; }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 10; transition: opacity .4s; }
+  #loading img { width: 180px; opacity: .9; }
+  #loading.done { opacity: 0; pointer-events: none; }
+</style>
+<script>
+// Phones: skip the live glass blur (it's what runs the Claude app out of memory, especially when zoomed in).
+try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.classList.add('lite'); } catch (e) {}
+</script>
+</head>
+<body>
+<div id="stage"><div id="viewport"><div id="frame"></div></div></div>
+<div id="loading"><img src="a_559acad5ae1afbaa1a07ab562568c842.png" alt="Vivint"></div>
+<script>
+(() => {
+  'use strict';
+  const W = 1466; let H = 1024;
+  const viewport = document.getElementById('viewport'), frame = document.getElementById('frame');
+  let P = null, scale = 1, current = null, overlay = null, busy = false, pushFrom = 0;
+  const stack = [], cache = {};
+  const slug = n => n.toLowerCase().replace(/’/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const EASE = { 'ease-in': 'cubic-bezier(.42,0,1,1)', 'ease-out': 'cubic-bezier(0,0,.58,1)', 'ease-in-out': 'cubic-bezier(.42,0,.58,1)', 'linear': 'linear', 'snap': 'cubic-bezier(.2,.9,.1,1)', 'wind-up': 'cubic-bezier(.5,-0.4,.5,1)', 'bounce': 'cubic-bezier(.3,1.4,.5,1)' };
+
+  function fit() {
+    const st = document.getElementById('stage');
+    const vw = st.clientWidth || innerWidth, vh = st.clientHeight || innerHeight;
+    // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
+    const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
+    // portrait mode is switched off for now: upright screens show the landscape design scaled to fit.
+    // (set PORTRAIT = true to bring it back)
+    const PORTRAIT = false;
+    const nh = PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : 1024;
+    const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
+    H = nh;
+    scale = Math.min(vw / W, vh / H);
+    document.documentElement.classList.toggle('port', H !== 1024);
+    const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (H - 1024) + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
+    if (oldH !== H) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
+    if (oldH !== H) frame.querySelectorAll('.layer').forEach(navFor);
+    if (oldH !== H) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
+    viewport.style.width = Math.round(W * scale) + 'px';
+    viewport.style.height = Math.round(H * scale) + 'px';
+    frame.style.transform = 'scale(' + scale + ')';
+  }
+
+  // ---------------- tiny runtime for the design-canvas board format ----------------
+  class DCLogic {
+    constructor(props) { this.props = props || {}; this.state = {}; }
+    setState(p) { if (typeof p === 'function') p = p(this.state); Object.assign(this.state, p); if (this.__sched) this.__sched(); }
+  }
+  const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
+  const resolve = (sc, expr) => expr.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc);
+  const fill = (tpl, sc) => tpl.replace(HOLE, (m, e) => { const v = resolve(sc, e); return v == null ? '' : String(v); });
+  const holeAttrs = html => html.replace(/(\s)([a-zA-Z][\w-]*)="([^"]*\{\{[^"]*)"/g, (m, sp, n, v) => sp + 'data-dct-' + n.toLowerCase() + '="' + v + '"');
+  function prep(markup) {
+    const loops = [];
+    const html = markup.replace(/<sc-for\s+list="\{\{\s*([\w.]+)\s*\}\}"\s+as="(\w+)"[^>]*>([\s\S]*?)<\/sc-for>/g, (m, list, as, inner) => {
+      loops.push({ list, as, inner: holeAttrs(inner) }); return '<sc-slot data-loop="' + (loops.length - 1) + '"></sc-slot>';
+    });
+    return { html: holeAttrs(html), loops };
+  }
+  function bind(root, loops) {
+    const out = [];
+    const els = [root, ...root.querySelectorAll('*')];
+    for (const el of els) {
+      if (el.tagName === 'SC-SLOT') { out.push({ k: 'loop', el, loop: loops[+el.dataset.loop] }); continue; }
+      for (const a of [...el.attributes]) {
+        if (!a.name.startsWith('data-dct-')) continue;
+        const name = a.name.slice(9), tpl = a.value;
+        if (name.startsWith('on')) { const m = /^\{\{\s*([\w.$]+)\s*\}\}$/.exec(tpl); if (m) out.push({ k: 'evt', el, evt: name.slice(2), expr: m[1] }); }
+        else if (name === 'ref') { const m = /^\{\{\s*([\w.$]+)\s*\}\}$/.exec(tpl); if (m) out.push({ k: 'ref', el, expr: m[1] }); }
+        else out.push({ k: 'attr', el, name, tpl });
+      }
+    }
+    const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let n = tw.nextNode(); n; n = tw.nextNode()) if (n.data.includes('{{')) out.push({ k: 'text', node: n, tpl: n.data });
+    return out;
+  }
+  const keyOf = list => JSON.stringify(list, (k, v) => (typeof v === 'function' ? undefined : v));
+  function apply(binds, sc) {
+    for (const b of binds) {
+      if (b.k === 'attr') { const v = fill(b.tpl, sc); if (b.el.getAttribute(b.name) !== v) b.el.setAttribute(b.name, v); }
+      else if (b.k === 'text') { const v = fill(b.tpl, sc); if (b.node.data !== v) b.node.data = v; }
+      else if (b.k === 'evt') {
+        b.el.__sc = sc;
+        if (!b.el.__on) b.el.__on = {};
+        if (!b.el.__on[b.evt]) {
+          b.el.__on[b.evt] = true;
+          b.el.addEventListener(b.evt, e => { const f = resolve(b.el.__sc, b.expr); if (typeof f === 'function') { const h = b.el.closest('.board'); withOwner((h && h.__owner) || null, () => f(e)); } }, b.evt === 'wheel' ? { passive: true } : false);
+        }
+      }
+      else if (b.k === 'ref') { if (!b.el.__ref) { b.el.__ref = true; const f = resolve(sc, b.expr); if (typeof f === 'function') f(b.el); } }
+      else if (b.k === 'loop') {
+        const list = resolve(sc, b.loop.list) || [];
+        const key = keyOf(list);
+        if (b.el.__key === key && b.el.__nodes) { b.el.__nodes.forEach(n => n.__binds && apply(n.__binds, Object.assign({}, sc, { [b.loop.as]: list[n.__i] }))); continue; }
+        b.el.__key = key;
+        (b.el.__nodes || []).forEach(n => n.remove());
+        b.el.__nodes = [];
+        list.forEach((item, i) => {
+          const t = document.createElement('template'); t.innerHTML = b.loop.inner;
+          [...t.content.children].forEach(n => {
+            n.__binds = bind(n, []); n.__i = i;
+            apply(n.__binds, Object.assign({}, sc, { [b.loop.as]: item }));
+            b.el.parentNode.insertBefore(n, b.el); b.el.__nodes.push(n);
+          });
+        });
+      }
+    }
+  }
+  // timers a board starts are tracked so they can be stopped when the board is closed
+  let TOWNER = null;
+  const _si = window.setInterval.bind(window), _st = window.setTimeout.bind(window);
+  window.setInterval = function (fn, ms, ...a) { const o = TOWNER; const id = _si(o ? () => { if (!o.__dead) { TOWNER = o; try { fn(...a); } finally { TOWNER = null; } } } : fn, ms); if (o) o.__ivs.push(id); return id; };
+  window.setTimeout = function (fn, ms, ...a) { const o = TOWNER; return _st(o ? () => { if (!o.__dead) { TOWNER = o; try { (typeof fn === 'function' ? fn : () => {})(...a); } finally { TOWNER = null; } } } : fn, ms); };
+  function withOwner(o, f) { const p = TOWNER; TOWNER = o; try { return f(); } finally { TOWNER = p; } }
+  function destroyLayer(layer) {
+    if (!layer || layer.__gone) return; layer.__gone = true;
+    (layer._off || []).forEach(f => { try { f(); } catch (e) {} }); layer._off = null;
+    try { stopVideos(layer); } catch (e) {}
+    const inst = layer._inst;
+    if (inst) {
+      inst.__dead = true; inst.__sched = null; inst.setState = () => {};
+      (inst.__ivs || []).forEach(id => clearInterval(id));
+      Object.keys(inst).forEach(k => { if (inst[k] instanceof Element) inst[k] = null; });
+    }
+    if (layer._io) { layer._io.disconnect(); layer._io = null; }
+    layer.querySelectorAll('img').forEach(i => { i.removeAttribute('srcset'); i.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; });
+    layer.remove();
+    layer._inst = null;
+  }
+  function instantiate(j) {
+    const C = new Function('DCLogic', j.script.split('e.currentTarget.scrollTop').join('window.__vs(e.currentTarget)').split('el.scrollTo({ top: this.sections[i].top').join('el.scrollTo({ top: window.__rs(el, this.sections[i].top)') + '\nreturn Component;')(DCLogic);
+    const owner = { __ivs: [], __dead: false };
+    const inst = withOwner(owner, () => new C({}));
+    inst.__ivs = owner.__ivs; Object.defineProperty(inst, '__dead', { get: () => owner.__dead, set: v => { owner.__dead = v; } });
+    // full-screen pieces whose style is data-driven (overlays) take the live canvas height
+    const mk = j.markup.replace(/style="([^"]*\{\{[^"]*)"/g, (m, st) => 'style="' + st.replace('width: 1466px; height: 1024px', 'width: 1466px; height: var(--H, 1024px)') + '"');
+    const pr = prep(mk), loops = pr.loops;
+    // images wait until their section is near the screen (see setupVirtual)
+    const html = pr.html.replace(/<img\b([^>]*?)\ssrc="(?![^"]*\{\{)/g, '<img$1 data-vsrc="');
+    const host = document.createElement('div'); host.className = 'board';
+    host.innerHTML = html;
+    const binds = bind(host, loops);
+    let raf = 0;
+    const render = () => { raf = 0; if (owner.__dead) return; withOwner(owner, () => apply(binds, inst.renderVals ? inst.renderVals() : {})); };
+    host.__owner = owner;
+    inst.__sched = () => { if (!raf) raf = requestAnimationFrame(render); };
+    render();
+    return { host, inst };
+  }
+
+  // ---------------- boards & navigation ----------------
+  async function loadBoard(fn) {
+    if (!cache[fn]) cache[fn] = fetch('boards_' + fn.replace('.dc.html', '') + '.json').then(r => r.json());
+    return cache[fn];
+  }
+  async function makeLayer(fn) {
+    const j = await loadBoard(fn);
+    const { host, inst } = instantiate(j);
+    const layer = document.createElement('div');
+    layer.className = 'layer'; layer.dataset.board = fn;
+    layer.appendChild(host);
+    layer._inst = inst; layer._fn = fn;
+    portraitize(host, inst);
+    const map = {};
+    (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
+    layer._ia = map;
+    layer.addEventListener('click', e => onTap(e, layer));
+    setupScrollGroups(layer);
+    setupVirtual(layer);
+    // prefetch destinations
+    (P.boards[fn].ia || []).forEach(x => { const t = x.dest && P.artboards[x.dest]; if (t) loadBoard(t.board); });
+    return layer;
+  }
+  const lastTop = {};   // where you were on each page, for swiping back
+  const lowMem = () => H !== 1024 || Math.min(innerWidth, innerHeight) < 600;
+  const scrollerOf = layer => layer && layer._inst && layer._inst.scroller;
+  // ---- portrait scroll mapping: boards think in landscape section positions; sections are taller in portrait ----
+  function secMap(sc) {
+    if (sc.__map && sc.__mapE === H) return sc.__map;
+    let T = 0, R = 0; const m = [];
+    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { const h = +el.dataset.h || el.offsetHeight, tall = h > 1100; const hr = tall ? h : h + (H - 1024); m.push({ T, R, h, hr, tall }); T += h; R += hr; });
+    sc.__map = m; sc.__mapE = H; return m;
+  }
+  // Content position on the real (portrait) page -> the same spot in landscape. Short sections have padding above and
+  // below their centred content (it collapses); long sections are 1:1.
+  function posP(m, yr) {
+    const E = H - 1024; let s = m[0]; m.forEach(x => { if (yr >= x.R) s = x; });
+    const c = Math.min(yr - s.R, s.hr);
+    return s.tall ? s.T + Math.min(s.h, c) : s.T + Math.max(0, Math.min(s.h, c - E / 2));
+  }
+  function Pinv(m, v) {
+    const E = H - 1024; let s = m[0]; m.forEach(x => { if (v > x.T) s = x; });
+    const c = v - s.T;
+    if (s.tall) return s.R + c;
+    return c >= s.h ? s.R + s.hr : s.R + E / 2 + c;
+  }
+  // The board's animations think the screen is 1024 tall, so tell them where the BOTTOM of the real screen is:
+  // everything already on screen is then shown, exactly as in landscape.
+  function vScroll(sc) {
+    const y = sc.scrollTop; if (H === 1024) return y;
+    const m = secMap(sc); if (!m.length) return y;
+    return Math.max(0, posP(m, y + H) - 1024);
+  }
+  function rScroll(sc, v) {
+    if (H === 1024) return v;
+    const m = secMap(sc); if (!m.length) return v;
+    let s = m[0]; m.forEach(x => { if (v >= x.T) s = x; });
+    if (v <= s.T + 0.5) return s.R;                            // a section's start = that section at the top
+    return Math.max(s.R, Pinv(m, v + 1024) - H);
+  }
+  window.__vs = vScroll; window.__rs = rScroll;
+  // portrait: the section menu starts collapsed to its dots so the bigger content has room (the + still opens it)
+  function navFor(l) { const i = l && l._inst; if (i && i.renderVals && i.sections && i.setState) withOwner(null, () => i.setState({ navOpen: H === 1024 })); }
+  // portrait: scale each section's content up so it fills the screen width (full-bleed decoration may crop at the sides)
+  function fitSection(sec) {
+    const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
+    const h = +sec.dataset.h || 1024;
+    if (H === 1024) { wrap.style.transform = ''; wrap.style.top = ''; return; }
+    const tall = h > 1100;
+    wrap.style.transform = 'none'; wrap.style.top = '0px';
+    const r0 = wrap.getBoundingClientRect(), k0 = r0.width / 1466 || 1;
+    let L = 1e9, T = 1e9, R = -1e9, B = -1e9;
+    wrap.querySelectorAll('*').forEach(n => {
+      if (n.closest('svg') && n.tagName.toLowerCase() !== 'svg') return;
+      let b = n.getBoundingClientRect(); if (b.width < 2 || b.height < 2) return;
+      if (n.tagName === 'P') { const rg = document.createRange(); rg.selectNodeContents(n); const t = rg.getBoundingClientRect(); if (t.width > 1) b = t; }   // text: its glyphs, not its box
+      const w = b.width / k0; if (w >= 1300) return;              // full-bleed strips don't count
+      const x0 = (b.left - r0.left) / k0, y0 = (b.top - r0.top) / k0, x1 = x0 + w, y1 = y0 + b.height / k0;
+      if (x1 < 0 || x0 > 1466 || y1 < 0 || y0 > h) return;
+      L = Math.min(L, Math.max(0, x0)); R = Math.max(R, Math.min(1466, x1)); T = Math.min(T, Math.max(0, y0)); B = Math.max(B, Math.min(h, y1));
+    });
+    if (R <= L || B <= T) { wrap.style.transform = ''; wrap.style.top = ''; return; }
+    const PADL = 60, PADR = 60, PADV = 230;   // centred: the section menu is collapsed to dots in portrait                     // room for the section menu, edges, header and bottom buttons
+    if (tall) {   // long sections: just centre them across the width
+      if (R - L > 1100 || R > 1440) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // wide/edge-to-edge strips: leave as designed
+      const tx = (1466 - (R - L)) / 2 - L;
+      wrap.style.transformOrigin = '0 0'; wrap.style.transform = 'translateX(' + tx.toFixed(1) + 'px)'; wrap.style.top = ''; return;
+    }
+    const k = Math.max(1, Math.min((1466 - PADL - PADR) / (R - L), (H - 2 * PADV) / (B - T), 1.9));
+    const tx = PADL + ((1466 - PADL - PADR) - (R - L) * k) / 2 - L * k;
+    const ty = (h + (H - 1024) - (B - T) * k) / 2 - T * k;
+    wrap.style.transformOrigin = '0 0'; wrap.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + k.toFixed(4) + ')';
+  }
+  const topOf = el => parseFloat((el.getAttribute && (el.getAttribute('style') || '').match(/(?:^|;)\s*top:\s*(-?[\d.]+)px/) || [])[1]);
+  const isFull = el => { const st = el.getAttribute && ((el.getAttribute('style') || '') + (el.getAttribute('data-dct-style') || '')); return /width:\s*1466px/.test(st) && /height:\s*(10\d\dpx|var\(--H)/.test(st); };
+  function wrapIn(el, cls) { const w = document.createElement('div'); w.className = cls; const z = (el.getAttribute('style') || el.getAttribute('data-dct-style') || '').match(/z-index:\s*(\d+)/); if (z) w.style.zIndex = z[1]; el.parentNode.insertBefore(w, el); w.appendChild(el); return w; }
+  function portraitize(host, inst) {
+    const root = host.firstElementChild; if (!root) return;
+    root.style.height = 'var(--H, 1024px)';
+    const sc = inst.scroller;
+    if (sc) {
+      sc.style.height = 'var(--H, 1024px)';
+      sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(sec => {
+        if (!sec.style.height) return;   // flowing sections (FAQs) keep their natural height and padding
+        const h = parseFloat(sec.style.height) || 1024; sec.dataset.h = h;
+        const tall = h > 1100;   // long scrolling sections keep their length and start at the top of the screen
+        sec.style.height = tall ? h + 'px' : 'calc(' + h + 'px + var(--E, 0px))';
+        const wrap = document.createElement('div'); wrap.className = tall ? 'pcont ptall' : 'pcont'; wrap.style.height = h + 'px';
+        [...sec.children].forEach(c => { if ((c.dataset.name || '').startsWith('Background (stays')) {
+            // the pinned background fills the whole portrait screen
+            [...c.children].forEach(k => { const st = k.getAttribute('style') || ''; if (k.getAttribute('data-dct-style')) return;
+              const t = topOf(k), hh = parseFloat((st.match(/height:\s*([\d.]+)px/) || [])[1]);
+              if (t <= 0 && hh >= 1000) k.style.height = 'calc(' + hh + 'px + var(--E, 0px))'; else if (t > 0) k.style.marginTop = 'calc(var(--E, 0px) / 2)'; });
+            // photos placed at a fixed size become "cover" so they fill the taller screen
+            c.querySelectorAll('img').forEach(im => { if (/position:\s*absolute/.test(im.getAttribute('style') || '')) im.classList.add('pbgimg'); });
+            return; }
+          // plain full-screen tints (no content inside) stretch with the background
+          if (isFull(c) && !c.children.length && topOf(c) === 0) { if (!c.getAttribute('data-dct-style')) c.style.height = 'calc(' + h + 'px + var(--E, 0px))'; return; }
+          wrap.appendChild(c); });
+        sec.appendChild(wrap);
+      });
+      [...root.children].forEach(c => {
+        if (c === sc || c.tagName === 'STYLE') return;
+        if (/height:\s*0px/.test(c.getAttribute('style') || '')) {
+          // floating controls layer: prev/next pills and anything else anchored to the bottom
+          const low = [...c.children].filter(k => topOf(k) >= 600);
+          if (low.length) { const d = document.createElement('div'); d.className = 'pdown'; c.appendChild(d); low.forEach(k => d.appendChild(k)); }
+        } else if (isFull(c)) {
+          // full-screen overlays (product sheet, video player): backdrop fills the tall screen, the card sits centred
+          if (!c.getAttribute('data-dct-style')) c.style.height = 'var(--H, 1024px)';
+          const mid = document.createElement('div'); mid.className = 'pmid pass';
+          [...c.children].forEach(k => { if (isFull(k)) k.style.height = 'var(--H, 1024px)'; else mid.appendChild(k); });
+          c.appendChild(mid);
+        }
+      });
+    } else {
+      // single-screen boards: backgrounds stretch to fill, everything else sits centred
+      const mid = document.createElement('div'); mid.className = 'pmid'; const low = document.createElement('div'); low.className = 'pdown';
+      [...root.children].forEach(c => {
+        if (isFull(c) && topOf(c) === 0 && /(Photo|Background|bg)/i.test(c.dataset.name || '')) { c.style.height = '100%'; return; }
+        if (topOf(c) >= 880) { low.appendChild(c); return; }   // bottom buttons stay at the bottom
+        mid.appendChild(c);
+      });
+      root.appendChild(mid); if (low.children.length) root.appendChild(low);
+    }
+  }
+  function sectionTop(fn, i) { const s = P.boards[fn].sections[i]; return s ? s.top : 0; }
+  function currentAid() {
+    if (!current) return null;
+    const secs = P.boards[current.board].sections, sc = scrollerOf(current.layer);
+    const y = sc ? vScroll(sc) + 1 : 0; let a = secs[0];
+    secs.forEach(s => { if (y >= s.top) a = s; });
+    return a.aid;
+  }
+
+  function onTap(e, layer) {
+    if (busy || layer._dragged) return;
+    for (let el = e.target; el && el !== layer; el = el.parentNode) {
+      if (el.id && layer._ia[el.id] && visible(el, layer)) {
+        const list = layer._ia[el.id].filter(x => x.t === 'tap');
+        if (list.length) { e.preventDefault(); e.stopPropagation(); run(list[0], layer, el); return; }
+      }
+      if (el.tagName === 'A' || el.tagName === 'BUTTON' || (el.tagName === 'INPUT' && !el.classList.contains('hapsw'))) return;   // handled by the board itself
+    }
+    const abTap = (layer._ia['ab'] || []).filter(x => x.t === 'tap');
+    if (abTap.length) run(abTap[0], layer);
+  }
+  function visible(el, layer) {
+    for (let n = el; n && n !== layer; n = n.parentNode) if (n.style && n.style.display === 'none') return false;
+    return true;
+  }
+  function run(x, layer, el) {
+    switch (x.a) {
+      case 'artboard-transition':
+      case 'auto-animate':
+        if (overlay && layer === overlay.layer) closeOverlay(true);
+        go(x.dest, x.a === 'auto-animate' ? 'dissolve' : x.tr, x.dur, x.ease); break;
+      case 'overlay-transition': openOverlay(x.dest, x.tr, x.dur, x.ease, x.ov); break;
+      case 'previous-artboard': if (overlay && layer === overlay.layer) closeOverlay(); else back(); break;
+      case 'state-transition': setCompState(layer, x.dest, el); break;
+      case 'video-playback': videoAction(layer, x, el); break;
+    }
+  }
+
+  async function go(aid, tr, dur, ease, restore) {
+    const t = P.artboards[aid];
+    if (!t || busy) return;
+    if (current && current.board === t.board && !restore) {
+      const sc = scrollerOf(current.layer);
+      if (sc) sc.scrollTo({ top: rScroll(sc, sectionTop(t.board, t.section)), behavior: 'smooth' });
+      setHash(aid); return;
+    }
+    busy = true;
+    try {
+      const layer = await makeLayer(t.board);
+      let old = current && current.layer;
+      if (current) { const osc = scrollerOf(old); if (osc) lastTop[current.board] = osc.scrollTop; }
+      if (!restore && current) stack.push({ board: current.board, aid: currentAid(), top: (scrollerOf(old) || {}).scrollTop || 0 });
+      // phones / upright: never keep two pages alive at once (the Claude app's viewer runs out of memory) — clear the old
+      // page first, then fade the new one in
+      if (old && lowMem()) { destroyLayer(old); old = null; if (tr !== 'none') tr = 'dissolve'; }
+      frame.appendChild(layer);
+      if (overlay) frame.appendChild(overlay.layer);
+      const sc = scrollerOf(layer);
+      if (sc) { sc.style.scrollBehavior = 'auto'; sc.scrollTop = restore ? restore.top : rScroll(sc, sectionTop(t.board, t.section)); requestAnimationFrame(() => { sc.style.scrollBehavior = ''; }); }
+      if (layer._vupdate) layer._vupdate();
+      layer.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
+      navFor(layer);
+      if (sc && H !== 1024) sc.dispatchEvent(new Event('scroll'));   // portrait: sync the board with the mapped position
+      current = { board: t.board, layer };
+      await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
+      if (old) destroyLayer(old);
+      startScreen(layer);
+      setHash(restore ? (currentAid() || aid) : aid);
+    } finally { busy = false; }
+  }
+  function back() { const s = stack.pop(); if (s) go(s.aid, 'dissolve', 0.3, 'ease-out', s); }
+  function setHash(aid) { try { history.replaceState(null, '', '#' + slug(P.artboards[aid].name)); } catch (e) {} }
+
+  function animate(layer, old, tr, ms, ease) {
+    const T = (x, y) => 'translate(' + x + 'px,' + y + 'px)';
+    const o = { duration: ms, easing: ease, fill: 'both' }; const a = [];
+    switch (tr) {
+      case 'slide-left': a.push(layer.animate([{ transform: T(W, 0) }, { transform: T(0, 0) }], o)); break;
+      case 'slide-right': a.push(layer.animate([{ transform: T(-W, 0) }, { transform: T(0, 0) }], o)); break;
+      case 'slide-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); break;
+      case 'slide-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); break;
+      case 'push-left': a.push(layer.animate([{ transform: T(W + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(-W * 0.35, 0), opacity: 0.25 }], o)); break;
+      case 'push-right': a.push(layer.animate([{ transform: T(-W + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(W * 0.35, 0), opacity: 0.25 }], o)); break;
+      case 'push-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, -H) }], o)); break;
+      case 'push-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, H) }], o)); break;
+      case 'none': return Promise.resolve();
+      default: a.push(layer.animate([{ opacity: 0 }, { opacity: 1 }], o));
+    }
+    pushFrom = 0; if (old) old.style.transform = '';
+    return Promise.all(a.map(x => x.finished)).then(() => a.forEach(x => x.cancel()));
+  }
+
+  async function openOverlay(aid, tr, dur, ease, pos) {
+    const t = P.artboards[aid];
+    if (!t || busy) return;
+    busy = true;
+    try {
+      if (overlay) closeOverlay(true);
+      const layer = await makeLayer(t.board);
+      layer.classList.add('overlay');
+      const root = layer.querySelector('.board > div'); if (root) root.style.background = 'transparent';
+      layer.style.left = ((pos && pos.x) || 0) + 'px'; layer.style.top = ((pos && pos.y) || 0) + 'px';
+      frame.appendChild(layer);
+      overlay = { board: t.board, layer };
+      await animate(layer, null, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
+      startScreen(layer);
+    } finally { busy = false; }
+  }
+  function closeOverlay(instant) {
+    if (!overlay) return;
+    const l = overlay.layer; overlay = null; stopVideos(l);
+    if (instant) { destroyLayer(l); return; }
+    l.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'both' }).finished.then(() => destroyLayer(l));
+  }
+
+  // component states: every state of a component is a sibling [data-state]; show one
+  function setCompState(layer, dest, el) {
+    let target = null;
+    for (let n = el; n && n !== layer && !target; n = n.parentNode) {
+      if (n.dataset && n.dataset.comp) target = [...n.children].find(c => c.dataset && c.dataset.state === dest) || null;
+    }
+    if (!target && el) {
+      // several instances of the same component share state ids: pick the instance nearest the tapped hotspot
+      const cands = [...layer.querySelectorAll('[data-comp]')].filter(c => [...c.children].some(ch => ch.dataset && ch.dataset.state === dest));
+      if (cands.length) {
+        const hb = el.getBoundingClientRect(), hx = hb.left + hb.width / 2, hy = hb.top + hb.height / 2;
+        const boxOf = c => { let L = 1e9, T = 1e9, R = -1e9, B = -1e9; c.querySelectorAll('*').forEach(n => { const r = n.getBoundingClientRect(); if (r.width && r.height) { L = Math.min(L, r.left); T = Math.min(T, r.top); R = Math.max(R, r.right); B = Math.max(B, r.bottom); } }); return R < L ? null : { L, T, R, B }; };
+        let best = null, bd = 1e18;
+        cands.forEach(c => { const b = boxOf(c); if (!b) return; const inside = hx >= b.L && hx <= b.R && hy >= b.T && hy <= b.B; const d = inside ? -1 / ((b.R - b.L) * (b.B - b.T) + 1) : Math.hypot(hx - (b.L + b.R) / 2, hy - (b.T + b.B) / 2); if (d < bd) { bd = d; best = c; } });
+        if (best) target = [...best.children].find(ch => ch.dataset && ch.dataset.state === dest) || null;
+      }
+    }
+    if (!target) {
+      for (const l of [layer, ...frame.querySelectorAll('.layer')]) { target = l.querySelector('[data-state="' + dest + '"]'); if (target) break; }
+    }
+    if (!target) return;
+    const comp = target.parentNode;
+    [...comp.children].forEach(c => {
+      if (!c.dataset || !c.dataset.state) return;
+      const on = c === target;
+      if (c.tagName === 'DIV') c.style.display = on ? 'contents' : 'none';
+      else c.style.display = on ? '' : 'none';
+    });
+    startVideos(target);
+  }
+
+  // videos
+  const trims = {};
+  function vidOf(layer, x, el) {
+    let v = x.video ? layer.querySelector('#' + x.video) : null;
+    if (!v && el && el.querySelector) v = el.tagName === 'VIDEO' ? el : el.querySelector('video');
+    return v || layer.querySelector('video');
+  }
+  const ensureSrc = v => { if (!v.getAttribute('src') && v.dataset.src) v.src = v.dataset.src; };
+  function videoAction(layer, x, el) {
+    const v = vidOf(layer, x, el); if (!v) return;
+    ensureSrc(v);
+    if (x.sub === 'pause' || (x.sub === 'toggle-play-pause' && !v.paused)) v.pause();
+    else v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  }
+  function startVideos(root) {
+    root.querySelectorAll('video').forEach(v => {
+      if (!(v.loop || v.muted)) return;
+      if (root.closest && v.closest('[data-state]') && getComputedStyle(v).display === 'none') return;
+      ensureSrc(v); v.muted = true;
+      const t = trims[v.id];
+      if (t && !v._trim) {
+        v._trim = true;
+        v.addEventListener('loadedmetadata', () => { v.currentTime = (t.start || 0) * v.duration; });
+        v.addEventListener('timeupdate', () => { if (v.duration && v.currentTime > (t.end || 1) * v.duration) v.currentTime = (t.start || 0) * v.duration; });
+      }
+      v.play().catch(() => {});
+    });
+  }
+  const stopVideos = root => root.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
+  function startScreen(layer) {
+    startVideos(layer);
+    setupReveal(layer);
+    setupSnap(layer);
+    (P.boards[layer._fn].ia || []).filter(x => x.t === 'time').forEach(x => setTimeout(() => {
+      if (!layer.isConnected) return;
+      if (x.a === 'video-playback') videoAction(layer, x, null); else run(x, layer);
+    }, (x.delay || 0) * 1000));
+  }
+
+  // scroll groups: drag or wheel to pan inside a clipped viewport
+  function setupScrollGroups(layer) {
+    layer.querySelectorAll('.sg').forEach(g => {
+      const type = g.dataset.scroll, HZ = type !== 'vertical', VT = type !== 'horizontal';
+      const inner = g.querySelector('.sgin'); if (!inner) return;
+      let ox = 0, oy = 0, start = null, lim = null;
+      const limits = () => {
+        const r = g.getBoundingClientRect(); let L = Infinity, T = Infinity, R = -Infinity, B = -Infinity;
+        inner.querySelectorAll(':scope > *').forEach(c => { const b = c.getBoundingClientRect(); if (!b.width && !b.height) return; L = Math.min(L, b.left); T = Math.min(T, b.top); R = Math.max(R, b.right); B = Math.max(B, b.bottom); });
+        const s = scale; L = (L - r.left) / s - ox; R = (R - r.left) / s - ox; T = (T - r.top) / s - oy; B = (B - r.top) / s - oy;
+        const vw = r.width / s, vh = r.height / s;
+        lim = { x0: Math.min(0, vw - R), x1: Math.max(0, -L), y0: Math.min(0, vh - B), y1: Math.max(0, -T) };
+      };
+      const cx = v => Math.max(lim.x0, Math.min(lim.x1, v)), cy = v => Math.max(lim.y0, Math.min(lim.y1, v));
+      const applyT = () => { inner.style.transform = 'translate(' + ox + 'px,' + oy + 'px)'; };
+      g.addEventListener('pointerdown', e => { limits(); start = { x: e.clientX, y: e.clientY, ox, oy }; });
+      const onMove = e => {
+        if (!start) return;
+        const dx = (e.clientX - start.x) / scale, dy = (e.clientY - start.y) / scale;
+        if (Math.abs(dx) + Math.abs(dy) > 6) layer._dragged = true;
+        if (HZ) ox = cx(start.ox + dx); if (VT) oy = cy(start.oy + dy); applyT();
+      };
+      const onUp = () => { if (start) { start = null; setTimeout(() => { layer._dragged = false; }, 50); } };
+      addEventListener('pointermove', onMove); addEventListener('pointerup', onUp);
+      // removed when the page closes, so closed pages can be freed
+      (layer._off = layer._off || []).push(() => { removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp); });
+      g.addEventListener('wheel', e => {
+        limits(); let used = false;
+        if (HZ && Math.abs(e.deltaX) > Math.abs(e.deltaY)) { const n = cx(ox - e.deltaX); used = n !== ox; ox = n; }
+        else if (VT) { const n = cy(oy - e.deltaY); used = n !== oy; oy = n; }
+        if (used) { e.preventDefault(); applyT(); }
+      }, { passive: false });
+    });
+  }
+
+  // ---------------- load only the sections near the screen ----------------
+  // Long pages are split into sections; sections more than ~1.5 screens away are unloaded
+  // (their DOM is parked and their images released) and reloaded just before they scroll in.
+  const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+  function setupVirtual(layer) {
+    const sc = scrollerOf(layer);
+    const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (im.getAttribute('src') !== im.dataset.vsrc) im.setAttribute('src', im.dataset.vsrc); });
+    const secs = sc ? [...sc.querySelectorAll('section[id^="sec-"]')] : [];
+    if (!sc || secs.length < 2) { restoreImgs(layer); secs.forEach(fitSection); return; }
+    // anything outside the sections (header, side nav, buttons) loads right away
+    layer.querySelectorAll('img[data-vsrc]').forEach(im => { if (!im.closest('section[id^="sec-"]') && !im.closest('[role="dialog"]')) im.setAttribute('src', im.dataset.vsrc); });
+    // pop-ups (product sheet, video player) load their pictures only once they are opened
+    layer.querySelectorAll('[role="dialog"]').forEach(d => {
+      const mo = new MutationObserver(() => { if (/opacity:\s*1/.test(d.getAttribute('style') || '')) { restoreImgs(d); mo.disconnect(); } });
+      mo.observe(d, { attributes: true, attributeFilter: ['style'] }); (layer._off = layer._off || []).push(() => mo.disconnect());
+    });
+    const VH = 1024; let tops = null;
+    const measure = () => { let t = 0; tops = secs.map(el => { const h = el.offsetHeight || parseFloat(el.style.height) || VH; const r = [t, t + h]; t += h; return r; }); };
+    const park = el => {
+      if (el.__vout) return; el.__vout = true;
+      el.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
+      el.querySelectorAll('img').forEach(im => { if (im.dataset.vsrc) im.setAttribute('src', BLANK); });
+      const fr = document.createDocumentFragment(); while (el.firstChild) fr.appendChild(el.firstChild); el.__frag = fr;
+    };
+    const load = el => {
+      if (el.__vout === false) return;
+      if (el.__frag) { el.appendChild(el.__frag); el.__frag = null; }
+      el.__vout = false; restoreImgs(el);
+      if (layer.isConnected) fitSection(el);
+      if (layer._rv) layer._rv(el);
+      if (layer.isConnected) startVideos(el);
+    };
+    let raf = 0;
+    const update = () => {
+      raf = 0; if (layer.__gone) return; if (!tops) measure();
+      const M = lowMem() ? 0.4 : 1.25, O = lowMem() ? 1.3 : 2.25;   // phones / upright keep fewer sections loaded
+      const y = sc.scrollTop, inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
+      secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) load(el); else if (b < outA || a > outB) park(el); });
+    };
+    layer._vupdate = (re) => { if (re) tops = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } update(); };
+    sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+    // first pass: park everything but the start of the page
+    secs.forEach((el, i) => { if (i > 1) park(el); else load(el); });
+  }
+
+  // ---------------- springy section snapping ----------------
+  // Pages snap: release between two sections and it springs onto one of them.
+  // Sections taller than the screen scroll freely inside; only their edges snap.
+  function setupSnap(layer) {
+    const sc = scrollerOf(layer); if (!sc) return;
+    const secs = [...sc.querySelectorAll('section[id^="sec-"]')];
+    if (secs.length < 2) return;
+    let Z = [], zH = 0;
+    // a snap zone is only where the screen straddles two sections:
+    // from "previous section's bottom fills the screen" to "next section's top is at the top"
+    const build = () => { if (zH === H && Z.length) return; zH = H; Z = []; const VH = H, maxY = sc.scrollHeight - sc.clientHeight;
+      for (let i = 0; i < secs.length - 1; i++) {
+        const t = secs[i].offsetTop, h = secs[i].offsetHeight, nt = secs[i + 1].offsetTop;
+        const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
+        if (b > a + 2) Z.push([a, b]);
+      } };
+    const zoneAt = y => { build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
+    let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false;
+    const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; };
+    const spring = (to, v0) => {
+      stopSpring(); springing = true;
+      // kill native momentum (iOS) before driving the scroll ourselves
+      sc.style.overflowY = 'hidden'; sc.style.scrollBehavior = 'auto';
+      let x = sc.scrollTop - to, v = (v0 || 0) * 1000, t0 = performance.now();
+      const K = 300, C = 22; // stiffness / damping: quick with a small overshoot
+      const step = now => {
+        const dt = Math.min(0.032, (now - t0) / 1000); t0 = now;
+        const a = -K * x - C * v; v += a * dt; x += v * dt;
+        sc.scrollTop = to + x;
+        if (Math.abs(x) < 0.5 && Math.abs(v) < 8) { sc.scrollTop = to; sc.style.overflowY = ''; sc.style.scrollBehavior = ''; springing = false; anim = 0; return; }
+        anim = requestAnimationFrame(step);
+      };
+      requestAnimationFrame(() => { sc.style.overflowY = ''; });
+      anim = requestAnimationFrame(step);
+    };
+    const decide = (y, v) => {
+      const z = zoneAt(y); if (!z) return null;
+      const [a, b] = z, p = (y - a) / (b - a);
+      if (Math.abs(v) > 0.35) return v > 0 ? b : a;           // a flick always moves on
+      if (dir > 0) return p > 0.18 ? b : a;                     // a small push is enough to go to the next page
+      return p < 0.82 ? a : b;
+    };
+    sc.addEventListener('scroll', () => {
+      const now = performance.now(), y = sc.scrollTop, dt = now - last.t;
+      if (!springing && dt > 0) { const nv = (y - last.y) / dt; vel = vel * 0.6 + nv * 0.4; if (Math.abs(y - last.y) > 0.5) dir = Math.sign(y - last.y); }
+      last = { y, t: now };
+      if (springing || touching || layer.__gone) return;
+      clearTimeout(idleT);
+      // wheel / trackpad / momentum settle: snap shortly after the scroll comes to rest
+      idleT = setTimeout(() => { if (touching || springing) return; const to = decide(sc.scrollTop, 0); if (to != null) spring(to, 0); }, 110);
+    }, { passive: true });
+    sc.addEventListener('touchstart', () => { touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() }; }, { passive: true });
+    const release = () => {
+      if (!touching) return; touching = false;
+      if (performance.now() - last.t > 90) vel = 0; // finger rested before lifting
+      const y = sc.scrollTop, proj = y + vel * 180;
+      // if the fling would carry into a section edge (or we're already straddling one), take over now
+      if (zoneAt(y) || zoneAt(proj)) {
+        const to = zoneAt(y) ? decide(y, vel) : decide(proj, vel);
+        if (to != null) { if (Math.abs(to - sc.scrollTop) > 40) (window.__haptic || (() => {}))('tick'); spring(to, vel); return; }
+      }
+      // otherwise let native momentum run; the idle check snaps if it ends between sections
+      clearTimeout(idleT);
+      idleT = setTimeout(() => { if (!touching && !springing) { const to = decide(sc.scrollTop, 0); if (to != null) spring(to, 0); } }, 160);
+    };
+    sc.addEventListener('touchend', release, { passive: true });
+    sc.addEventListener('touchcancel', release, { passive: true });
+    sc.addEventListener('wheel', () => { if (springing) stopSpring(); }, { passive: true });
+  }
+
+  // ---------------- scroll reveal for headings & copy ----------------
+  function setupReveal(layer) {
+    const sc = scrollerOf(layer); if (!sc || !window.IntersectionObserver) return;
+    const SKIP = 'nav, button, a, .sg, .tlw, [data-state], [data-name$="carousel"], [data-name="History wheel"], [data-name^="Background"], [data-name="Award quote"]';
+    const io = new IntersectionObserver(entries => {
+      const ins = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left);
+      ins.forEach((e, k) => { e.target.style.setProperty('--rvd', Math.min(k * 90, 450) + 'ms'); e.target.classList.add('rv-in'); });
+      entries.filter(e => !e.isIntersecting && e.rootBounds && e.boundingClientRect.top > e.rootBounds.bottom).forEach(e => { e.target.style.removeProperty('--rvd'); e.target.classList.remove('rv-in'); });
+    }, { root: sc, rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    layer._io = io;
+    // classify the copy in whatever sections are loaded; loaded-later sections call this again
+    layer._rv = root => {
+      const els = [...root.querySelectorAll('p')].filter(p => {
+        if (p.__rv) return false; p.__rv = true;
+        if (!p.closest('section')) return false;
+        const st = p.getAttribute('style') || '';
+        if (/(^|;)\s*(opacity|transform)\s*:/.test(st) || p.closest(SKIP)) return false;
+        return parseFloat(getComputedStyle(p).fontSize) >= 18 && p.textContent.trim().length > 2;
+      });
+      els.forEach(p => { p.classList.add('rv'); io.observe(p); });
+    };
+    sc.querySelectorAll('section').forEach(sec => { if (!sec.__vout) layer._rv(sec); });
+  }
+
+  // ---------------- haptic feedback ----------------
+  // Android/Chrome: Vibration API.
+  // iPhone: Safari only plays its haptic tick when a finger actually lands on a native switch, so when a touch
+  // starts on something tappable we slip an invisible switch under the finger, inside that element. The tap then
+  // hits the switch (tick) and bubbles up to the button/link as a normal click.
+  const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const TAPPABLE = 'button, a, .hot, [data-dct-onclick], .tlw';
+  const haptic = (kind) => { try { if (!IOS && navigator.vibrate) navigator.vibrate(kind === 'strong' ? 18 : kind === 'select' ? 8 : 5); } catch (e) {} };
+  window.__haptic = haptic;
+  if (IOS) {
+    let tsw = null, tT = 0;
+    const host = el => { for (let n = el; n && n !== viewport; n = n.parentElement) { if (n instanceof HTMLElement && !/^(IMG|INPUT|TEXTAREA|SELECT|VIDEO|BR|HR)$/.test(n.tagName)) return n; } return null; };
+    viewport.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0], target = e.target;
+      if (!target || !target.closest || target.closest('input, textarea, select')) return;
+      const tap = target.closest(TAPPABLE); if (!tap || !viewport.contains(tap)) return;
+      if (tap.matches('a[target="_blank"]')) return;   // outbound links keep the browser's own activation (a switch inside would swallow it)
+      const box = host(tap instanceof HTMLElement ? tap : (target instanceof HTMLElement ? target : tap.parentElement)) || host(tap.parentElement);
+      if (!box) return;
+      clearTimeout(tT); if (tsw) tsw.remove();
+      tsw = document.createElement('input'); tsw.className = 'hapsw'; tsw.type = 'checkbox'; tsw.setAttribute('switch', ''); tsw.tabIndex = -1; tsw.setAttribute('aria-hidden', 'true');
+      tsw.style.cssText = 'position:absolute;margin:0;padding:0;opacity:0;z-index:2147483647;pointer-events:auto;';
+      box.appendChild(tsw);
+      // size/position in the element's own (scaled) coordinates so it sits right under the finger
+      const op = tsw.offsetParent || box, r = op.getBoundingClientRect(), k = (op.offsetWidth ? r.width / op.offsetWidth : 1) || 1, S = 56 / k;
+      tsw.style.width = S + 'px'; tsw.style.height = S + 'px';
+      tsw.style.left = ((t.clientX - r.left) / k - S / 2) + 'px'; tsw.style.top = ((t.clientY - r.top) / k - S / 2) + 'px';
+      // if the switch could not live inside the tappable thing (SVG hotspots), hand the click on to it
+      if (!tap.contains(tsw)) tsw.addEventListener('click', ev => { ev.stopPropagation(); tap.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: ev.clientX, clientY: ev.clientY })); });
+      const sw = tsw; tT = setTimeout(() => { sw.remove(); if (tsw === sw) tsw = null; }, 1500);
+    }, { capture: true, passive: true });
+    const done = () => { const sw = tsw; if (!sw) return; setTimeout(() => { sw.remove(); if (tsw === sw) tsw = null; }, 350); };
+    viewport.addEventListener('touchend', done, { capture: true, passive: true });
+    viewport.addEventListener('touchcancel', done, { capture: true, passive: true });
+  } else {
+    // light tick on anything tappable
+    viewport.addEventListener('click', e => {
+      const t = e.target && e.target.closest && e.target.closest(TAPPABLE);
+      if (t && !(e.target.closest('input, textarea'))) haptic('select');
+    }, true);
+  }
+
+  // ---------------- swipe between the main pages ----------------
+  const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
+  const NOSWIPE = '[data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], input:not(.hapsw), textarea, select';
+  const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
+  const neighbour = dir => { const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
+  function swipeTo(dir, from) {
+    const fn = neighbour(dir); if (!fn || busy) return false;
+    pushFrom = from || 0;
+    // swiping back to a page you've visited lands where you left it
+    const t = lastTop[fn];
+    go(firstAid(fn), dir > 0 ? 'push-left' : 'push-right', 0.62, 'snap', t != null ? { top: t } : undefined);
+    return true;
+  }
+  function shiftLive(d) {
+    if (!current) return;
+    const dir = d < 0 ? 1 : -1, ok = !!neighbour(dir);
+    const x = ok ? d : d * 0.25;
+    current.layer.style.transition = 'none';
+    current.layer.style.transform = 'translateX(' + x + 'px)';
+    current.layer.style.opacity = String(1 - Math.min(0.35, Math.abs(x) / W * 0.6));
+    return x;
+  }
+  function snapBack() {
+    if (!current) return; const l = current.layer;
+    l.style.transition = 'transform .45s cubic-bezier(.2,.9,.1,1), opacity .45s ease'; l.style.transform = ''; l.style.opacity = '';
+    setTimeout(() => { l.style.transition = ''; }, 480);
+  }
+  function commitOrSnap(x) {
+    const l = current && current.layer;
+    if (l) { l.style.transition = ''; l.style.opacity = ''; }
+    if (Math.abs(x) > 110 && swipeTo(x < 0 ? 1 : -1, x)) { haptic('strong'); return; }
+    snapBack();
+  }
+  let sw = null;
+  viewport.addEventListener('pointerdown', e => {
+    { const ci = current && current.layer && current.layer._inst; if (ci && ci.hdrKick && ci.state && ci.state.hdrHide) { ci.setState({ hdrHide: false }); withOwner(null, () => ci.hdrKick()); } }
+    if (busy || overlay || !current || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (e.target.closest && e.target.closest(NOSWIPE)) return;
+    sw = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, d: 0, id: e.pointerId };
+  }, true);
+  viewport.addEventListener('pointermove', e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = (e.clientX - sw.x) / scale, dy = (e.clientY - sw.y) / scale;
+    if (sw.on === null && (Math.abs(dx) > 14 || Math.abs(dy) > 14)) sw.on = Math.abs(dx) > Math.abs(dy) * 1.4;
+    if (sw.on) { sw.d = shiftLive(dx); if (current) current.layer._dragged = true; }
+  }, true);
+  const endSwipe = e => {
+    if (!sw || (e && e.pointerId !== sw.id)) return;
+    const s = sw; sw = null;
+    if (s.on) {
+      const v = s.d / Math.max(1, performance.now() - s.t);
+      commitOrSnap(Math.abs(v) > 0.9 && Math.abs(s.d) > 50 ? Math.sign(s.d) * 200 : s.d);
+      const l = current && current.layer; setTimeout(() => { if (l) l._dragged = false; }, 60);
+    }
+  };
+  viewport.addEventListener('pointerup', endSwipe, true);
+  viewport.addEventListener('pointercancel', () => { if (sw && sw.on) snapBack(); sw = null; }, true);
+  // two-finger trackpad swipe
+  let wAcc = 0, wT = 0, wCool = 0;
+  viewport.addEventListener('wheel', e => {
+    if (busy || overlay || !current || performance.now() < wCool) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 1.5 || (e.target.closest && e.target.closest(NOSWIPE))) return;
+    wAcc -= e.deltaX; const x = shiftLive(wAcc * 0.7);
+    clearTimeout(wT);
+    if (Math.abs(wAcc) > 170) { wCool = performance.now() + 1100; const a = wAcc; wAcc = 0; current.layer.style.opacity = ''; if (!swipeTo(a < 0 ? 1 : -1, x)) snapBack(); return; }
+    wT = setTimeout(() => { wAcc = 0; snapBack(); }, 160);
+  }, { passive: true, capture: true });
+  addEventListener('keydown', e => { if (overlay || busy || (e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) return; if (e.key === 'ArrowRight') swipeTo(1); else if (e.key === 'ArrowLeft') swipeTo(-1); });
+
+  addEventListener('keydown', e => { if (e.key === 'Escape') { if (overlay) closeOverlay(); else back(); } });
+  addEventListener('resize', fit);
+  addEventListener('hashchange', () => {
+    if (!P) return;
+    const h = decodeURIComponent(location.hash.slice(1));
+    const aid = Object.keys(P.artboards).find(k => slug(P.artboards[k].name) === h);
+    if (aid && aid !== currentAid()) go(aid, 'dissolve', 0.3, 'ease-out');
+  });
+
+  fetch('proto.json').then(r => r.json()).then(async d => {
+    P = d;
+    Object.values(P.boards).forEach(b => (b.videos || []).forEach(v => { if (v.trim) trims[v.id] = v.trim; }));
+    fit();
+    const home = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home');
+    const h = decodeURIComponent(location.hash.slice(1));
+    const start = Object.keys(P.artboards).find(k => slug(P.artboards[k].name) === h) || home;
+    try { await document.fonts.load("400 16px 'Vivint Sans'"); } catch (e) {}
+    await go(start, 'none', 0);
+    document.getElementById('loading').classList.add('done');
+  });
+})();
+</script>
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js'));</script>
+</body>
+</html>
