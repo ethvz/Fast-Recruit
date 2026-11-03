@@ -915,6 +915,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // Long pages are split into sections; sections more than ~1.5 screens away are unloaded
   // (their DOM is parked and their images released) and reloaded just before they scroll in.
   const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+  // a picture that fails to load (patchy cellular, the app updating in the background) is tried again a few times
+  document.addEventListener('error', e => {
+    const im = e.target; if (!im || im.tagName !== 'IMG') return;
+    const src = im.getAttribute('src') || ''; if (!src || src.startsWith('data:')) return;
+    const n = (im.__retry || 0) + 1; if (n > 4) return; im.__retry = n;
+    setTimeout(() => { if (im.getAttribute('src') === src) im.setAttribute('src', src.replace(/[?#].*$/, '') + '?r=' + n); }, 600 * n);
+  }, true);
   function setupVirtual(layer) {
     const sc = scrollerOf(layer);
     const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (im.getAttribute('src') !== im.dataset.vsrc) im.setAttribute('src', im.dataset.vsrc); });
