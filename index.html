@@ -163,8 +163,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   function fit() {
     const st = document.getElementById('stage');
-    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight);
-    st.style.height = vh + 'px';
+    // Home Screen app on newer iPadOS/iOS: the clock/battery bar is drawn over the top of the page, so start below it
+    let safeTop = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); } safeTop = Math.round(fit.probe.getBoundingClientRect().height) || 0; } catch (e) {}
+    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop;
+    st.style.top = safeTop + 'px'; st.style.height = vh + 'px';
     // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
     const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
     // portrait mode is switched off for now: upright screens show the landscape design scaled to fit.
