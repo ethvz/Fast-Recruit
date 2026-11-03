@@ -161,15 +161,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const slug = n => n.toLowerCase().replace(/’/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const EASE = { 'ease-in': 'cubic-bezier(.42,0,1,1)', 'ease-out': 'cubic-bezier(0,0,.58,1)', 'ease-in-out': 'cubic-bezier(.42,0,.58,1)', 'linear': 'linear', 'snap': 'cubic-bezier(.2,.9,.1,1)', 'wind-up': 'cubic-bezier(.5,-0.4,.5,1)', 'bounce': 'cubic-bezier(.3,1.4,.5,1)' };
 
+  function botInset() { try { if (!botInset.p) { botInset.p = document.createElement('div'); botInset.p.style.cssText = 'position:fixed;left:0;top:0;width:0;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(botInset.p); } return Math.round(botInset.p.getBoundingClientRect().height) || 0; } catch (e) { return 0; } }
   function fit() {
     const st = document.getElementById('stage');
     // Home Screen app on newer iPadOS/iOS: the clock/battery bar is drawn over the top of the page, so start below it
-    // The app runs right down to the bottom edge (only the thin home-indicator line is drawn over it): the window height
-    // Safari reports can stop short of the real screen in a Home Screen app, which left an empty black strip there.
     let safeTop = 0, full = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box;visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); }
       safeTop = Math.round(parseFloat(getComputedStyle(fit.probe).paddingTop)) || 0; full = Math.round(fit.probe.getBoundingClientRect().height - safeTop) || 0; } catch (e) {}
-    const standalone = (navigator.standalone === true) || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
-    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.max(Math.round(innerHeight || (vv && vv.height) || st.clientHeight), standalone ? full : 0) - safeTop;
+    // iPadOS draws an opaque strip behind the home indicator in Home Screen apps, so the app stops above it
+    const safeBot = botInset();
+    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop - safeBot;
     st.style.top = safeTop + 'px'; st.style.height = vh + 'px';
     // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
     const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
