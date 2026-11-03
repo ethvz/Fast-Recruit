@@ -170,7 +170,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
     // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
     // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
-    const wasStk = stk; stk = PHONE && portrait;
+    // (switched off: upright iPhones kept crashing with it on, so upright phones show the app scaled to fit, one screen at a time)
+    const STACK = false;
+    const wasStk = stk; stk = STACK && PHONE && portrait;
     const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
     const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
@@ -180,7 +182,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     document.documentElement.classList.toggle('port', H !== 1024 && !stk);
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
     document.documentElement.classList.toggle('stack', stk); document.documentElement.classList.toggle('phone', PHONE);
-    const ncs = PHONE ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
+    const ncs = PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
     // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
