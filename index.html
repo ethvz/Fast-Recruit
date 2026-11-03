@@ -70,6 +70,16 @@
   html.lite .board *, html.lite .board *::before, html.lite .board *::after { animation: none !important; }
   html.lite .board [data-name^="Background (stays"] { transform: none !important; }
   html.lite .board :is([data-name="Glass card"], [data-name="Skill tile"], [data-name="Card"], [data-name="Rule card"], [data-name="Stream detail"], [data-name="Position detail"], [data-name="Income chart"], [data-name="Metric toggle"], [data-name="Pay details sheet"], [data-name="Override details sheet"], [data-name="YouTube link sheet"]) { background-color: rgba(14,20,18,0.78) !important; }
+  /* zoom-out pill (shows while the page content is zoomed in) */
+  .zoomout { position: absolute; z-index: 160; left: calc(var(--FW, 1466px) / 2); top: calc(var(--H, 1024px) - 112px); transform: translate(-50%, 24px) scale(.92); opacity: 0; pointer-events: none;
+    height: 56px; padding: 0 28px 0 22px; display: flex; align-items: center; gap: 12px; border-radius: 28px; cursor: pointer;
+    font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; font-size: 17px; font-weight: 600; letter-spacing: .01em; color: #fff;
+    border: 1px solid rgba(255,255,255,0.32); background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.08)), rgba(10,14,13,0.35);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.08), 0 14px 40px rgba(0,0,0,0.45);
+    -webkit-backdrop-filter: blur(18px) saturate(1.7); backdrop-filter: blur(18px) saturate(1.7);
+    transition: opacity .3s ease, transform .45s cubic-bezier(.2,.9,.1,1.15); }
+  .zoomout.on { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
+  .zoomout:active { transform: translate(-50%, 0) scale(.96); }
   #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 10; transition: opacity .4s; }
   #loading img { width: 180px; opacity: .9; }
   #loading.done { opacity: 0; pointer-events: none; }
@@ -77,9 +87,11 @@
   /* all-pages menu (hamburger in the header) */
   .navmenu { position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); z-index: 150; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
   .navmenu .nm-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: nmFade .3s ease; }
+  html.lite .navmenu .nm-panel { background-color: rgba(6,10,9,0.94); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  html.lite .board [data-name="Guide drawer"] { background-color: rgba(6,10,9,0.94) !important; }
   html.lite .navmenu .nm-scrim { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,0.7); }
-  .navmenu .nm-panel { position: absolute; left: 0; top: 0; width: calc(var(--FW, 1466px) * 0.75); height: 100%; box-sizing: border-box; padding: 46px 56px 40px; background: #050807;
-    background-image: radial-gradient(60% 45% at 10% 0%, rgba(5,229,175,0.12), rgba(5,229,175,0) 70%); border-right: 1px solid rgba(255,255,255,0.12); box-shadow: 40px 0 120px rgba(0,0,0,0.6);
+  .navmenu .nm-panel { position: absolute; left: 0; top: 0; width: calc(var(--FW, 1466px) * 0.75); height: 100%; box-sizing: border-box; padding: 46px 56px 40px; background: linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.02) 100%), rgba(8,12,11,0.55); backdrop-filter: blur(32px) saturate(1.7); -webkit-backdrop-filter: blur(32px) saturate(1.7); border-radius: 0 36px 36px 0; border: 1px solid rgba(255,255,255,0.2); border-left: 0;
+    background-image: radial-gradient(60% 45% at 10% 0%, rgba(5,229,175,0.12), rgba(5,229,175,0) 70%); box-shadow: inset -1px 1px 0 rgba(255,255,255,0.3), 40px 0 120px rgba(0,0,0,0.55);
     animation: nmIn .45s cubic-bezier(.2,.8,.2,1); overflow-y: auto; }
   .navmenu.out .nm-panel { transform: translateX(-60px); opacity: 0; transition: transform .25s ease, opacity .25s ease; }
   .navmenu.out .nm-scrim { opacity: 0; transition: opacity .25s ease; }
@@ -917,13 +929,58 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const maxZ = () => Math.max(1.5, Math.min(3, 1.4 / scale));   // never draw content bigger than the device can hold
   const zoomed = () => zoom.z > 1.001;
   const clampZ = () => { zoom.x = Math.min(0, Math.max(FW - zoom.z * FW, zoom.x)); zoom.y = Math.min(0, Math.max(H - zoom.z * H, zoom.y)); };
+  // zoomed in on one section: scrolling on to another section zooms back out
+  let zSec = null;
+  const secAt = el => { const y = el.scrollTop + (H / 2 - zoom.y) / zoom.z; let hit = null; el.querySelectorAll(':scope > section[id^="sec-"]').forEach(x => { if (y >= x.offsetTop && y < x.offsetTop + x.offsetHeight) hit = x; }); return hit; };
+  function watchSec(el) {
+    if (el.__zw) return; el.__zw = true;
+    el.addEventListener('scroll', () => { if (!zoomed() || pinch || zSec == null) return; const now = secAt(el); if (now && now !== zSec) { zSec = null; zoomTo(1); } }, { passive: true });
+  }
   function applyZoom(anim) {
-    const el = zEl(); if (!el) return;
+    const el = zEl(); if (!el) return; setTimeout(zPill, 0);
+    if (zoomed()) { watchSec(el); if (zSec == null || pinch) zSec = secAt(el) || zSec; } else zSec = null;
     if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
     clampZ(); el.style.transformOrigin = '0 0'; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : 'none';
     el.style.transform = 'translate(' + zoom.x.toFixed(1) + 'px,' + zoom.y.toFixed(1) + 'px) scale(' + zoom.z.toFixed(4) + ')';
   }
-  function resetZoom() { const el = zEl(); zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } }
+  function resetZoom() { const el = zEl(); zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } zPill(); }
+  // Liquid Glass "Zoom out" pill at the bottom while zoomed in
+  let zpill = null;
+  function zPill() {
+    if (!zpill) {
+      zpill = document.createElement('button'); zpill.type = 'button'; zpill.className = 'zoomout'; zpill.setAttribute('aria-label', 'Zoom out');
+      zpill.innerHTML = '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#05E5AF" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="6"/><path d="M13 13l4.5 4.5M5.8 8.5h5.4"/></svg>Zoom out';
+      ['pointerdown', 'touchstart'].forEach(ev => zpill.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      zpill.addEventListener('click', e => { e.stopPropagation(); zoomTo(1); });
+      frame.appendChild(zpill);
+    }
+    if (zpill.parentNode !== frame || zpill.nextSibling) frame.appendChild(zpill);   // keep it above the page
+    zpill.classList.toggle('on', zoomed());
+  }
+  function zoomTo(z, m) {
+    if (!current) return;
+    z = Math.max(1, Math.min(maxZ(), z)); m = m || [FW / 2, H / 2];
+    const px = (m[0] - zoom.x) / zoom.z, py = (m[1] - zoom.y) / zoom.z;
+    zoom = z <= 1.001 ? { z: 1, x: 0, y: 0 } : { z, x: m[0] - z * px, y: m[1] - z * py };
+    applyZoom(true);
+  }
+  // double-tap (or double-click) the page: zoom in there; double-tap again (or the pill) to zoom out
+  const NOZOOMTAP = 'button, a, input, select, textarea, label, .hot, [role="button"], [onclick], [data-name="Header"], nav, .pdown, .navmenu, .zoomout';
+  let lastTap = null;
+  function dblTap(cx, cy, target) {
+    if (!current || overlay || busy || (target && target.closest && target.closest(NOZOOMTAP))) return false;
+    if (zoomed()) zoomTo(1); else zoomTo(Math.min(2.2, maxZ()), toFrame(cx, cy));
+    return true;
+  }
+  viewport.addEventListener('touchstart', e => { if (e.touches.length === 1) { const t = e.touches[0]; lastTap = lastTap && lastTap.t ? Object.assign(lastTap, { sx: t.clientX, sy: t.clientY, moved: false }) : { sx: t.clientX, sy: t.clientY, moved: false }; } else if (lastTap) lastTap.moved = true; }, { passive: true, capture: true });
+  viewport.addEventListener('touchmove', e => { const t = e.touches[0]; if (lastTap && t && Math.hypot(t.clientX - lastTap.sx, t.clientY - lastTap.sy) > 12) lastTap.moved = true; }, { passive: true, capture: true });
+  viewport.addEventListener('touchend', e => {
+    if (!lastTap || lastTap.moved || e.touches.length) { lastTap = null; return; }
+    const now = performance.now(), x = lastTap.sx, y = lastTap.sy;
+    if (lastTap.t && now - lastTap.t < 320 && Math.hypot(x - lastTap.x, y - lastTap.y) < 40) { lastTap = null; if (dblTap(x, y, e.target)) e.preventDefault(); return; }
+    lastTap = { t: now, x, y };
+  }, { passive: false, capture: true });
+  viewport.addEventListener('dblclick', e => { if (e.pointerType === 'touch' || (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents)) return; dblTap(e.clientX, e.clientY, e.target); }, true);
   const toFrame = (cx, cy) => { const r = frame.getBoundingClientRect(); return [(cx - r.left) / scale, (cy - r.top) / scale]; };
   const pinchInfo = t => { const a = t[0], b = t[1]; return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), m: toFrame((a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2) }; };
   viewport.addEventListener('touchstart', e => {
@@ -948,6 +1005,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const y0 = zoom.y; zoom.x += dx; zoom.y += dy; clampZ();
       const rest = dy - (zoom.y - y0);                     // what the zoomed view can't absorb scrolls the page
       const sc = zEl(); if (sc && rest) sc.scrollTop -= rest / zoom.z;
+      if (sc && zSec) { const now = secAt(sc); if (now && now !== zSec) { zSec = null; zpan = null; zoomTo(1); return; } }
       applyZoom(false);
     }
   }, { passive: false, capture: true });
