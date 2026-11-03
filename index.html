@@ -164,9 +164,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   function fit() {
     const st = document.getElementById('stage');
     // Home Screen app on newer iPadOS/iOS: the clock/battery bar is drawn over the top of the page, so start below it
-    // and the home-indicator strip at the bottom is kept clear too, so the arrow buttons aren't covered
-    let safeTop = 0, safeBot = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:env(safe-area-inset-bottom,0px);height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); } const r = fit.probe.getBoundingClientRect(); safeTop = Math.round(r.height) || 0; safeBot = Math.round(r.width) || 0; } catch (e) {}
-    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop - safeBot;
+    // The app runs right down to the bottom edge (only the thin home-indicator line is drawn over it): the window height
+    // Safari reports can stop short of the real screen in a Home Screen app, which left an empty black strip there.
+    let safeTop = 0, full = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box;visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); }
+      safeTop = Math.round(parseFloat(getComputedStyle(fit.probe).paddingTop)) || 0; full = Math.round(fit.probe.getBoundingClientRect().height - safeTop) || 0; } catch (e) {}
+    const standalone = (navigator.standalone === true) || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.max(Math.round(innerHeight || (vv && vv.height) || st.clientHeight), standalone ? full : 0) - safeTop;
     st.style.top = safeTop + 'px'; st.style.height = vh + 'px';
     // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
     const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
