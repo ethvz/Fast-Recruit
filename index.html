@@ -32,7 +32,7 @@
   .board { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; user-select: none; -webkit-user-select: none; }
   /* only interactive things take the pointer; artwork lets clicks fall through */
   .board [data-name], .board p, .board svg, .board img { pointer-events: none; }
-  .board .hot, .board svg .hot, .board svg .hot *, .board button, .board a, .board video, .board .sg, .board .tlw, .board input { pointer-events: auto; }
+  .board .hot, .board svg .hot, .board svg .hot *, .board button, .board a, .board video, .board .sg, .board .tlw, .board .awc, .board input { pointer-events: auto; }
   .board input::-webkit-outer-spin-button, .board input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .board input::placeholder { color: rgba(17,17,17,0.4); }
   .board .hot { cursor: pointer; }
@@ -56,7 +56,16 @@
   /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
   html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
-  .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; }
+  .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
+  html.lite .pcont { transition: none; }
+  /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
+  html.stack .stk-sc::before, html.stack .stk-sc::after { content: ''; display: block; flex: none; height: var(--SP, 0px); }
+  .stkfade { display: none; }
+  html.stack .stkfade { display: block; position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,.74) 0px, rgba(0,0,0,.64) calc(var(--SP) - 140px), rgba(0,0,0,0) calc(var(--SP) + 10px), rgba(0,0,0,0) calc(var(--SP) + 1014px), rgba(0,0,0,.64) calc(var(--SP) + 1164px), rgba(0,0,0,.74) 100%); }
+  html.stack .stk-sc > section > [data-name^="Background (stays"] { opacity: 1 !important; visibility: visible !important; }
+  .pnavw { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 41; scale: var(--CS, 1); transform-origin: 0 0; }
+  .pmeas .rv { transform: none !important; transition: none !important; }
   /* fill any landscape screen: the canvas grows wider (--FW) or taller (--H); backgrounds stretch, content stays centred,
      things near the edges stay pinned to the real screen edges */
   #frame, .layer, .board { width: var(--FW, 1466px) !important; }
@@ -132,7 +141,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 <script>
 (() => {
   'use strict';
-  const W = 1466; let H = 1024, FW = 1466, upright = false;
+  const W = 1466; let H = 1024, FW = 1466, upright = false, stk = false, CS = 1;
+  // phones: the header, section menu and arrow buttons are drawn bigger (CS) so they're readable at phone size
+  const PHONE = (() => { try { return Math.min(screen.width, screen.height) < 600; } catch (e) { return false; } })();
+  const SP = () => (stk ? (H - 1024) / 2 : 0);   // phone portrait: empty room above/below so a section can sit in the middle
   const st2pre = st => { const X = (FW - W) / 2; st.setProperty('--FW', FW + 'px'); st.setProperty('--X', X + 'px'); st.setProperty('--X2', 2 * X + 'px'); };
   const viewport = document.getElementById('viewport'), frame = document.getElementById('frame');
   let P = null, scale = 1, current = null, overlay = null, busy = false, pushFrom = 0;
@@ -150,15 +162,21 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // (set PORTRAIT = true to bring it back)
     const PORTRAIT = false;
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
-    const nh = PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
+    // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
+    // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
+    stk = PHONE && portrait;
+    const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
     const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
     H = nh;
     scale = Math.min(vw / FW, vh / H);
     st2pre(frame.style);
-    document.documentElement.classList.toggle('port', H !== 1024);
-    document.documentElement.classList.toggle('fill', H !== 1024 || FW !== W);
-    const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (H - 1024) + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
+    document.documentElement.classList.toggle('port', H !== 1024 && !stk);
+    document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
+    document.documentElement.classList.toggle('stack', stk);
+    const ncs = PHONE ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
+    if (ncs !== CS || oldH !== H) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
+    const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
     if (oldH !== H) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
     if (oldH !== H) frame.querySelectorAll('.layer').forEach(navFor);
     if (oldH !== H) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
@@ -270,7 +288,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     host.innerHTML = html;
     const binds = bind(host, loops);
     let raf = 0;
-    const render = () => { raf = 0; if (owner.__dead) return; withOwner(owner, () => apply(binds, inst.renderVals ? inst.renderVals() : {})); };
+    const render = () => { raf = 0; if (owner.__dead) return; withOwner(owner, () => apply(binds, inst.renderVals ? inst.renderVals() : {})); if (host.__onrender) host.__onrender(); };
     host.__owner = owner;
     inst.__sched = () => { if (!raf) raf = requestAnimationFrame(render); };
     render();
@@ -294,6 +312,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
     layer._ia = map;
     layer.addEventListener('click', e => onTap(e, layer));
+    host.__onrender = () => navShift(layer);
+    phoneChrome(layer); stackDim(layer);
     setupScrollGroups(layer);
     setupVirtual(layer);
     // prefetch destinations
@@ -329,12 +349,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // The board's animations think the screen is 1024 tall, so tell them where the BOTTOM of the real screen is:
   // everything already on screen is then shown, exactly as in landscape.
   function vScroll(sc) {
-    const y = sc.scrollTop; if (H === 1024) return y;
+    const y = sc.scrollTop; if (H === 1024 || stk) return y;
     const m = secMap(sc); if (!m.length) return y;
     return Math.max(0, posP(m, y + H) - 1024);
   }
   function rScroll(sc, v) {
-    if (H === 1024) return v;
+    if (H === 1024 || stk) return v;
     const m = secMap(sc); if (!m.length) return v;
     let s = m[0]; m.forEach(x => { if (v >= x.T) s = x; });
     if (v <= s.T + 0.5) return s.R;                            // a section's start = that section at the top
@@ -342,12 +362,131 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   window.__vs = vScroll; window.__rs = rScroll;
   // portrait: the section menu starts collapsed to its dots so the bigger content has room (the + still opens it)
-  function navFor(l) { const i = l && l._inst; if (i && i.renderVals && i.sections && i.setState) withOwner(null, () => i.setState({ navOpen: !(upright && H !== 1024) })); }
+  function navFor(l) { const i = l && l._inst; if (i && i.renderVals && i.sections && i.setState) withOwner(null, () => i.setState({ navOpen: !(upright && H !== 1024) })); }   // (phone upright too: just the dots)
+  // section menu collapsed (landscape): slide each section's content over to the middle of the screen; back when it opens
+  // ---- phone: bigger header / section menu / arrow buttons ----
+  // Each piece grows from the screen edge or corner it is pinned to (left, right or centre; top or bottom), so nothing
+  // drifts off screen. The section menu (whose own scale animation must keep its pivot) is wrapped and grown from the corner.
+  let pcSheet = null; const pcRules = new Set();
+  const pcRule = (id, css) => { if (pcRules.has(id)) return; pcRules.add(id); if (!pcSheet) { pcSheet = document.createElement('style'); document.head.appendChild(pcSheet); } pcSheet.textContent += css + '\n'; };
+  function phoneChrome(layer) {
+    const host = layer.querySelector('.board'), root = host && host.firstElementChild, sc = scrollerOf(layer); if (!root) return;
+    if (!layer.__pc) {
+      layer.__pc = true; const b = slug(layer._fn || 'b'); let n = 0;
+      const num = (el, k) => numIn(el.getAttribute('style') || '', k);
+      const leaf = (el, x0, y0, low) => {
+        const l = num(el, 'left'), t = num(el, 'top'), w = num(el, 'width') || 0;
+        const x = x0 + (l || 0), y = y0 + (t || 0);
+        const ax = x < 110 ? -x : x + w > 1356 ? 1466 - x : 733 - x, ay = low ? 1024 - y : -y;
+        const id = b + '-' + (n++); el.setAttribute('data-pc', id);
+        const isLink = el.tagName === 'P' && /^\(/.test(el.dataset.name || '');   // header page links: a second row when upright
+        pcRule(id, '[data-pc="' + id + '"] { scale: var(--CS); transform-origin: ' + ax + 'px ' + ay + 'px !important; }' +
+          (isLink ? ' html.stack [data-pc="' + id + '"] { scale: calc(var(--CS) * 0.8); translate: 0 calc(var(--CS) * 62px); }' : ''));
+      };
+      const walk = (el, x0, y0, low) => {
+        [...el.children].forEach(c => {
+          if (c === sc || c.tagName === 'STYLE' || c.tagName === 'SC-SLOT' || c.classList.contains('pmid') || c.classList.contains('pnavw')) return;
+          if (c.classList.contains('pdown')) { walk(c, x0, y0, true); return; }
+          const st = c.getAttribute('style') || '', dn = c.dataset.name || '';
+          if (dn === 'Header bar') { c.setAttribute('data-pc', b + '-hb'); pcRule(b + '-hb', '[data-pc="' + b + '-hb"] { scale: 1 var(--CS); transform-origin: 0 0 !important; } html.stack [data-pc="' + b + '-hb"] { scale: 1 calc(var(--CS) * 1.45); }'); return; }
+          if (/display:\s*(contents|none)/.test(st)) { walk(c, x0, y0, low); return; }
+          const l = num(c, 'left'), t = num(c, 'top'), w = num(c, 'width'), h = num(c, 'height');
+          if (c.tagName === 'NAV') return;
+          if (l != null && l <= 0 && w != null && w >= 1460 && (h === 0 || h == null || h < 200)) { walk(c, x0 + l, y0 + (t || 0), low); return; }   // full-width rows/containers
+          if (c.getAttribute('role') === 'dialog' || (w != null && w >= 1460 && h != null && h >= 900)) return;   // pop-ups
+          if (l == null && t == null) return;
+          leaf(c, x0, y0, low);
+        });
+      };
+      // section menu + its toggle: wrap and grow from the top-left corner
+      const nav = root.querySelector(':scope > nav');
+      if (nav) {
+        const wrap = document.createElement('div'); wrap.className = 'pnavw';
+        const tog = root.querySelector(':scope > button[aria-label$="section menu"]') || [...root.children].find(c => c.tagName === 'BUTTON' && c.nextElementSibling === nav);
+        nav.before(wrap); if (tog && tog.tagName === 'BUTTON') wrap.appendChild(tog); wrap.appendChild(nav);
+      }
+      walk(root, 0, 0, false);
+    }
+    // the section menu grows as far as it can without running into the arrow buttons at the bottom
+    const w = root.querySelector(':scope > .pnavw'), nav = w && w.querySelector('nav');
+    if (w && nav) {
+      const st = nav.getAttribute('style') || '', bot = (numIn(st, 'top') || 110) + (numIn(st, 'height') || 700) + 20;
+      // upright the header is two rows tall, so the menu starts below it
+      const hb = !PHONE ? 0 : stk ? 120 * CS * 1.45 : 80 * CS, sh = Math.max(0, hb + 6 - 86 * Math.min(CS, 1.2)), room = H - 80 * CS - 24 - sh;
+      const k = Math.max(1, Math.min(CS, room / bot)), dy = Math.max(0, hb + 6 - 86 * k); w.style.scale = k.toFixed(3);
+      w.style.translate = dy ? '0px ' + dy.toFixed(0) + 'px' : '';
+    }
+  }
+  // phone upright: the section in the middle is shown in full; above and below sit under a fixed dark shade
+  function stackDim(layer) {
+    const sc = scrollerOf(layer); if (!sc || sc.__sd) return; sc.__sd = true; sc.classList.add('stk-sc');
+    const f = document.createElement('div'); f.className = 'stkfade'; sc.after(f);
+  }
+  function contentSpan(wrap) {
+    // what you actually see: text, pictures, icons, controls and solid/outlined boxes — not soft glows or parked carousel items
+    const r0 = wrap.getBoundingClientRect(), k0 = r0.width / 1466 || 1, h = parseFloat(wrap.style.height) || 1024;
+    let L = 1e9, R = -1e9, T = 1e9, B = -1e9;
+    const add = b => { if (b.width < 2 || b.height < 2) return; const w = b.width / k0; if (w >= 1300) return;
+      const x0 = (b.left - r0.left) / k0, y0 = (b.top - r0.top) / k0, x1 = x0 + w, y1 = y0 + b.height / k0;
+      if (x1 < 0 || x0 > 1466 || y1 < 0 || y0 > h) return;
+      L = Math.min(L, Math.max(0, x0)); R = Math.max(R, Math.min(1466, x1)); T = Math.min(T, Math.max(0, y0)); B = Math.max(B, Math.min(h, y1)); };
+    const walk = n => {
+      const tag = n.tagName.toLowerCase();
+      if (n.matches('[data-name$="carousel"] button, [data-name="History wheel"] *')) return;
+      const cs = getComputedStyle(n); if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      if (tag === 'svg' || tag === 'img' || tag === 'video' || tag === 'input' || tag === 'button' || tag === 'select') { add(n.getBoundingClientRect()); return; }
+      const bi = cs.backgroundImage, soft = /radial-gradient/.test(bi) || /blur/.test(cs.filter);
+      const solid = !soft && (parseFloat(cs.borderTopWidth) > 0 || parseFloat(cs.borderLeftWidth) > 0 || (bi && bi !== 'none') || !/rgba\(0, 0, 0, 0\)|transparent/.test(cs.backgroundColor));
+      if (solid) add(n.getBoundingClientRect());
+      if ([...n.childNodes].some(c => c.nodeType === 3 && c.data.trim())) { const rg = document.createRange(); rg.selectNodeContents(n); add(rg.getBoundingClientRect()); }
+      for (const c of n.children) walk(c);
+    };
+    // measure the settled layout: entrance / scroll-reveal slides (which depend on where the page is scrolled) are taken out while measuring
+    const rv = [...wrap.querySelectorAll('[data-dct-style*="{{"]')].filter(n => /^translate(3d)?\(0px, -?[\d.]+px(, 0px)?\)( scale\([\d.]+\))?$/.test(n.style.transform)).map(n => [n, n.style.transform]);
+    rv.forEach(([n]) => { n.style.transform = 'none'; }); wrap.classList.add('pmeas');
+    for (const c of wrap.children) walk(c);
+    rv.forEach(([n, t]) => { n.style.transform = t; }); wrap.classList.remove('pmeas');
+    return R > L && B > T ? [L, R, T, B] : null;
+  }
+  window.__cs = w => { const a = w.style.translate, b = w.style.scale; w.style.translate = ''; w.style.scale = ''; const r = contentSpan(w); w.style.translate = a; w.style.scale = b; return r && r.map(Math.round); };
+  const spanCache = new Map();   // the layout of each section never changes, so measure it once per visit
+  function navShift(layer) {
+    const inst = layer._inst, sc = inst && inst.scroller; if (!sc || !inst.sections) return;
+    const on = inst.state.navOpen === false && !(upright && H !== 1024);   // (phone upright: content stays put — no re-measuring while scrolling)
+    if (layer._navc === on) return; layer._navc = on;
+    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(sec => navSec(layer, sec));
+  }
+  function navSec(layer, sec) {
+    const w = sec.querySelector(':scope > .pcont'); if (!w) return;   // parked sections catch up when they load
+    const on = !!layer._navc;
+    {
+      if (on && w.dataset.nx == null) {
+        const pt = w.style.translate, ps = w.style.scale; w.style.translate = ''; w.style.scale = '';
+        const ck = (layer._fn || '') + '#' + sec.id; if (!spanCache.has(ck)) spanCache.set(ck, contentSpan(w));
+        const sp = spanCache.get(ck); let nx = 0, k = 1, ox = 733, oy = 512;
+        if (sp) {
+          const [L, R, T, B] = sp, cx = (L + R) / 2; ox = cx;
+          nx = Math.max(110 - L, 733 - cx); nx = Math.min(0, nx); if (nx > -30) nx = 0;   // already about centred: leave it where it is
+          // a little bigger to use the room the menu gave up — kept below the header bar, above the arrow buttons, inside the edges
+          if (!w.classList.contains('ptall')) {
+            const TM = 142, BM = 930, hh = B - T;
+            k = Math.max(1, Math.min(1.12, 1246 / (R - L), (BM - TM) / hh));
+            if (k < 1.02) k = 1;
+            if (k > 1) { const t1 = Math.max(TM, Math.min(BM - k * hh, (T + B) / 2 - k * hh / 2)); oy = (t1 - k * T) / (1 - k); }
+          }
+        }
+        w.dataset.nx = Math.round(nx); w.dataset.k = k.toFixed(3); w.style.transformOrigin = ox.toFixed(1) + 'px ' + oy.toFixed(1) + 'px';
+        w.style.translate = pt; w.style.scale = ps;
+      }
+      w.style.translate = on && +w.dataset.nx ? w.dataset.nx + 'px 0px' : '';
+      w.style.scale = on && +w.dataset.k > 1 ? w.dataset.k : '';
+    }
+  }
   // portrait: scale each section's content up so it fills the screen width (full-bleed decoration may crop at the sides)
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
     const h = +sec.dataset.h || 1024;
-    if (H === 1024 || !upright) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // landscape fill: no rescaling, just centred
+    if (H === 1024 || !upright || stk) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // landscape fill: no rescaling, just centred
     const tall = h > 1100;
     wrap.style.transform = 'none'; wrap.style.top = '0px';
     const r0 = wrap.getBoundingClientRect(), k0 = r0.width / 1466 || 1;
@@ -761,7 +900,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (el.__vout === false) return;
       if (el.__frag) { el.appendChild(el.__frag); el.__frag = null; }
       el.__vout = false; restoreImgs(el);
-      if (layer.isConnected) fitSection(el);
+      if (layer.isConnected) { fitSection(el); navSec(layer, el); }
       if (layer._rv) layer._rv(el);
       if (layer.isConnected) startVideos(el);
     };
@@ -773,8 +912,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const now = performance.now(), yy = sc.scrollTop, vel = Math.abs(yy - lastY) / Math.max(1, now - lastT); lastY = yy; lastT = now;
       const fast = TOUCH && vel > 1.2;
       clearTimeout(idleT); if (fast) idleT = setTimeout(() => { lastT = performance.now(); update(); }, 160);
-      const M = fast ? 0 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = fast ? (lowMem() ? 0.6 : 1) : lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
-      const y = sc.scrollTop, inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
+      const M = fast || stk ? 0 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = stk ? 0.35 : fast ? (lowMem() ? 0.6 : 1) : lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
+      const y = sc.scrollTop - SP(), inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
       secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) load(el); else if (b < outA || a > outB) park(el); });
     };
     layer._vupdate = (re) => { if (re) tops = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } update(); };
@@ -793,9 +932,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let Z = [], zH = 0;
     // a snap zone is only where the screen straddles two sections:
     // from "previous section's bottom fills the screen" to "next section's top is at the top"
-    const build = () => { if (zH === H && Z.length) return; zH = H; Z = []; const VH = H, maxY = sc.scrollHeight - sc.clientHeight;
+    const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length) return; zH = H + (stk ? 0.5 : 0); Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
       for (let i = 0; i < secs.length - 1; i++) {
-        const t = secs[i].offsetTop, h = secs[i].offsetHeight, nt = secs[i + 1].offsetTop;
+        const t = secs[i].offsetTop - sp, h = secs[i].offsetHeight, nt = secs[i + 1].offsetTop - sp;
         const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
         if (b > a + 2) Z.push([a, b]);
       } };
@@ -929,6 +1068,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const maxZ = () => Math.max(1.5, Math.min(3, 1.4 / scale));   // never draw content bigger than the device can hold
   const zoomed = () => zoom.z > 1.001;
   const clampZ = () => { zoom.x = Math.min(0, Math.max(FW - zoom.z * FW, zoom.x)); zoom.y = Math.min(0, Math.max(H - zoom.z * H, zoom.y)); };
+  // zooming in tucks the side section list away; trying to zoom out further at normal size brings it back
+  const setNav = open => { const inst = current && current.layer && current.layer._inst; if (inst && inst.setState && (inst.state.navOpen === false) === open) inst.setState({ navOpen: open }); };
+  let wasZoomed = false;
   // zoomed in on one section: scrolling on to another section zooms back out
   let zSec = null;
   const secAt = el => { const y = el.scrollTop + (H / 2 - zoom.y) / zoom.z; let hit = null; el.querySelectorAll(':scope > section[id^="sec-"]').forEach(x => { if (y >= x.offsetTop && y < x.offsetTop + x.offsetHeight) hit = x; }); return hit; };
@@ -938,12 +1080,27 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   function applyZoom(anim) {
     const el = zEl(); if (!el) return; setTimeout(zPill, 0);
+    if (zoomed() && !wasZoomed) {
+      // the menu tucks away and the content re-centres underneath; move the zoom with it so what you zoomed into stays put
+      setNav(false); const L = current && current.layer;
+      if (L && L._inst && L._inst.state.navOpen === false && !L._navc) {
+        const ws = [...el.querySelectorAll(':scope > section[id^="sec-"] > .pcont')]; ws.forEach(w => { w.style.transition = 'none'; });
+        navShift(L); const sec = secAt(el), w = sec && sec.querySelector(':scope > .pcont');
+        if (w && w.dataset.k) {
+          const k = +w.dataset.k, nx = +w.dataset.nx || 0, o = (w.style.transformOrigin || '733px 512px').split(' ').map(parseFloat);
+          const px = (FW / 2 - zoom.x) / zoom.z - w.offsetLeft, py = el.scrollTop + (H / 2 - zoom.y) / zoom.z - sec.offsetTop - w.offsetTop;
+          zoom.x -= (nx + (o[0] + k * (px - o[0])) - px) * zoom.z; zoom.y -= ((o[1] + k * (py - o[1])) - py) * zoom.z;
+        }
+        requestAnimationFrame(() => requestAnimationFrame(() => ws.forEach(w => { w.style.transition = ''; })));
+      }
+    }
+    wasZoomed = zoomed();
     if (zoomed()) { watchSec(el); if (zSec == null || pinch) zSec = secAt(el) || zSec; } else zSec = null;
     if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
     clampZ(); el.style.transformOrigin = '0 0'; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : 'none';
     el.style.transform = 'translate(' + zoom.x.toFixed(1) + 'px,' + zoom.y.toFixed(1) + 'px) scale(' + zoom.z.toFixed(4) + ')';
   }
-  function resetZoom() { const el = zEl(); zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } zPill(); }
+  function resetZoom() { const el = zEl(); wasZoomed = false; zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } zPill(); }
   // Liquid Glass "Zoom out" pill at the bottom while zoomed in
   let zpill = null;
   function zPill() {
@@ -996,6 +1153,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (pinch && e.touches.length >= 2) {
       e.preventDefault();
       const i = pinchInfo(e.touches), z = Math.max(1, Math.min(maxZ(), pinch.z0 * i.d / pinch.d0));
+      if (pinch.z0 <= 1.001 && !pinch.opened && i.d / pinch.d0 < 0.82) { pinch.opened = true; setNav(true); }
       const px = (pinch.m0[0] - pinch.x0) / pinch.z0, py = (pinch.m0[1] - pinch.y0) / pinch.z0;
       zoom = { z, x: i.m[0] - z * px, y: i.m[1] - z * py }; applyZoom(false); return;
     }
@@ -1017,6 +1175,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // trackpad pinch / ctrl + scroll wheel on a computer
   viewport.addEventListener('wheel', e => {
     if (!e.ctrlKey || !current || overlay) return; e.preventDefault(); e.stopImmediatePropagation();
+    if (!zoomed() && e.deltaY > 0) { setNav(true); return; }
     const m = toFrame(e.clientX, e.clientY), z = Math.max(1, Math.min(maxZ(), zoom.z * Math.exp(-e.deltaY * 0.01)));
     const px = (m[0] - zoom.x) / zoom.z, py = (m[1] - zoom.y) / zoom.z; zoom = { z, x: m[0] - z * px, y: m[1] - z * py }; applyZoom(false);
   }, { passive: false, capture: true });
