@@ -65,6 +65,8 @@
   /* phones: glass panels become solid tinted panels (no live blur) */
   html.lite .board [style*="backdrop-filter"] { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   html.lite .board [style*="will-change"] { will-change: auto !important; }
+  html.lite .board *, html.lite .board *::before, html.lite .board *::after { animation: none !important; }
+  html.lite .board [data-name^="Background (stays"] { transform: none !important; }
   html.lite .board :is([data-name="Glass card"], [data-name="Skill tile"], [data-name="Card"], [data-name="Rule card"], [data-name="Stream detail"], [data-name="Position detail"], [data-name="Income chart"], [data-name="Metric toggle"], [data-name="Pay details sheet"], [data-name="Override details sheet"], [data-name="YouTube link sheet"]) { background-color: rgba(14,20,18,0.78) !important; }
   #loading { position: fixed; inset: 0; display: grid; place-items: center; background: var(--bg); z-index: 10; transition: opacity .4s; }
   #loading img { width: 180px; opacity: .9; }
@@ -748,10 +750,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (layer._rv) layer._rv(el);
       if (layer.isConnected) startVideos(el);
     };
-    let raf = 0;
+    let raf = 0, lastY = sc.scrollTop, lastT = performance.now(), idleT = 0;
     const update = () => {
       raf = 0; if (layer.__gone) return; if (!tops) measure();
-      const M = lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
+      // a fast fling: only keep what is actually on screen and let go of the rest; the look-ahead loads once scrolling slows
+      // (building and tearing down sections mid-fling is what ran Safari out of memory)
+      const now = performance.now(), yy = sc.scrollTop, vel = Math.abs(yy - lastY) / Math.max(1, now - lastT); lastY = yy; lastT = now;
+      const fast = TOUCH && vel > 1.2;
+      clearTimeout(idleT); if (fast) idleT = setTimeout(() => { lastT = performance.now(); update(); }, 160);
+      const M = fast ? 0 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = fast ? (lowMem() ? 0.6 : 1) : lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
       const y = sc.scrollTop, inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
       secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) load(el); else if (b < outA || a > outB) park(el); });
     };
