@@ -185,7 +185,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
     // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
     // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
-    const STACK = true;
+    // upright-phone layout (sections stacked mid-screen) is switched off for now — upright phones show the app scaled to fit
+    const STACK = false;
     const wasStk = stk; stk = STACK && PHONE && portrait;
     const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
