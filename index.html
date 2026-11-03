@@ -283,6 +283,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   const lastTop = {};   // where you were on each page, for swiping back
   const lowMem = () => (upright && H !== 1024) || Math.min(innerWidth, innerHeight) < 600;
+  // iPad / touch tablets: Safari gives a Home Screen web app far less memory than a desktop browser, so keep fewer sections
+  // loaded and never hold two pages at once during a page change
+  const TOUCH = (() => { try { return navigator.maxTouchPoints > 1 || matchMedia('(pointer: coarse)').matches; } catch (e) { return false; } })();
   const scrollerOf = layer => layer && layer._inst && layer._inst.scroller;
   // ---- portrait scroll mapping: boards think in landscape section positions; sections are taller in portrait ----
   function secMap(sc) {
@@ -478,7 +481,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (!restore && current) stack.push({ board: current.board, aid: currentAid(), top: (scrollerOf(old) || {}).scrollTop || 0 });
       // phones / upright: never keep two pages alive at once (the Claude app's viewer runs out of memory) — clear the old
       // page first, then fade the new one in
-      if (old && lowMem()) { destroyLayer(old); old = null; if (tr !== 'none') tr = 'dissolve'; }
+      if (old && (lowMem() || TOUCH)) { destroyLayer(old); old = null; if (tr !== 'none') tr = 'dissolve'; }
       frame.appendChild(layer);
       if (overlay) frame.appendChild(overlay.layer);
       const sc = scrollerOf(layer);
@@ -720,7 +723,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let raf = 0;
     const update = () => {
       raf = 0; if (layer.__gone) return; if (!tops) measure();
-      const M = lowMem() ? 0.4 : 1.25, O = lowMem() ? 1.3 : 2.25;   // phones / upright keep fewer sections loaded
+      const M = lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
       const y = sc.scrollTop, inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
       secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) load(el); else if (b < outA || a > outB) park(el); });
     };
