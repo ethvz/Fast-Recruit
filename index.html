@@ -234,8 +234,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     if (layer._io) { layer._io.disconnect(); layer._io = null; }
     layer.querySelectorAll('img').forEach(i => { i.removeAttribute('srcset'); i.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; });
+    try { layer.getAnimations({ subtree: true }).forEach(a => a.cancel()); } catch (e) {}
+    layer.querySelectorAll('section').forEach(sec => { if (sec.__frag) { sec.__frag.querySelectorAll && sec.__frag.querySelectorAll('img').forEach(i => { i.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; }); sec.__frag = null; } });
     layer.remove();
-    layer._inst = null;
+    layer.textContent = '';
+    layer._inst = null; layer._ia = null; layer._rv = null; layer._vupdate = null;
   }
   function instantiate(j) {
     const C = new Function('DCLogic', j.script.split('e.currentTarget.scrollTop').join('window.__vs(e.currentTarget)').split('el.scrollTo({ top: this.sections[i].top').join('el.scrollTo({ top: window.__rs(el, this.sections[i].top)') + '\nreturn Component;')(DCLogic);
@@ -465,9 +468,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
   }
 
+  // changing pages very fast made Safari run out of memory (it frees a closed page's memory lazily): page changes are
+  // spaced out, and a tap made while a page is still settling is remembered and run right after (last tap wins)
+  let navReady = 0, navPending = null, navTimer = 0;
+  const NAV_GAP = 650;
   async function go(aid, tr, dur, ease, restore) {
     const t = P.artboards[aid];
-    if (!t || busy) return;
+    if (!t) return;
+    const samePage = current && current.board === t.board && !restore;
+    if (!samePage && (busy || performance.now() < navReady)) {
+      navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer);
+      navTimer = setTimeout(runPending, Math.max(60, navReady - performance.now()));
+      return;
+    }
+    if (busy) return;
     if (current && current.board === t.board && !restore) {
       const sc = scrollerOf(current.layer);
       if (sc) sc.scrollTo({ top: rScroll(sc, sectionTop(t.board, t.section)), behavior: 'smooth' });
@@ -495,11 +509,17 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (old) destroyLayer(old);
       startScreen(layer);
       setHash(restore ? (currentAid() || aid) : aid);
-    } finally { busy = false; }
+    } finally { busy = false; navReady = performance.now() + NAV_GAP; if (navPending) { clearTimeout(navTimer); navTimer = setTimeout(runPending, NAV_GAP); } }
   }
+  function runPending() { const p = navPending; navPending = null; if (p) go(...p); }
   function back() { const s = stack.pop(); if (s) go(s.aid, 'dissolve', 0.3, 'ease-out', s); }
   function setHash(aid) { try { history.replaceState(null, '', '#' + slug(P.artboards[aid].name)); } catch (e) {} }
 
+  // the page chrome (header, logo + menu, bottom page arrows) stays put while pages slide/swipe; only the content moves
+  const chromeOf = layer => { const h = layer && layer.querySelector('[data-name="Header"]'); return h ? h.parentElement : null; };
+  // while a page slides, its chrome is counter-moved outside the page box, so the page box must not clip it
+  const unclip = (layer, on) => { const c = chromeOf(layer); if (!c) return; for (let e = c.parentElement; e; e = e.parentElement) { e.style.overflow = on ? 'visible' : ''; if (e === layer) break; } };
+  const bodyOf = layer => { const c = chromeOf(layer); if (!c) return [layer]; return [...c.parentElement.children].filter(x => x !== c && x.tagName !== 'STYLE'); };
   function animate(layer, old, tr, ms, ease) {
     const T = (x, y) => 'translate(' + x + 'px,' + y + 'px)';
     const o = { duration: ms, easing: ease, fill: 'both' }; const a = [];
@@ -508,17 +528,25 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       case 'slide-right': a.push(layer.animate([{ transform: T(-FW, 0) }, { transform: T(0, 0) }], o)); break;
       case 'slide-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); break;
       case 'slide-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); break;
-      case 'push-left': a.push(layer.animate([{ transform: T(FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(-FW * 0.35, 0), opacity: 0.25 }], o)); break;
-      case 'push-right': a.push(layer.animate([{ transform: T(-FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(FW * 0.35, 0), opacity: 0.25 }], o)); break;
+      case 'push-left': a.push(layer.animate([{ transform: T(FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(-FW * 0.35, 0), opacity: 0.25 }], o)); pinChrome(a, layer, old, FW + pushFrom, pushFrom, -FW * 0.35, o); break;
+      case 'push-right': a.push(layer.animate([{ transform: T(-FW + pushFrom, 0) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(pushFrom, 0), opacity: 1 }, { transform: T(FW * 0.35, 0), opacity: 0.25 }], o)); pinChrome(a, layer, old, -FW + pushFrom, pushFrom, FW * 0.35, o); break;
       case 'push-up': a.push(layer.animate([{ transform: T(0, H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, -H) }], o)); break;
       case 'push-down': a.push(layer.animate([{ transform: T(0, -H) }, { transform: T(0, 0) }], o)); old && a.push(old.animate([{ transform: T(0, 0) }, { transform: T(0, H) }], o)); break;
       case 'none': return Promise.resolve();
-      default: a.push(layer.animate([{ opacity: 0 }, { opacity: 1 }], o));
+      default: { const c = chromeOf(layer); if (c && old == null) { bodyOf(layer).forEach(b => a.push(b.animate([{ opacity: 0 }, { opacity: 1 }], o))); const pd = c.querySelector('.pdown'); if (pd) a.push(pd.animate([{ opacity: 0 }, { opacity: 1 }], o)); } else a.push(layer.animate([{ opacity: 0 }, { opacity: 1 }], o)); }
     }
-    pushFrom = 0; if (old) old.style.transform = '';
+    pushFrom = 0; if (old) { old.style.transform = ''; const oc = chromeOf(old); if (oc) oc.style.translate = ''; }
     return Promise.all(a.map(x => x.finished)).then(() => a.forEach(x => x.cancel()));
   }
 
+  // counter-move the chrome of a sliding page so it stays on screen; the old page's arrows fade out, the new one's fade in
+  function pinChrome(a, layer, old, newFrom, oldFrom, oldTo, o) {
+    const cn = chromeOf(layer), co = old && chromeOf(old);
+    if (cn) { a.push(cn.animate([{ translate: (-newFrom) + 'px 0px' }, { translate: '0px 0px' }], o)); const pd = cn.querySelector('.pdown'); if (pd) a.push(pd.animate([{ opacity: 0 }, { opacity: 1 }], o)); }
+    if (co) { a.push(co.animate([{ translate: (-oldFrom) + 'px 0px', opacity: 1 }, { translate: (-oldTo) + 'px 0px', opacity: 0 }], o)); }
+    unclip(layer, true); if (old) unclip(old, true);
+    Promise.all(a.map(x => x.finished.catch(() => {}))).then(() => { if (!layer.__gone) unclip(layer, false); });
+  }
   async function openOverlay(aid, tr, dur, ease, pos) {
     const t = P.artboards[aid];
     if (!t || busy) return;
@@ -876,7 +904,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
   const neighbour = dir => { const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
   function swipeTo(dir, from) {
-    const fn = neighbour(dir); if (!fn || busy) return false;
+    const fn = neighbour(dir); if (!fn || busy || performance.now() < navReady) return false;
     pushFrom = from || 0;
     // swiping back to a page you've visited lands where you left it
     const t = lastTop[fn];
@@ -887,19 +915,22 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (!current) return;
     const dir = d < 0 ? 1 : -1, ok = !!neighbour(dir);
     const x = ok ? d : d * 0.25;
-    current.layer.style.transition = 'none';
-    current.layer.style.transform = 'translateX(' + x + 'px)';
-    current.layer.style.opacity = String(1 - Math.min(0.35, Math.abs(x) / FW * 0.6));
+    const L = current.layer, c = chromeOf(L), op = String(1 - Math.min(0.35, Math.abs(x) / FW * 0.6));
+    L.style.transition = 'none';
+    L.style.transform = 'translateX(' + x + 'px)';
+    if (c) { unclip(L, true); c.style.transition = 'none'; c.style.translate = (-x) + 'px 0px'; bodyOf(L).forEach(b => { b.style.transition = 'none'; b.style.opacity = op; }); }
+    else L.style.opacity = op;
     return x;
   }
   function snapBack() {
-    if (!current) return; const l = current.layer;
-    l.style.transition = 'transform .45s cubic-bezier(.2,.9,.1,1), opacity .45s ease'; l.style.transform = ''; l.style.opacity = '';
-    setTimeout(() => { l.style.transition = ''; }, 480);
+    if (!current) return; const l = current.layer, c = chromeOf(l), T = 'transform .45s cubic-bezier(.2,.9,.1,1), opacity .45s ease';
+    l.style.transition = T; l.style.transform = ''; l.style.opacity = '';
+    if (c) { c.style.transition = 'translate .45s cubic-bezier(.2,.9,.1,1)'; c.style.translate = ''; bodyOf(l).forEach(b => { b.style.transition = 'opacity .45s ease'; b.style.opacity = ''; }); }
+    setTimeout(() => { l.style.transition = ''; if (c) { c.style.transition = ''; bodyOf(l).forEach(b => { b.style.transition = ''; }); unclip(l, false); } }, 480);
   }
   function commitOrSnap(x) {
     const l = current && current.layer;
-    if (l) { l.style.transition = ''; l.style.opacity = ''; }
+    if (l) { l.style.transition = ''; l.style.opacity = ''; const c = chromeOf(l); if (c) { c.style.transition = ''; bodyOf(l).forEach(b => { b.style.transition = ''; b.style.opacity = ''; }); } }
     if (Math.abs(x) > 110 && swipeTo(x < 0 ? 1 : -1, x)) { haptic('strong'); return; }
     snapBack();
   }
