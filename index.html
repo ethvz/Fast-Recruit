@@ -164,7 +164,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
     // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
     // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
-    stk = PHONE && portrait;
+    const wasStk = stk; stk = PHONE && portrait;
     const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
     const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
@@ -175,11 +175,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
     document.documentElement.classList.toggle('stack', stk);
     const ncs = PHONE ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
-    if (ncs !== CS || oldH !== H) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
+    if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
-    if (oldH !== H) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
-    if (oldH !== H) frame.querySelectorAll('.layer').forEach(navFor);
-    if (oldH !== H) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
+    // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
+    // growing/shrinking while you scroll change the height many times a second: then only the sizes above update
+    // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
+    const relayout = oldH !== H && !(stk && wasStk);
+    if (relayout) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
+    if (relayout) frame.querySelectorAll('.layer').forEach(navFor);
+    if (relayout) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
@@ -894,11 +898,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (el.__vout) return; el.__vout = true;
       el.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
       el.querySelectorAll('img').forEach(im => { if (im.dataset.vsrc) im.setAttribute('src', BLANK); });
+      el.querySelectorAll('.hsc').forEach(h => { h.__sl = h.scrollLeft; });   // side-scrollers keep their place
       const fr = document.createDocumentFragment(); while (el.firstChild) fr.appendChild(el.firstChild); el.__frag = fr;
     };
     const load = el => {
       if (el.__vout === false) return;
-      if (el.__frag) { el.appendChild(el.__frag); el.__frag = null; }
+      if (el.__frag) { el.appendChild(el.__frag); el.__frag = null; el.querySelectorAll('.hsc').forEach(h => { if (h.__sl) { h.scrollLeft = h.__sl; h.dispatchEvent(new Event('scroll')); } }); }
       el.__vout = false; restoreImgs(el);
       if (layer.isConnected) { fitSection(el); navSec(layer, el); }
       if (layer._rv) layer._rv(el);
@@ -1122,7 +1127,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     applyZoom(true);
   }
   // double-tap (or double-click) the page: zoom in there; double-tap again (or the pill) to zoom out
-  const NOZOOMTAP = 'button, a, input, select, textarea, label, .hot, [role="button"], [onclick], [data-name="Header"], nav, .pdown, .navmenu, .zoomout';
+  const NOZOOMTAP = '.hsc, button, a, input, select, textarea, label, .hot, [role="button"], [onclick], [data-name="Header"], nav, .pdown, .navmenu, .zoomout';
   let lastTap = null;
   function dblTap(cx, cy, target) {
     if (!current || overlay || busy || (target && target.closest && target.closest(NOZOOMTAP))) return false;
@@ -1254,7 +1259,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   addEventListener('keydown', e => { if (overlay || busy || (e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) return; if (e.key === 'ArrowRight') swipeTo(1); else if (e.key === 'ArrowLeft') swipeTo(-1); });
 
   addEventListener('keydown', e => { if (e.key === 'Escape') { if (overlay) closeOverlay(); else back(); } });
-  addEventListener('resize', fit);
+  let fitRaf = 0; addEventListener('resize', () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fit(); }); });
   addEventListener('orientationchange', () => setTimeout(fit, 250));
   addEventListener('pageshow', () => setTimeout(fit, 50));
   addEventListener('hashchange', () => {
