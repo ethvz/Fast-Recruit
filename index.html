@@ -960,6 +960,6 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   });
 })();
 </script>
-<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js'));</script>
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => { const had = !!navigator.serviceWorker.controller; let done = false; navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }); navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } }); });</script>
 </body>
 </html>
