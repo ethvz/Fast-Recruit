@@ -957,11 +957,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       // a fast fling: only keep what is actually on screen and let go of the rest; the look-ahead loads once scrolling slows
       // (building and tearing down sections mid-fling is what ran Safari out of memory)
       const now = performance.now(), yy = sc.scrollTop, vel = Math.abs(yy - lastY) / Math.max(1, now - lastT); lastY = yy; lastT = now;
-      const fast = TOUCH && vel > 1.2;
+      const fast = TOUCH && vel > (stk ? 0.8 : 1.2);
       clearTimeout(idleT); if (fast) idleT = setTimeout(() => { lastT = performance.now(); update(); }, 160);
       const M = fast || stk ? 0 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = stk ? 0.35 : fast ? (lowMem() ? 0.6 : 1) : lowMem() ? 1.3 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
       const y = sc.scrollTop - SP(), inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
-      secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) load(el); else if (b < outA || a > outB) park(el); });
+      // upright phone mid-fling: several sections fly past each second; building each one (and decoding its photos) only
+      // to tear it down a moment later is what ran Safari out of memory — so nothing new loads until the scroll slows
+      const hold = fast && stk;
+      secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) { if (!hold) load(el); } else if (b < outA || a > outB) park(el); });
     };
     layer._vupdate = (re) => { if (re) tops = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } update(); };
     sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
