@@ -74,7 +74,7 @@
   .navmenu { position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); z-index: 150; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
   .navmenu .nm-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: nmFade .3s ease; }
   html.lite .navmenu .nm-scrim { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,0.7); }
-  .navmenu .nm-panel { position: absolute; left: 0; top: 0; width: 820px; height: 100%; box-sizing: border-box; padding: 46px 56px 40px; background: #050807;
+  .navmenu .nm-panel { position: absolute; left: 0; top: 0; width: calc(var(--FW, 1466px) * 0.75); height: 100%; box-sizing: border-box; padding: 46px 56px 40px; background: #050807;
     background-image: radial-gradient(60% 45% at 10% 0%, rgba(5,229,175,0.12), rgba(5,229,175,0) 70%); border-right: 1px solid rgba(255,255,255,0.12); box-shadow: 40px 0 120px rgba(0,0,0,0.6);
     animation: nmIn .45s cubic-bezier(.2,.8,.2,1); overflow-y: auto; }
   .navmenu.out .nm-panel { transform: translateX(-60px); opacity: 0; transition: transform .25s ease, opacity .25s ease; }
@@ -86,7 +86,14 @@
   .nm-title { margin-top: 8px; font-size: 26px; line-height: 30px; font-weight: 500; letter-spacing: -0.03em; }
   .nm-x, .nm-guide { cursor: pointer; border: 1px solid rgba(255,255,255,0.28); background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08)); color: #fff; font: inherit; }
   .nm-x { width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .nm-cols { margin-top: 34px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; align-items: start; }
+  .nm-quick { margin-top: 28px; display: flex; align-items: center; gap: 10px; padding-bottom: 26px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .nm-quick .nm-ptitle { height: 46px; box-sizing: border-box; padding: 0 22px; border-radius: 23px; align-items: center; font-size: 20px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.05); }
+  .nm-quick .nm-page { margin: 0; }
+  .nm-quick .nm-page.on .nm-ptitle { border-color: rgba(5,229,175,0.7); background: rgba(5,229,175,0.12); }
+  .nm-quick .nm-guide { margin: 0 0 0 auto; }
+  .nm-cols { margin-top: 30px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 36px; align-items: start; }
+  .nm-cols .nm-ptitle { padding: 0 0 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.14); }
+  .nm-cols .nm-page.on .nm-ptitle { border-bottom-color: rgba(5,229,175,0.6); }
   .nm-page { margin-bottom: 26px; }
   .nm-ptitle { display: flex; align-items: baseline; gap: 12px; cursor: pointer; padding: 6px 0; font-size: 26px; line-height: 30px; font-weight: 500; letter-spacing: -0.03em; color: #fff; }
   .nm-ptitle .n { font-size: 11px; letter-spacing: .2em; color: #05E5AF; font-weight: 500; }
@@ -534,7 +541,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
 
   // ---------------- all-pages menu (hamburger in the header) ----------------
-  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Culture'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
+  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   let menuEl = null;
   function closeMenu(instant) {
@@ -552,10 +559,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const secs = B.sections.slice(1).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
       return '<div class="nm-page' + (fn === cur ? ' on' : '') + '"><div class="nm-ptitle" data-aid="' + B.sections[0].aid + '"><span class="n">' + String(k + 1).padStart(2, '0') + '</span>' + esc(label) + '</div>' + secs + '</div>';
     };
-    const left = MENU.slice(0, 3).map((x, k) => page(x, k)).join(''), right = MENU.slice(3).map((x, k) => page(x, k + 3)).join('');
+    const hasSecs = fn => { const B = P.boards[fn]; return B && B.sections && B.sections.length > 1; };
+    const quick = MENU.map((x, k) => hasSecs(x[0]) ? '' : page(x, k)).join(''), cols = MENU.map((x, k) => hasSecs(x[0]) ? page(x, k) : '').join('');
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
-      + '<div class="nm-cols"><div>' + left + '</div><div>' + right + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:#05E5AF"></span>Recruiting Guide</button></div></div></div>';
+      + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:#05E5AF"></span>Recruiting Guide</button></div>'
+      + '<div class="nm-cols">' + cols + '</div></div>';
     m.addEventListener('click', e => {
       e.stopPropagation();
       const t = e.target.closest('[data-aid], .nm-x, .nm-scrim, .nm-guide'); if (!t) return;
