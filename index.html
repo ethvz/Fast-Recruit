@@ -1141,6 +1141,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         requestAnimationFrame(() => requestAnimationFrame(() => ws.forEach(w => { w.style.transition = ''; })));
       }
     }
+    if (!zoomed() && wasZoomed) setNav(true);   // back out to normal size: the section menu opens again
     wasZoomed = zoomed();
     if (zoomed()) { watchSec(el); if (zSec == null || pinch) zSec = secAt(el) || zSec; } else zSec = null;
     if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
