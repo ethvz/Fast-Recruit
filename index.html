@@ -54,6 +54,10 @@
   .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
   .pmid.pass { pointer-events: none; }
   /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
+  /* phones held sideways: the screen is much wider than the design, so a photo stretched edge to edge is cropped hard
+     (looks zoomed in). Keep each section photo at the design's own frame, centred, and fade its sides into black. */
+  html.phone.fill .pbgw { position: absolute !important; left: var(--X, 0px) !important; top: 0 !important; width: 1466px !important; height: 100% !important; object-fit: cover;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); }
   html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
@@ -63,6 +67,8 @@
   .stkfade { display: none; }
   html.stack .stkfade { display: block; position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); pointer-events: none;
     background: linear-gradient(180deg, rgba(0,0,0,.74) 0px, rgba(0,0,0,.64) calc(var(--SP) - 140px), rgba(0,0,0,0) calc(var(--SP) + 10px), rgba(0,0,0,0) calc(var(--SP) + 1014px), rgba(0,0,0,.64) calc(var(--SP) + 1164px), rgba(0,0,0,.74) 100%); }
+  /* inside each section the "screen" is still one design screen tall (backgrounds, entrance wrappers), not the tall phone screen */
+  html.stack .stk-sc > section { --H: 1024px; }
   html.stack .stk-sc > section > [data-name^="Background (stays"] { opacity: 1 !important; visibility: visible !important; }
   .pnavw { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 41; scale: var(--CS, 1); transform-origin: 0 0; }
   .pmeas .rv { transform: none !important; transition: none !important; }
@@ -173,7 +179,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     st2pre(frame.style);
     document.documentElement.classList.toggle('port', H !== 1024 && !stk);
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
-    document.documentElement.classList.toggle('stack', stk);
+    document.documentElement.classList.toggle('stack', stk); document.documentElement.classList.toggle('phone', PHONE);
     const ncs = PHONE ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
@@ -553,7 +559,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
               const t = topOf(k), hh = parseFloat((st.match(/height:\s*([\d.]+)px/) || [])[1]);
               if (t <= 0 && hh >= 1000) k.style.height = 'calc(' + hh + 'px + var(--E, 0px))'; else if (t > 0) k.style.marginTop = 'calc(var(--E, 0px) / 2)'; });
             // photos placed at a fixed size become "cover" so they fill the taller screen
-            c.querySelectorAll('img').forEach(im => { if (/position:\s*absolute/.test(im.getAttribute('style') || '')) im.classList.add('pbgimg'); });
+            c.querySelectorAll('img').forEach(im => { const st = im.getAttribute('style') || ''; if (/position:\s*absolute/.test(st)) im.classList.add('pbgimg'); const w = numIn(st, 'width'); if (/width:\s*100%/.test(st) || (w != null && w >= 1400)) im.classList.add('pbgw'); });
             return; }
           // plain full-screen tints (no content inside) stretch with the background
           if (isFull(c) && !c.children.length && topOf(c) === 0) { c.classList.add('fx-full'); if (!c.getAttribute('data-dct-style')) c.style.height = 'calc(' + h + 'px + var(--E, 0px))'; return; }
