@@ -479,6 +479,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   async function go(aid, tr, dur, ease, restore) {
     const t = P.artboards[aid];
     if (!t) return;
+    if (zoomed() && !(current && current.board === t.board && !restore)) resetZoom();
     const samePage = current && current.board === t.board && !restore;
     if (!samePage && (busy || performance.now() < navReady)) {
       navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer);
@@ -907,6 +908,61 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }, true);
   }
 
+  // ---------------- in-app zoom ----------------
+  // Safari's own pinch-zoom redraws the whole app at a huge resolution and crashes it, so pinching is handled here instead:
+  // only the page content zooms; the header, side nav, menu and page arrows stay where they are.
+  // Zoomed in, one finger pans (sideways too) instead of swiping to the next page; pinch back out (or change page) to reset.
+  let zoom = { z: 1, x: 0, y: 0 }, pinch = null, zpan = null;
+  const zEl = () => scrollerOf(current && current.layer);
+  const maxZ = () => Math.max(1.5, Math.min(3, 1.4 / scale));   // never draw content bigger than the device can hold
+  const zoomed = () => zoom.z > 1.001;
+  const clampZ = () => { zoom.x = Math.min(0, Math.max(FW - zoom.z * FW, zoom.x)); zoom.y = Math.min(0, Math.max(H - zoom.z * H, zoom.y)); };
+  function applyZoom(anim) {
+    const el = zEl(); if (!el) return;
+    if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
+    clampZ(); el.style.transformOrigin = '0 0'; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : 'none';
+    el.style.transform = 'translate(' + zoom.x.toFixed(1) + 'px,' + zoom.y.toFixed(1) + 'px) scale(' + zoom.z.toFixed(4) + ')';
+  }
+  function resetZoom() { const el = zEl(); zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } }
+  const toFrame = (cx, cy) => { const r = frame.getBoundingClientRect(); return [(cx - r.left) / scale, (cy - r.top) / scale]; };
+  const pinchInfo = t => { const a = t[0], b = t[1]; return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), m: toFrame((a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2) }; };
+  viewport.addEventListener('touchstart', e => {
+    if (!current || overlay || busy) return;
+    if (e.touches.length === 2) {
+      const i = pinchInfo(e.touches); pinch = { d0: Math.max(1, i.d), m0: i.m, z0: zoom.z, x0: zoom.x, y0: zoom.y }; zpan = null; sw = null;
+      e.preventDefault();
+    } else if (e.touches.length === 1 && zoomed()) {
+      zpan = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  }, { passive: false, capture: true });
+  viewport.addEventListener('touchmove', e => {
+    if (pinch && e.touches.length >= 2) {
+      e.preventDefault();
+      const i = pinchInfo(e.touches), z = Math.max(1, Math.min(maxZ(), pinch.z0 * i.d / pinch.d0));
+      const px = (pinch.m0[0] - pinch.x0) / pinch.z0, py = (pinch.m0[1] - pinch.y0) / pinch.z0;
+      zoom = { z, x: i.m[0] - z * px, y: i.m[1] - z * py }; applyZoom(false); return;
+    }
+    if (zpan && e.touches.length === 1 && zoomed()) {
+      e.preventDefault();
+      const t = e.touches[0], dx = (t.clientX - zpan.x) / scale, dy = (t.clientY - zpan.y) / scale; zpan = { x: t.clientX, y: t.clientY };
+      const y0 = zoom.y; zoom.x += dx; zoom.y += dy; clampZ();
+      const rest = dy - (zoom.y - y0);                     // what the zoomed view can't absorb scrolls the page
+      const sc = zEl(); if (sc && rest) sc.scrollTop -= rest / zoom.z;
+      applyZoom(false);
+    }
+  }, { passive: false, capture: true });
+  const zEnd = e => {
+    if (pinch && e.touches.length < 2) { pinch = null; if (zoom.z < 1.08) { zoom.z = 1; applyZoom(true); } if (e.touches.length === 1 && zoomed()) zpan = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
+    if (e.touches.length === 0) zpan = null;
+  };
+  viewport.addEventListener('touchend', zEnd, { capture: true }); viewport.addEventListener('touchcancel', zEnd, { capture: true });
+  // trackpad pinch / ctrl + scroll wheel on a computer
+  viewport.addEventListener('wheel', e => {
+    if (!e.ctrlKey || !current || overlay) return; e.preventDefault(); e.stopImmediatePropagation();
+    const m = toFrame(e.clientX, e.clientY), z = Math.max(1, Math.min(maxZ(), zoom.z * Math.exp(-e.deltaY * 0.01)));
+    const px = (m[0] - zoom.x) / zoom.z, py = (m[1] - zoom.y) / zoom.z; zoom = { z, x: m[0] - z * px, y: m[1] - z * py }; applyZoom(false);
+  }, { passive: false, capture: true });
+
   // ---------------- swipe between the main pages ----------------
   const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
   const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], input:not(.hapsw), textarea, select';
@@ -946,12 +1002,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   let sw = null;
   viewport.addEventListener('pointerdown', e => {
     // a tap no longer brings the hidden header back; only scrolling does (see each board's onScroll)
-    if (busy || overlay || !current || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (busy || overlay || !current || pinch || zoomed() || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
     if (e.target.closest && e.target.closest(NOSWIPE)) return;
     sw = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, d: 0, id: e.pointerId };
   }, true);
   viewport.addEventListener('pointermove', e => {
     if (!sw || e.pointerId !== sw.id) return;
+    if (pinch || zoomed()) { sw = null; return; }
     const dx = (e.clientX - sw.x) / scale, dy = (e.clientY - sw.y) / scale;
     if (sw.on === null && (Math.abs(dx) > 14 || Math.abs(dy) > 14)) sw.on = Math.abs(dx) > Math.abs(dy) * 1.4;
     if (sw.on) { sw.d = shiftLive(dx); if (current) current.layer._dragged = true; }
@@ -970,7 +1027,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // two-finger trackpad swipe
   let wAcc = 0, wT = 0, wCool = 0;
   viewport.addEventListener('wheel', e => {
-    if (busy || overlay || !current || performance.now() < wCool) return;
+    if (busy || overlay || !current || zoomed() || performance.now() < wCool) return;
     if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 1.5 || (e.target.closest && e.target.closest(NOSWIPE))) return;
     wAcc -= e.deltaX; const x = shiftLive(wAcc * 0.7);
     clearTimeout(wT);
