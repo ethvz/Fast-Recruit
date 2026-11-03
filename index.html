@@ -64,12 +64,14 @@
   html.lite .pcont { transition: none; }
   /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
   html.stack .stk-sc::before, html.stack .stk-sc::after { content: ''; display: block; flex: none; height: var(--SP, 0px); }
-  .stkfade { display: none; }
-  html.stack .stkfade { display: block; position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); pointer-events: none;
-    background: linear-gradient(180deg, rgba(0,0,0,.74) 0px, rgba(0,0,0,.64) calc(var(--SP) - 140px), rgba(0,0,0,0) calc(var(--SP) + 10px), rgba(0,0,0,0) calc(var(--SP) + 1014px), rgba(0,0,0,.64) calc(var(--SP) + 1164px), rgba(0,0,0,.74) 100%); }
+  /* Neighbouring sections are dimmed by a plain shade painted inside them (no extra full-screen layer), and keep their
+     photo hidden (only the middle section shows its background): far less for Safari to hold in memory while scrolling. */
   /* inside each section the "screen" is still one design screen tall (backgrounds, entrance wrappers), not the tall phone screen */
   html.stack .stk-sc > section { --H: 1024px; }
-  html.stack .stk-sc > section > [data-name^="Background (stays"] { opacity: 1 !important; visibility: visible !important; }
+  html.stack .stk-sc > section.sdim::after { content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,.66); pointer-events: none; }
+  html.stack .stk-sc > section.sdim [data-cfst] { visibility: hidden; }
+  /* a one-screen section's photo can't move within it anyway, so it needn't be "sticky" (which gives it its own layer) */
+  html.stack .stk-sc > section:not(.ptall-sec) > [data-name^="Background (stays"] { position: absolute !important; left: 0; top: 0 !important; }
   .pnavw { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 41; scale: var(--CS, 1); transform-origin: 0 0; }
   .pmeas .rv { transform: none !important; transition: none !important; }
   /* fill any landscape screen: the canvas grows wider (--FW) or taller (--H); backgrounds stretch, content stays centred,
@@ -170,8 +172,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
     // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
     // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
-    // (switched off: upright iPhones kept crashing with it on, so upright phones show the app scaled to fit, one screen at a time)
-    const STACK = false;
+    const STACK = true;
     const wasStk = stk; stk = STACK && PHONE && portrait;
     const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
@@ -190,7 +191,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
     const relayout = oldH !== H && !(stk && wasStk);
     if (relayout) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
-    if (relayout) frame.querySelectorAll('.layer').forEach(navFor);
+    if (relayout) frame.querySelectorAll('.layer').forEach(l => { navFor(l); if (l._sdim) l._sdim(); });
     if (relayout) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
@@ -429,10 +430,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       w.style.translate = dy ? '0px ' + dy.toFixed(0) + 'px' : '';
     }
   }
-  // phone upright: the section in the middle is shown in full; above and below sit under a fixed dark shade
+  // phone upright: the section in the middle is shown in full; the ones above and below are dimmed
   function stackDim(layer) {
     const sc = scrollerOf(layer); if (!sc || sc.__sd) return; sc.__sd = true; sc.classList.add('stk-sc');
-    const f = document.createElement('div'); f.className = 'stkfade'; sc.after(f);
+    const secs = [...sc.querySelectorAll(':scope > section[id^="sec-"]')];
+    let tops = null, tH = 0, cur = -1, raf = 0;
+    const upd = () => { raf = 0; if (layer.__gone) return;
+      if (!stk) { if (cur !== -1) { secs.forEach(x => x.classList.remove('sdim')); cur = -1; } return; }
+      if (!tops || tH !== H) { let t = 0; tops = secs.map(x => { const r = [t, t + (x.offsetHeight || 1024)]; t = r[1]; return r; }); tH = H; }
+      const mid = sc.scrollTop - SP() + H / 2; let best = 0, bd = 1e9;
+      tops.forEach(([a, b], i) => { const d = mid < a ? a - mid : mid > b ? mid - b : 0; if (d < bd) { bd = d; best = i; } });
+      if (best === cur) return; cur = best; secs.forEach((x, i) => x.classList.toggle('sdim', i !== best)); };
+    sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
+    layer._sdim = () => { cur = -2; tops = null; upd(); };
+    requestAnimationFrame(upd);
   }
   function contentSpan(wrap) {
     // what you actually see: text, pictures, icons, controls and solid/outlined boxes — not soft glows or parked carousel items
@@ -553,6 +564,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         if (!sec.style.height) { sec.classList.add('fx-c'); return; }   // flowing sections (FAQs) keep their natural height and padding, centred
         const h = parseFloat(sec.style.height) || 1024; sec.dataset.h = h; sec.classList.add('fx-full');
         const tall = h > 1100;   // long scrolling sections keep their length and start at the top of the screen
+        if (tall) sec.classList.add('ptall-sec');
         sec.style.height = tall ? h + 'px' : 'calc(' + h + 'px + var(--E, 0px))';
         const wrap = document.createElement('div'); wrap.className = tall ? 'pcont ptall' : 'pcont'; wrap.style.height = h + 'px';
         [...sec.children].forEach(c => { if ((c.dataset.name || '').startsWith('Background (stays')) {
