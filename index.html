@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Fast Recruit (iPad)</title>
 <meta name="description" content="See why top reps choose Vivint: the experience, the culture, and the earning opportunity — in one interactive recruiting guide.">
 <meta name="theme-color" content="#000000">
@@ -20,7 +20,9 @@
 <style>
   :root { --bg: #000000; --fg: #ffffff; --accent: #05E5AF; color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: var(--fg); touch-action: manipulation; }
+  /* no pinch-zoom: zooming makes Safari redraw the whole app at a much higher resolution and run out of memory */
+  html, body { touch-action: pan-x pan-y; }
+  body { font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: var(--fg); }
   /* the app fills the whole screen (Home Screen web app included): no safe-area gutters, height from the real window */
   #stage { position: fixed; left: 0; top: 0; width: 100%; height: 100%; height: 100dvh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   #viewport { position: relative; overflow: hidden; background: var(--bg); }
@@ -1001,6 +1003,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   });
 })();
 </script>
+<script>(() => { const no = e => e.preventDefault(); ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, no, { passive: false })); document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false }); })();</script>
 <script>if ('serviceWorker' in navigator) addEventListener('load', () => { const had = !!navigator.serviceWorker.controller; let done = false; navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }); navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } }); });</script>
 </body>
 </html>
