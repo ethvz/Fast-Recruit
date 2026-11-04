@@ -66,6 +66,17 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); }
   html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
+  /* phone held sideways: each section's photo fills the right three quarters of the screen and fades in from black on the left */
+  html.pland .board .pbx { left: 25% !important; width: 75% !important; top: 0 !important; height: 100% !important; margin: 0 !important; transform: none !important;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); }
+  html.pland .board .pbx img { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
+  html.pland .board .pbx-fade { display: none !important; }
+  /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
+  html.pland .board .pmid > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
+  html.pland .board .pmid > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 256px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board .pmid > [aria-label="Open the onboarding tool"] { scale: var(--CS); transform-origin: 144px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board .pbx-side::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
   html.lite .pcont { transition: none; }
   /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
@@ -171,8 +182,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   function fit() {
     const st = document.getElementById('stage');
     // Home Screen app on newer iPadOS/iOS: the clock/battery bar is drawn over the top of the page, so start below it
-    let safeTop = 0, full = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;padding-top:env(safe-area-inset-top,0px);box-sizing:content-box;visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); }
-      safeTop = Math.round(parseFloat(getComputedStyle(fit.probe).paddingTop)) || 0; full = Math.round(fit.probe.getBoundingClientRect().height - safeTop) || 0; } catch (e) {}
+    let safeTop = 0, full = 0, safeL = 0, safeR = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);box-sizing:content-box;visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); }
+      const pcs = getComputedStyle(fit.probe); safeTop = Math.round(parseFloat(pcs.paddingTop)) || 0; safeL = Math.round(parseFloat(pcs.paddingLeft)) || 0; safeR = Math.round(parseFloat(pcs.paddingRight)) || 0; full = Math.round(fit.probe.getBoundingClientRect().height - safeTop) || 0; } catch (e) {}
     // iPadOS draws an opaque strip behind the home indicator in Home Screen apps, so the app stops above it
     const safeBot = botInset();
     const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop - safeBot;
@@ -197,6 +208,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     document.documentElement.classList.toggle('port', H !== 1024 && !stk);
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
     document.documentElement.classList.toggle('stack', stk); document.documentElement.classList.toggle('phone', PHONE);
+    // phone held sideways: photos on the right three quarters; header, menu and arrows kept clear of the screen edges and notch
+    const pland = PHONE && !portrait && FW > W; document.documentElement.classList.toggle('pland', pland);
+    { const k = 1 / scale, f = frame.style; f.setProperty('--MXL', pland ? Math.round((safeL + 16) * k) + 'px' : '0px'); f.setProperty('--MXR', pland ? Math.round((safeR + 16) * k) + 'px' : '0px'); f.setProperty('--MY', pland ? Math.round(12 * k) + 'px' : '0px'); }
     const ncs = PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
@@ -406,10 +420,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const leaf = (el, x0, y0, low) => {
         const l = num(el, 'left'), t = num(el, 'top'), w = num(el, 'width') || 0;
         const x = x0 + (l || 0), y = y0 + (t || 0);
-        const ax = x < 110 ? -x : x + w > 1356 ? 1466 - x : 733 - x, ay = low ? 1024 - y : -y;
+        const rp = x + w > 1356 || el.getAttribute('aria-label') === 'Open the recruiting guide';
+        const ax = x < 110 ? -x : rp ? 1466 - x : 733 - x, ay = low ? 1024 - y : -y;
         const id = b + '-' + (n++); el.setAttribute('data-pc', id);
         const isLink = el.tagName === 'P' && /^\(/.test(el.dataset.name || '');   // header page links: a second row when upright
-        pcRule(id, '[data-pc="' + id + '"] { scale: var(--CS); transform-origin: ' + ax + 'px ' + ay + 'px !important; }' +
+        const tx = x < 110 ? 'var(--MXL, 0px)' : rp ? 'calc(-1 * var(--MXR, 0px))' : '0px', ty = low ? '0px' : 'var(--MY, 0px)';
+        pcRule(id, '[data-pc="' + id + '"] { scale: var(--CS); translate: ' + tx + ' ' + ty + '; transform-origin: ' + ax + 'px ' + ay + 'px !important; }' +
           (isLink ? ' html.stack [data-pc="' + id + '"] { scale: calc(var(--CS) * 0.8); translate: 0 calc(var(--CS) * 62px); }' : ''));
       };
       const walk = (el, x0, y0, low) => {
@@ -443,7 +459,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       // upright the header is two rows tall, so the menu starts below it
       const hb = !PHONE ? 0 : stk ? 120 * CS * 1.45 : 80 * CS, sh = Math.max(0, hb + 6 - 86 * Math.min(CS, 1.2)), room = H - 80 * CS - 24 - sh;
       const k = Math.max(1, Math.min(CS, room / bot)), dy = Math.max(0, hb + 6 - 86 * k); w.style.scale = k.toFixed(3);
-      w.style.translate = dy ? '0px ' + dy.toFixed(0) + 'px' : '';
+      w.style.translate = 'var(--MXL, 0px) calc(' + dy.toFixed(0) + 'px + var(--MY, 0px))';
     }
   }
   // phone upright: the section in the middle is shown in full; the ones above and below are dimmed
@@ -566,7 +582,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (l <= 0 && w != null && h != null && h >= 1000 && !el.getAttribute('data-dct-style')) { el.style.width = 'calc(' + w + 'px + var(--X2, 0px))'; return; }   // full-height side strip
     const r = l + (w || 0);
     if (l < 110) return;                    // pinned left (logo, menu, back pill)
-    if (r > 1356) { el.classList.add('fx-r'); return; }   // pinned right (help, next pill, right-hand photos/panels)
+    if (r > 1356 || el.getAttribute('aria-label') === 'Open the recruiting guide') { el.classList.add('fx-r'); return; }   // (Guide pill sits beside Onboard)   // pinned right (help, next pill, right-hand photos/panels)
     el.classList.add('fx-c');
   }
   function portraitize(host, inst) {
@@ -589,6 +605,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
               const t = topOf(k), hh = parseFloat((st.match(/height:\s*([\d.]+)px/) || [])[1]);
               if (t <= 0 && hh >= 1000) k.style.height = 'calc(' + hh + 'px + var(--E, 0px))'; else if (t > 0) k.style.marginTop = 'calc(var(--E, 0px) / 2)'; });
             // photos placed at a fixed size become "cover" so they fill the taller screen
+            [...c.children].forEach(k => { const dn = k.dataset.name || '', st = k.getAttribute('style') || '', w = numIn(st, 'width'), hh = parseFloat((st.match(/height:\s*(?:calc\()?([\d.]+)px/) || [])[1]);
+              if (dn === 'Photo fade') { k.classList.add('pbx-fade'); return; }
+              if (/Destination|Wheel|iPads|Award|Opener|Image 65|glow/i.test(dn) || numIn(st, 'top') > 0) return;
+              if ((k.tagName === 'IMG' || k.querySelector('img')) && hh >= 1000 && w >= 600) { k.classList.add('pbx'); if (w < 1400) k.classList.add('pbx-side'); } });
             c.querySelectorAll('img').forEach(im => { const st = im.getAttribute('style') || ''; if (/position:\s*absolute/.test(st)) im.classList.add('pbgimg'); const w = numIn(st, 'width'); if (/width:\s*100%/.test(st) || (w != null && w >= 1400)) im.classList.add('pbgw'); });
             return; }
           // plain full-screen tints (no content inside) stretch with the background
