@@ -71,6 +71,8 @@
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); }
   html.pland .board .pbx img { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
   html.pland .board .pbx-fade { display: none !important; }
+  /* header logo = Home button: its tap area sits right over the visible logo (it was 13px too high) with some room around it */
+  .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
   html.pland .board .pmid > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
   html.pland .board .pmid > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
@@ -359,6 +361,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
     layer._ia = map;
     layer.addEventListener('click', e => onTap(e, layer));
+    layer.querySelectorAll('img.hot[data-name="Vivint Logo"]').forEach(im => { im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home'); });
     host.__onrender = () => navShift(layer);
     phoneChrome(layer); stackDim(layer);
     setupScrollGroups(layer);
