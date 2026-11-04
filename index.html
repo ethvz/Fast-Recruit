@@ -75,6 +75,7 @@
   .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
   html.pland .board .pmid > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
+  html.pland .board .pmid > [data-name="In memory"] { margin-left: var(--MXL, 0px) !important; scale: var(--CS); transform-origin: 0 100%; }
   html.pland .board .pmid > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
@@ -361,7 +362,16 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
     layer._ia = map;
     layer.addEventListener('click', e => onTap(e, layer));
-    layer.querySelectorAll('img.hot[data-name="Vivint Logo"]').forEach(im => { im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home'); });
+    // header logo = Home button. It has its own handler (finger lifted without moving far = go home), so it doesn't depend on
+    // the general tap path, which can miss a tap on iOS (haptic switch, swipe detection, a page still settling)
+    layer.querySelectorAll('img.hot[data-name="Vivint Logo"]').forEach(im => {
+      im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home');
+      let p0 = null;
+      const home = () => { const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (!aid) return; if (overlay) closeOverlay(true); haptic('select'); go(aid, 'dissolve', 0.3, 'ease-out'); };
+      im.addEventListener('pointerdown', e => { p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; e.stopPropagation(); }, true);
+      im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
+      im.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (Date.now() - (im.__fired || 0) > 800) home(); }, true);
+    });
     host.__onrender = () => navShift(layer);
     phoneChrome(layer); stackDim(layer);
     setupScrollGroups(layer);
