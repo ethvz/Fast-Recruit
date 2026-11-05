@@ -127,16 +127,16 @@
 
   /* long-press a page link in the header: quick menu of that page's sections */
   .board .hot[data-name^="("] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-  .qnav { position: fixed; z-index: 400; min-width: 230px; max-width: min(320px, 86vw); max-height: min(62vh, 520px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; box-sizing: border-box;
+  .qnav { position: fixed; z-index: 400; min-width: 196px; max-width: min(320px, 86vw); max-height: min(62vh, 520px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; box-sizing: border-box;
     border-radius: 18px; border: 1px solid rgba(255,255,255,0.2); background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)), rgba(8,12,11,0.9);
     -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); box-shadow: 0 18px 50px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
     font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; transform-origin: 50% 0; opacity: 0; transform: translateY(-6px) scale(.96); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.1,1.1); scrollbar-width: none; }
   .qnav::-webkit-scrollbar { display: none; }
   .qnav.on { opacity: 1; transform: none; }
-  .qnav .qn-h { padding: 6px 10px 8px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
-  .qnav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 11px; background: transparent; color: #fff; text-align: left; cursor: pointer;
-    font: 500 15px/19px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .01em; -webkit-tap-highlight-color: transparent; }
-  .qnav button .n { flex: none; width: 22px; font-size: 10.5px; letter-spacing: .14em; color: rgb(var(--acr)); }
+  .qnav .qn-h { padding: 5px 9px 6px; font-size: 9.5px; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .qnav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 7px 9px; border: 0; border-radius: 10px; background: transparent; color: #fff; text-align: left; cursor: pointer;
+    font: 500 13px/17px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .01em; -webkit-tap-highlight-color: transparent; }
+  .qnav button .n { flex: none; width: 20px; font-size: 9px; letter-spacing: .14em; color: rgb(var(--acr)); }
   .qnav button:active, .qnav button.cur { background: rgba(var(--acr), 0.16); }
   .qnav button.cur { color: rgb(var(--acr)); font-weight: 600; }
   /* all-pages menu (hamburger in the header) */
@@ -967,7 +967,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   // ---------------- long-press a header page link: that page's sections ----------------
   let qnav = null;
-  const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; q.classList.remove('on'); setTimeout(() => q.remove(), 220); };
+  let qnavInst = null;
+  const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; q.classList.remove('on'); setTimeout(() => q.remove(), 220);
+    const ins = qnavInst; qnavInst = null; if (ins && ins.hdrKick) ins.hdrKick(); };   // header's idle timer starts again once the menu closes
   function openQnav(layer, el) {
     const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
     if (!ab || !P.boards[ab.board]) return false;
@@ -986,7 +988,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
     q.style.left = left + 'px'; q.style.top = top + 'px';
     requestAnimationFrame(() => q.classList.add('on'));
-    qnav = q; haptic('strong'); return true;
+    qnav = q; haptic('strong');
+    // keep the header showing while the menu is open (it normally hides after a few idle seconds)
+    const ins = layer._inst; qnavInst = ins || null;
+    if (ins) { clearTimeout(ins._hdrT); if (ins.state && ins.state.hdrHide) ins.setState({ hdrHide: false });
+      if (ins.hdrKick && !ins.__qnavWrap) { const k = ins.hdrKick; ins.__qnavWrap = true; ins.hdrKick = function () { if (qnav && qnavInst === this) { clearTimeout(this._hdrT); return; } return k.apply(this, arguments); }; } }
+    return true;
   }
   function setupQnav(layer) {
     let t = 0, start = null;
