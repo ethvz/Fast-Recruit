@@ -125,6 +125,20 @@
   #loading img { width: 180px; opacity: .9; }
   #loading.done { opacity: 0; pointer-events: none; }
 
+  /* long-press a page link in the header: quick menu of that page's sections */
+  .board .hot[data-name^="("] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  .qnav { position: fixed; z-index: 400; min-width: 230px; max-width: min(320px, 86vw); max-height: min(62vh, 520px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px; box-sizing: border-box;
+    border-radius: 18px; border: 1px solid rgba(255,255,255,0.2); background: linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)), rgba(8,12,11,0.9);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); box-shadow: 0 18px 50px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25);
+    font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; transform-origin: 50% 0; opacity: 0; transform: translateY(-6px) scale(.96); transition: opacity .18s ease, transform .22s cubic-bezier(.2,.9,.1,1.1); scrollbar-width: none; }
+  .qnav::-webkit-scrollbar { display: none; }
+  .qnav.on { opacity: 1; transform: none; }
+  .qnav .qn-h { padding: 6px 10px 8px; font-size: 11px; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .qnav button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 11px; background: transparent; color: #fff; text-align: left; cursor: pointer;
+    font: 500 15px/19px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .01em; -webkit-tap-highlight-color: transparent; }
+  .qnav button .n { flex: none; width: 22px; font-size: 10.5px; letter-spacing: .14em; color: rgb(var(--acr)); }
+  .qnav button:active, .qnav button.cur { background: rgba(var(--acr), 0.16); }
+  .qnav button.cur { color: rgb(var(--acr)); font-weight: 600; }
   /* all-pages menu (hamburger in the header) */
   .navmenu { position: absolute; left: 0; top: 0; width: var(--FW, 1466px); height: var(--H, 1024px); z-index: 150; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
   .navmenu .nm-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: nmFade .3s ease; }
@@ -372,6 +386,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
       im.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (Date.now() - (im.__fired || 0) > 800) home(); }, true);
     });
+    setupQnav(layer);
     host.__onrender = () => navShift(layer);
     phoneChrome(layer); stackDim(layer);
     setupScrollGroups(layer);
@@ -950,6 +965,43 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     });
   }
 
+  // ---------------- long-press a header page link: that page's sections ----------------
+  let qnav = null;
+  const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; q.classList.remove('on'); setTimeout(() => q.remove(), 220); };
+  function openQnav(layer, el) {
+    const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
+    if (!ab || !P.boards[ab.board]) return false;
+    const secs = P.boards[ab.board].sections || []; if (secs.length < 2) return false;
+    closeQnav();
+    const cur = current && current.board === ab.board ? currentAid() : null;
+    const q = document.createElement('div'); q.className = 'qnav'; q.setAttribute('role', 'menu');
+    const pg = (el.textContent || '').trim();
+    q.innerHTML = '<div class="qn-h"></div>'; q.firstChild.textContent = pg;
+    secs.forEach((x, i) => { if (i === 0) return; const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'menuitem'); if (x.aid === cur) b.className = 'cur';
+      b.innerHTML = '<span class="n"></span><span></span>'; b.firstChild.textContent = String(i).padStart(2, '0'); b.lastChild.textContent = x.name;
+      b.addEventListener('click', e => { e.stopPropagation(); closeQnav(); go(x.aid, 'dissolve', 0.3, 'ease-out'); }); q.appendChild(b); });
+    document.body.appendChild(q);
+    const r = el.getBoundingClientRect(), w = q.offsetWidth, vw = innerWidth, vh = innerHeight;
+    let left = Math.max(10, Math.min(vw - w - 10, r.left + r.width / 2 - w / 2)), top = r.bottom + 6;
+    if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
+    q.style.left = left + 'px'; q.style.top = top + 'px';
+    requestAnimationFrame(() => q.classList.add('on'));
+    qnav = q; haptic('strong'); return true;
+  }
+  function setupQnav(layer) {
+    let t = 0, start = null;
+    const cancel = () => { clearTimeout(t); t = 0; start = null; };
+    layer.addEventListener('pointerdown', e => {
+      const el = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (!el || !layer.contains(el) || !el.id) return;
+      start = { x: e.clientX, y: e.clientY };
+      t = setTimeout(() => { t = 0; if (openQnav(layer, el)) { layer._dragged = true; setTimeout(() => { layer._dragged = false; }, 600); } }, 450);
+    }, true);
+    layer.addEventListener('pointermove', e => { if (start && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 10) cancel(); }, true);
+    ['pointerup', 'pointercancel'].forEach(k => layer.addEventListener(k, cancel, true));
+    layer.addEventListener('contextmenu', e => { const el = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (el) { e.preventDefault(); if (!qnav && openQnav(layer, el)) { layer._dragged = true; setTimeout(() => { layer._dragged = false; }, 600); } } });
+  }
+  document.addEventListener('pointerdown', e => { if (qnav && !qnav.contains(e.target)) { const keep = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (!keep) closeQnav(); } }, true);
+  addEventListener('resize', closeQnav); addEventListener('hashchange', closeQnav);
   // ---------------- load only the sections near the screen ----------------
   // Long pages are split into sections; sections more than ~1.5 screens away are unloaded
   // (their DOM is parked and their images released) and reloaded just before they scroll in.
