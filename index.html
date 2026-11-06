@@ -86,6 +86,10 @@
     background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
   html.lite .pcont { transition: none; }
+  html.safe .board [style*="mask-image"]:not(img):not(:has(img)), html.safe .board [style*="radial-gradient(closest-side"] { display: none !important; }
+  html.safe .board [style*="mask-image"] { -webkit-mask-image: none !important; mask-image: none !important; }
+  html.safe .board [style*="box-shadow"] { box-shadow: none !important; }
+  html.safe .board [style*="filter: blur"], html.safe .board [style*="filter:blur"] { filter: none !important; }
   /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
   html.stack .stk-sc::before, html.stack .stk-sc::after { content: ''; display: block; flex: none; height: var(--SP, 0px); }
   /* Neighbouring sections are dimmed by a plain shade painted inside them (no extra full-screen layer), and keep their
@@ -195,8 +199,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const ssSet = (k, v) => { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} };
   const crashed = ssGet('fr_alive') === '1';   // the last visit ended without the page closing normally
   if (crashed) ssSet('fr_safe', '1');
+  // two crashes within a few minutes: start on the home page next time instead of reopening the page that crashed
+  let crashLoop = false;
+  if (crashed) {
+    const now = Date.now(), log = (ssGet('fr_crashes') || '').split(',').map(Number).filter(t => now - t < 300000);
+    log.push(now); ssSet('fr_crashes', log.join(',')); crashLoop = log.length >= 2;
+  }
   const SAFE = ssGet('fr_safe') === '1';
-  if (SAFE) document.documentElement.classList.add('lite');
+  if (SAFE) document.documentElement.classList.add('lite', 'safe');
   ssSet('fr_alive', '1');
   let booted = false;
   function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now() })); } catch (e) {} }
@@ -1467,10 +1477,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     fit();
     const home = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home');
     const h = decodeURIComponent(location.hash.slice(1));
-    const start = Object.keys(P.artboards).find(k => slug(P.artboards[k].name) === h) || home;
+    let start = Object.keys(P.artboards).find(k => slug(P.artboards[k].name) === h) || home;
     try { await document.fonts.load("400 16px 'Vivint Sans'"); } catch (e) {}
     // coming back after a refresh / crash: same page, same scroll position
     let pos = null; try { pos = JSON.parse(ssGet('fr_pos') || 'null'); } catch (e) {}
+    if (crashLoop) { start = home; pos = null; ssSet('fr_pos', null); ssSet('fr_crashes', null); }
     const back = pos && P.boards[pos.b] && P.artboards[start].board === pos.b && Date.now() - pos.t < 6 * 3600e3 ? { v: pos.v } : null;
     await go(start, 'none', 0, undefined, back);
     document.getElementById('loading').classList.add('done');
