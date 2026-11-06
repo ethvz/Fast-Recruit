@@ -1017,19 +1017,27 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const secOf = k => { const h = k.indexOf('#'), fn = k.slice(0, h), sid = k.slice(h + 1), i = secIdx(fn, sid); return i < 0 ? null : { fn, sid, i, x: secList(fn)[i] }; };
   const aidOf = (fn, sid) => { const x = secList(fn).find(y => y.sid === sid); return x && x.aid; };
   const FLOWPAGES = () => ORDER.filter(fn => fn !== 'Main.dc.html' && secList(fn).length);
-  const validFavs = () => FAVS.filter(k => { const o = secOf(k); return o && o.fn !== 'Main.dc.html'; });
+  // a page's opening title screen (its first section, on pages that have more than one) isn't starred or added:
+  // it joins the flow on its own, at the start of every page that has sections in the flow
+  const isTitle = (fn, i) => i === 0 && secList(fn).length > 1;
+  const validFavs = () => FAVS.filter(k => { const o = secOf(k); return o && o.fn !== 'Main.dc.html' && !isTitle(o.fn, o.i); });
   // the flow as runs of same-page sections (a run continues while sections keep going down the page)
   function segs() {
-    const out = []; let cur = null;
+    groupFavs();
+    const out = [], seen = new Set(); let cur = null;
     validFavs().forEach(k => { const o = secOf(k);
-      if (!cur || cur.fn !== o.fn || o.i <= cur.last) { cur = { fn: o.fn, ids: [], last: -1 }; out.push(cur); }
+      if (!cur || cur.fn !== o.fn || o.i <= cur.last) {
+        cur = { fn: o.fn, ids: [], last: -1 }; out.push(cur);
+        if (!seen.has(o.fn) && secList(o.fn).length > 1) { cur.ids.push(secList(o.fn)[0].sid); cur.last = 0; }   // the page's title first
+        seen.add(o.fn);
+      }
       cur.ids.push(o.sid); cur.last = o.i; });
     return out;
   }
   const rank = k => { const o = secOf(k); return o ? ORDER.indexOf(o.fn) * 1000 + o.i : 1e9; };
   const fnOf = k => k.slice(0, k.indexOf('#'));
   // keep each page's sections together (pages in order of first appearance, sections in their saved order)
-  function groupFavs() { const pages = []; FAVS.forEach(k => { const f = fnOf(k); if (pages.indexOf(f) < 0) pages.push(f); }); FAVS = pages.flatMap(f => FAVS.filter(k => fnOf(k) === f)); }
+  function groupFavs() { FAVS = FAVS.filter(k => { const o = secOf(k); return !(o && isTitle(o.fn, o.i)); }); const pages = []; FAVS.forEach(k => { const f = fnOf(k); if (pages.indexOf(f) < 0) pages.push(f); }); FAVS = pages.flatMap(f => FAVS.filter(k => fnOf(k) === f)); }
   function addFav(k) {
     if (FAVS.indexOf(k) >= 0) return; groupFavs();
     const f = fnOf(k), mine = FAVS.filter(x => fnOf(x) === f);
@@ -1047,11 +1055,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
     (sc ? [...sc.querySelectorAll(':scope > section[id^="sec-"]')] : [...layer.querySelectorAll('section[id^="sec-"]')]).forEach(sec => {
       const id = sec.id.slice(4); if (sec.querySelector(':scope > .favw')) return;
+      if (!flow && isTitle(fn, secIdx(fn, id))) return;
       const w = document.createElement('div'); w.className = 'favw';
       if (flow) {
         const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'fav fedit'; ed.setAttribute('aria-label', 'Edit your Custom flow'); ed.innerHTML = PEN;
         noDrag(ed); ed.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openEdit(); }); w.appendChild(ed);
       }
+      if (flow) { sec.appendChild(w); return; }   // in the flow, sections are removed from the edit menu only
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
       b.setAttribute('aria-label', 'Star this section for your Custom flow'); b.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); b.innerHTML = STAR;
       noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
@@ -1112,17 +1122,19 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // backgrounds and animations line up (a dropped section becomes zero-height where the next kept one starts)
   function flowCompact(layer) {
     const fn = layer._fn, inst = layer._inst, sc = inst && inst.scroller;
-    if (!FLOW || !sc || !inst.sections) return;
+    if (!FLOW || !inst) return;
     const g = segs()[SEG]; if (!g || g.fn !== fn) return;
     const keep = new Set(g.ids);
     layer.dataset.flow = '1'; layer.dataset.seg = SEG; layer._keep = keep;
-    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
-    let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
-    flowTops[fn] = inst.sections.map(x => x.top);
+    if (sc && inst.sections) {   // (single-screen pages like FAQs have nothing to trim)
+      sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
+      let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
+      flowTops[fn] = inst.sections.map(x => x.top);
+    }
     // side menu: only the run's sections, evenly spaced; a dropped section's star sits on the next kept one (so the
     // progress line still runs between kept stars) and is hidden
     let css = '';
-    if (Array.isArray(inst.starY) && inst.starY.length) {
+    if (sc && inst.sections && Array.isArray(inst.starY) && inst.starY.length) {
       const sy = inst.starY.slice(), gap = sy.length > 1 ? sy[1] - sy[0] : 52, nav = inst.sections.slice(1);
       let k = 0; const ny = nav.map(x => keep.has(x.id) ? sy[0] + gap * (k++) : null);
       for (let q = ny.length - 1, nextY = ny.filter(v => v != null).pop() || sy[0]; q >= 0; q--) { if (ny[q] == null) ny[q] = nextY; else nextY = ny[q]; }
@@ -1237,7 +1249,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let body = '';
     FLOWPAGES().forEach(fn => {
       body += '<div class="fa-pg"><span>' + esc2(pageName(fn)) + '</span><button type="button" class="fa-all" data-fn="' + esc2(fn) + '">Select all</button></div>';
-      secList(fn).forEach(x => { const k = favKey(fn, x.sid), inF = FAVS.indexOf(k) >= 0;
+      secList(fn).forEach((x, xi) => { if (isTitle(fn, xi)) return; const k = favKey(fn, x.sid), inF = FAVS.indexOf(k) >= 0;
         body += '<label class="fa-it' + (inF ? ' in' : '') + '"><input type="checkbox" value="' + esc2(k) + '"' + (inF ? ' checked disabled' : '') + '><i></i><span>' + esc2(x.name) + '</span>' + (inF ? '<em>Added</em>' : '') + '</label>'; });
     });
     const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Add sections</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
