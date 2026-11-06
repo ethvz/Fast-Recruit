@@ -279,6 +279,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     constructor(props) { this.props = props || {}; this.state = {}; }
     setState(p) { if (typeof p === 'function') p = p(this.state); Object.assign(this.state, p); if (this.__sched) this.__sched(); }
   }
+  // phones: 3D transforms (translate3d) make Safari keep a separate full-resolution picture of every animated element,
+  // which is what runs it out of memory in landscape — the same motion done as a flat 2D transform needs none of that
+  const isLite = () => document.documentElement.classList.contains('lite');
+  const flat3d = s => s.indexOf('3d(') < 0 && s.indexOf('will-change') < 0 && s.indexOf('translateZ') < 0 ? s : s.replace(/translate3d\(\s*([^,()]+),\s*([^,()]+),\s*[^,()]+\)/g, 'translate($1, $2)').replace(/\s*translateZ\([^()]*\)/g, '').replace(/will-change:\s*[^;"]+;?/g, '');
   const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
   const resolve = (sc, expr) => expr.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc);
   const fill = (tpl, sc) => tpl.replace(HOLE, (m, e) => { const v = resolve(sc, e); return v == null ? '' : String(v); });
@@ -310,7 +314,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const keyOf = list => JSON.stringify(list, (k, v) => (typeof v === 'function' ? undefined : v));
   function apply(binds, sc) {
     for (const b of binds) {
-      if (b.k === 'attr') { const v = fill(b.tpl, sc); if (b.el.getAttribute(b.name) !== v) b.el.setAttribute(b.name, v); }
+      if (b.k === 'attr') { let v = fill(b.tpl, sc); if (b.name === 'style' && isLite()) v = flat3d(v); if (b.el.getAttribute(b.name) !== v) b.el.setAttribute(b.name, v); }
       else if (b.k === 'text') { const v = fill(b.tpl, sc); if (b.node.data !== v) b.node.data = v; }
       else if (b.k === 'evt') {
         b.el.__sc = sc;
@@ -372,6 +376,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let mk = j.markup.replace(/style="([^"]*\{\{[^"]*)"/g, (m, st) => 'style="' + st.replace('width: 1466px; height: 1024px', 'width: 1466px; height: var(--H, 1024px)') + '"');
     // phones: big photos come from smaller copies (a phone screen never shows them that large; saves a lot of memory)
     if (PHONE) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
+    if (isLite()) mk = flat3d(mk);
     const pr = prep(mk), loops = pr.loops;
     // images wait until their section is near the screen (see setupVirtual)
     const html = pr.html.replace(/<img\b([^>]*?)\ssrc="(?![^"]*\{\{)/g, '<img$1 data-vsrc="');
@@ -1100,7 +1105,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const now = performance.now(), yy = sc.scrollTop, vel = Math.abs(yy - lastY) / Math.max(1, now - lastT); lastY = yy; lastT = now;
       const fast = TOUCH && vel > (stk ? 0.8 : 1.2);
       clearTimeout(idleT); if (fast) idleT = setTimeout(() => { lastT = performance.now(); update(); }, 160);
-      const M = fast || stk ? 0 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = stk ? 0.35 : fast ? (lowMem() ? 0.5 : 1) : lowMem() ? 0.95 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
+      const PL = SAFE || document.documentElement.classList.contains('pland'), M = fast || stk ? 0 : PL ? 0.2 : lowMem() ? 0.4 : TOUCH ? 0.75 : 1.25, O = stk ? 0.35 : fast ? (lowMem() ? 0.5 : 1) : PL ? 0.65 : lowMem() ? 0.95 : TOUCH ? 1.6 : 2.25;   // phones / upright / tablets keep fewer sections loaded
       const y = sc.scrollTop - SP(), inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
       // upright phone mid-fling: several sections fly past each second; building each one (and decoding its photos) only
       // to tear it down a moment later is what ran Safari out of memory — so nothing new loads until the scroll slows
