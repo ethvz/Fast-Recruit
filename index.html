@@ -1080,7 +1080,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') retryAll(); });
   function setupVirtual(layer) {
     const sc = scrollerOf(layer);
-    const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (im.getAttribute('src') !== im.dataset.vsrc) { im.decoding = 'async'; im.setAttribute('src', im.dataset.vsrc); } });
+    // phones: a picture is only kept while it is within about a screen of being visible — carousels (35 guest portraits,
+    // trip photos) used to load every card at once, which is what ran an iPhone held sideways out of memory
+    const show = im => { if (im.getAttribute('src') !== im.dataset.vsrc) { im.decoding = 'async'; im.setAttribute('src', im.dataset.vsrc); } };
+    const io = isLite() && 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(en => {
+      const im = en.target; if (!im.dataset.vsrc || !im.isConnected) return;
+      if (en.isIntersecting) show(im); else if (im.getAttribute('src') === im.dataset.vsrc) im.setAttribute('src', BLANK);
+    }), { rootMargin: '100% 100% 100% 100%' }) : null;
+    if (io) (layer._off = layer._off || []).push(() => io.disconnect());
+    const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (io) io.observe(im); else show(im); });
     const secs = sc ? [...sc.querySelectorAll('section[id^="sec-"]')] : [];
     if (!sc || secs.length < 2) { restoreImgs(layer); secs.forEach(fitSection); return; }
     // anything outside the sections (header, side nav, buttons) loads right away
