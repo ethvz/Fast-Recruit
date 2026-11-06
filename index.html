@@ -257,7 +257,8 @@
   .fs-pgh { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
   .fs-pgh b { flex: 1; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgb(var(--acr)); }
   .fs-pgh small { font-size: 11px; color: rgba(255,255,255,0.5); }
-  .fs-pg .fs-it { margin: 4px 0 4px 10px; }
+  .fs-pg .fs-it { margin: 4px 0 4px 10px; padding-left: 4px; }
+  .fs-dot { flex: none; width: 8px; height: 8px; margin: 0 10px 0 12px; border-radius: 50%; background: rgb(var(--acr)); }
   .fs-grip { flex: none; width: 40px; height: 40px; display: grid; place-items: center; cursor: grab; touch-action: none; }
   .fs-it.drag .fs-grip { cursor: grabbing; }
   .fs-txt { flex: 1; min-width: 0; } .fs-txt small { display: block; font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
@@ -576,12 +577,16 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   // The board's animations think the screen is 1024 tall, so tell them where the BOTTOM of the real screen is:
   // everything already on screen is then shown, exactly as in landscape.
-  function vScroll(sc) {
+  // Custom flow with sections in your own order: they're shown in that order, but the page's code still sees them in
+  // their original order (its backgrounds, animations and side menu all depend on it). sc.__fperm maps between the two.
+  function vScroll(sc) { const v = vScroll0(sc), m = sc.__fperm; if (!m) return v; const x = m.find(q => v < q.vt + q.h) || m[m.length - 1]; return x.nt + Math.min(x.h, Math.max(0, v - x.vt)); }
+  function rScroll(sc, n) { const m = sc.__fperm; if (m) { const x = m.find(q => q.h && n >= q.nt && n < q.nt + q.h) || m.find(q => n <= q.nt) || m[m.length - 1]; n = x.vt + Math.min(x.h, Math.max(0, n - x.nt)); } return rScroll0(sc, n); }
+  function vScroll0(sc) {
     const y = sc.scrollTop; if (H === 1024 || stk) return y;
     const m = secMap(sc); if (!m.length) return y;
     return Math.max(0, posP(m, y + H) - 1024);
   }
-  function rScroll(sc, v) {
+  function rScroll0(sc, v) {
     if (H === 1024 || stk) return v;
     const m = secMap(sc); if (!m.length) return v;
     let s = m[0]; m.forEach(x => { if (v >= x.T) s = x; });
@@ -1027,7 +1032,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     groupFavs();
     const out = [], seen = new Set(); let cur = null;
     validFavs().forEach(k => { const o = secOf(k);
-      if (!cur || cur.fn !== o.fn || o.i <= cur.last) {
+      if (!cur || cur.fn !== o.fn) {
         cur = { fn: o.fn, ids: [], last: -1 }; out.push(cur);
         if (!seen.has(o.fn) && secList(o.fn).length > 1) { cur.ids.push(secList(o.fn)[0].sid); cur.last = 0; }   // the page's title first
         seen.add(o.fn);
@@ -1135,16 +1140,28 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const keep = new Set(g.ids);
     layer.dataset.flow = '1'; layer.dataset.seg = SEG; layer._keep = keep;
     if (sc && inst.sections) {   // (single-screen pages like FAQs have nothing to trim)
-      sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
+      const els = [...sc.querySelectorAll(':scope > section[id^="sec-"]')];
+      els.forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
       let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
       flowTops[fn] = inst.sections.map(x => x.top);
+      // your order on screen (the page's code keeps the original order; vScroll/rScroll translate)
+      const byId = {}; inst.sections.forEach(x => { byId[x.id] = x; });
+      const kept = els.filter(el => keep.has(el.id.slice(4))), natural = kept.map(el => el.id.slice(4));
+      if (kept.length > 1 && g.ids.join() !== natural.join()) {
+        const mark = document.createComment('flow'); sc.insertBefore(mark, kept[0]);
+        g.ids.forEach(id => { const el = kept.find(e => e.id === 'sec-' + id); if (el) sc.insertBefore(el, mark); });
+        mark.remove();
+        let vt = 0; sc.__fperm = g.ids.map(id => { const x = byId[id], q = { vt, nt: x.top, h: x.h }; vt += x.h; return q; });
+        sc.__map = null; layer._fperm = g.ids;
+      }
     }
     // side menu: only the run's sections, evenly spaced; a dropped section's star sits on the next kept one (so the
     // progress line still runs between kept stars) and is hidden
     let css = '';
     if (sc && inst.sections && Array.isArray(inst.starY) && inst.starY.length) {
       const sy = inst.starY.slice(), gap = sy.length > 1 ? sy[1] - sy[0] : 52, nav = inst.sections.slice(1);
-      let k = 0; const ny = nav.map(x => keep.has(x.id) ? sy[0] + gap * (k++) : null);
+      const ordr = g.ids.filter(id => nav.some(x => x.id === id)); const ny = nav.map(x => keep.has(x.id) ? sy[0] + gap * ordr.indexOf(x.id) : null);
+      if (layer._fperm) css += '.layer[data-seg="' + SEG + '"] nav > div:nth-of-type(2){display:none!important}';
       for (let q = ny.length - 1, nextY = ny.filter(v => v != null).pop() || sy[0]; q >= 0; q--) { if (ny[q] == null) ny[q] = nextY; else nextY = ny[q]; }
       inst.starY = ny;
       nav.forEach(x => { if (!keep.has(x.id)) css += '.layer[data-seg="' + SEG + '"] nav a[href="#sec-' + x.id + '"]{display:none!important}'; });
