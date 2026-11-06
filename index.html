@@ -184,13 +184,13 @@
 
   /* ---- favorites: Liquid Glass star on every section ---- */
   .favw { position: absolute; right: 26px; top: 96px; z-index: 30; display: flex; gap: 8px; scale: var(--SS, 1); transform-origin: 100% 0; }
-  .fav { position: relative; width: 40px; height: 40px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  .fav { position: relative; width: 50px; height: 50px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
     border: 1.5px solid rgb(var(--acr)); background: transparent; box-shadow: none;
     transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
   html.stack .favw, html.phone:not(.pland) .favw { top: auto; bottom: 10px; right: 8px; transform-origin: 100% 100%; }
-  html.pland .favw { top: 140px; right: calc(26px + var(--MXR, 0px)); }
-  .fav svg { width: 18px; height: 18px; display: block; overflow: visible; }
-  .fav.fexitb svg { width: 13px; height: 13px; }
+  html.pland .favw { scale: var(--CS, 1); top: 140px; right: calc(26px + var(--MXR, 0px)); }
+  .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
+  .fav.fexitb svg { width: 15px; height: 15px; }
   .fav svg path { fill: none; stroke: #fff; stroke-width: 1.7; transition: fill .25s ease, stroke .25s ease; }
   .fav.on { box-shadow: 0 0 16px rgba(var(--acr),0.35); }
   .fav.on svg path { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); }
@@ -219,7 +219,7 @@
   .fbar svg { display: block; flex: none; }
   @media (max-width: 560px) { .fbar button:not(.fb-mid) span { display: none; } .fbar button:not(.fb-mid) { padding: 0; width: 42px; justify-content: center; } .fbar .fb-mid { padding: 0 8px; } }
   [data-x="Custom flow"] { cursor: pointer; }
-  .fav.fedit svg { width: 17px; height: 17px; }
+  .fav.fedit svg { width: 20px; height: 20px; }
   /* the flow's section rail (board coordinates, sits where the page's side menu was) */
   .fnav { position: absolute; left: 30px; top: 96px; width: 238px; max-height: 800px; overflow: hidden auto; z-index: 46; pointer-events: auto; scrollbar-width: none; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
   .fnav::-webkit-scrollbar { display: none; }
@@ -386,7 +386,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
-    document.documentElement.style.setProperty('--SS', Math.max(1, 32 / (40 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
+    document.documentElement.style.setProperty('--SS', Math.max(1, 34 / (50 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
   }
 
   // ---------------- tiny runtime for the design-canvas board format ----------------
