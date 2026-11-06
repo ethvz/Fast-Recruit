@@ -181,6 +181,44 @@
   .nm-sec.on::before { background: rgb(var(--acr)); border-color: rgb(var(--acr)); box-shadow: 0 0 0 4px rgba(var(--acr),0.18); }
   .nm-ptitle:active, .nm-sec:active { opacity: .6; }
   .nm-guide { margin-top: 6px; height: 46px; padding: 0 22px; border-radius: 23px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .04em; }
+
+  /* ---- favorites: Liquid Glass star on every section ---- */
+  .fav { position: absolute; right: 26px; top: 68px; z-index: 30; width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.38); background: linear-gradient(145deg, rgba(255,255,255,0.32), rgba(255,255,255,0.07) 55%, rgba(255,255,255,0.14));
+    backdrop-filter: blur(18px) saturate(1.8); -webkit-backdrop-filter: blur(18px) saturate(1.8);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 1px rgba(255,255,255,0.12), 0 10px 28px rgba(0,0,0,0.35);
+    scale: var(--SS, 1); transform-origin: 100% 0; transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
+  html.stack .fav, html.phone:not(.pland) .fav { top: 6px; right: 8px; }
+  html.pland .fav { top: 104px; right: calc(26px + var(--MXR, 0px)); }
+  .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
+  .fav svg path { fill: none; stroke: #fff; stroke-width: 1.7; transition: fill .25s ease, stroke .25s ease; }
+  .fav.on { border-color: rgba(var(--acr),0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 28px rgba(0,0,0,0.35), 0 0 22px rgba(var(--acr),0.35); }
+  .fav.on svg path { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); }
+  .fav:active { transform: scale(0.88); }
+  html.lite .fav { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: rgba(22,26,25,0.78); }
+  .ftoast { position: fixed; left: 50%; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 90; translate: -50% 12px; opacity: 0; pointer-events: none;
+    padding: 11px 18px; border-radius: 22px; background: rgba(14,18,17,0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; font: 600 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: opacity .2s ease, translate .25s ease; white-space: nowrap; }
+  .ftoast.on { opacity: 1; translate: -50% 0; }
+  html.flow .ftoast { bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); }
+  /* ---- custom flow: only the starred sections; the page's own arrows + section rail give way to the flow bar ---- */
+  html.flow .layer[data-flow] .flowhide, html.flow .layer[data-flow] nav[aria-label$=" sections"], html.flow .layer[data-flow] button[aria-label$="section menu"] { display: none !important; }
+  .fbar { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); translate: -50% 0; z-index: 80; display: flex; align-items: center; gap: 6px; padding: 6px;
+    border-radius: 30px; border: 1px solid rgba(255,255,255,0.26); background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05)), rgba(8,12,11,0.62);
+    backdrop-filter: blur(24px) saturate(1.7); -webkit-backdrop-filter: blur(24px) saturate(1.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 14px 40px rgba(0,0,0,0.5);
+    font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
+  html.lite .fbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(12,16,15,0.92); }
+  .fbar button { height: 42px; min-width: 42px; padding: 0 14px; border-radius: 21px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.07); color: #fff;
+    font: 600 13px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .fbar button[disabled] { opacity: .3; pointer-events: none; }
+  .fbar button.fb-x { padding: 0; width: 42px; justify-content: center; }
+  .fbar .fb-mid { padding: 0 12px; text-align: center; line-height: 1.15; }
+  .fbar .fb-mid b { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--acr)); font-weight: 600; }
+  .fbar .fb-mid span { display: block; margin-top: 3px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .fbar svg { display: block; flex: none; }
+  @media (max-width: 560px) { .fbar button span { display: none; } .fbar button { padding: 0; width: 42px; justify-content: center; } }
+  [data-x="Custom flow"] { cursor: pointer; }
+  [data-x="Custom flow"] .cf-n { min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: #DFFF1A; color: #000; font-size: 13px; line-height: 22px; text-align: center; }
 </style>
 <script>
 // Phones: skip the live glass blur (it's what runs the Claude app out of memory, especially when zoomed in).
@@ -283,6 +321,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
+    document.documentElement.style.setProperty('--SS', Math.max(1, 34 / (46 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
   }
 
   // ---------------- tiny runtime for the design-canvas board format ----------------
@@ -432,6 +471,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     setupQnav(layer);
     host.__onrender = () => navShift(layer);
     phoneChrome(layer); stackDim(layer);
+    flowCompact(layer); addStars(layer); setupFlowBtn(layer);
     setupScrollGroups(layer);
     setupVirtual(layer);
     // prefetch destinations
@@ -720,12 +760,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       root.appendChild(mid); if (low.children.length) root.appendChild(low);
     }
   }
-  function sectionTop(fn, i) { const s = P.boards[fn].sections[i]; return s ? s.top : 0; }
+  function sectionTop(fn, i) { if (FLOW && flowTops[fn]) return flowTops[fn][i] || 0; const s = P.boards[fn].sections[i]; return s ? s.top : 0; }
   function currentAid() {
     if (!current) return null;
     const secs = P.boards[current.board].sections, sc = scrollerOf(current.layer);
-    const y = sc ? vScroll(sc) + 1 : 0; let a = secs[0];
-    secs.forEach(s => { if (y >= s.top) a = s; });
+    const y = sc ? vScroll(sc) + 1 : 0, ft = FLOW && flowTops[current.board]; let a = ft ? (secs.find(s => isFav(current.board, s.sid)) || secs[0]) : secs[0];
+    secs.forEach((s, k) => { if (ft ? (isFav(current.board, s.sid) && y >= ft[k]) : y >= s.top) a = s; });
     return a.aid;
   }
 
@@ -749,6 +789,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     switch (x.a) {
       case 'artboard-transition':
       case 'auto-animate':
+        if (FLOW && (x.tr === 'push-left' || x.tr === 'push-right')) { swipeTo(x.tr === 'push-left' ? 1 : -1); break; }
         if (overlay && layer === overlay.layer) closeOverlay(true);
         go(x.dest, x.a === 'auto-animate' ? 'dissolve' : x.tr, x.dur, x.ease); break;
       case 'overlay-transition': openOverlay(x.dest, x.tr, x.dur, x.ease, x.ov); break;
@@ -763,17 +804,26 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   let navReady = 0, navPending = null, navTimer = 0;
   const NAV_GAP = 650;
   async function go(aid, tr, dur, ease, restore) {
-    const t = P.artboards[aid];
+    let t = P.artboards[aid];
     if (!t) return;
-    if (zoomed() && !(current && current.board === t.board && !restore)) resetZoom();
-    const samePage = current && current.board === t.board && !restore;
+    let fresh = false;
+    if (FLOW) {
+      const sx = (P.boards[t.board].sections || [])[t.section || 0];
+      if (!(sx && isFav(t.board, sx.sid))) {
+        const fl = flowList().find(x => x.fn === t.board);
+        if (fl && !(t.section)) { aid = fl.secs[0].x.aid; t = P.artboards[aid]; }
+        else { endFlow(false); fresh = !!(current && current.board === t.board); }
+      }
+    } else if (current && current.layer && current.layer.dataset.flow) fresh = true;   // left the flow: rebuild the full page
+    if (zoomed() && !(current && current.board === t.board && !restore && !fresh)) resetZoom();
+    const samePage = current && current.board === t.board && !restore && !fresh;
     if (!samePage && (busy || performance.now() < navReady)) {
       navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer);
       navTimer = setTimeout(runPending, Math.max(60, navReady - performance.now()));
       return;
     }
     if (busy) return;
-    if (current && current.board === t.board && !restore) {
+    if (current && current.board === t.board && !restore && !fresh) {
       const sc = scrollerOf(current.layer);
       if (sc) sc.scrollTo({ top: rScroll(sc, sectionTop(t.board, t.section)), behavior: 'smooth' });
       setHash(aid); return;
@@ -801,7 +851,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (old) destroyLayer(old);
       startScreen(layer);
       setHash(restore ? (currentAid() || aid) : aid);
-      savePos();
+      savePos(); drawFlowBar();
     } finally { busy = false; navReady = performance.now() + NAV_GAP; if (navPending) { clearTimeout(navTimer); navTimer = setTimeout(runPending, NAV_GAP); } }
   }
   function runPending() { const p = navPending; navPending = null; if (p) go(...p); }
@@ -865,6 +915,108 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
 
   // ---------------- all-pages menu (hamburger in the header) ----------------
+
+  // ---------------- favorites + custom flow ----------------
+  // Every section (all pages but Home) has a star. Starred sections make up the Custom flow: the same pages, in the
+  // same order and with the same scrolling and page swipes, but showing only the starred sections.
+  const FAVK = 'fr_favs';
+  let FAVS = (() => { try { const a = JSON.parse(localStorage.getItem(FAVK) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } })();
+  const favKey = (fn, id) => fn + '#' + id, isFav = (fn, id) => FAVS.indexOf(favKey(fn, id)) >= 0;
+  const saveFavs = () => { try { localStorage.setItem(FAVK, JSON.stringify(FAVS)); } catch (e) {} };
+  let FLOW = ssGet('fr_flow') === '1';
+  if (FLOW) document.documentElement.classList.add('flow');
+  const flowTops = {};
+  const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" stroke-linecap="round" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>';
+  const CHEV = d => '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="' + (d < 0 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6') + '"/></svg>';
+  const pageName = fn => (MENU.find(m => m[0] === fn) || [0, ''])[1];
+  // pages in app order, each with its starred sections
+  const flowList = () => ORDER.filter(fn => fn !== 'Main.dc.html').map(fn => {
+    const B = P.boards[fn]; if (!B || !B.sections) return null;
+    const secs = B.sections.map((x, i) => ({ x, i })).filter(o => isFav(fn, o.x.sid));
+    return secs.length ? { fn, secs } : null;
+  }).filter(Boolean);
+  let toastT = 0;
+  function toast(msg) {
+    let t = document.querySelector('.ftoast'); if (!t) { t = document.createElement('div'); t.className = 'ftoast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
+    t.textContent = msg; requestAnimationFrame(() => t.classList.add('on')); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1900);
+  }
+  function addStars(layer) {
+    const fn = layer._fn, sc = scrollerOf(layer);
+    if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
+    (sc ? [...sc.querySelectorAll(':scope > section[id^="sec-"]')] : [...layer.querySelectorAll('section[id^="sec-"]')]).forEach(sec => {
+      const id = sec.id.slice(4); if (sec.querySelector(':scope > .fav')) return;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'fav' + (isFav(fn, id) ? ' on' : '');
+      b.setAttribute('aria-label', 'Star this section for your Custom flow'); b.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); b.innerHTML = STAR;
+      ['pointerdown', 'touchstart', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
+      sec.appendChild(b);
+    });
+  }
+  function toggleFav(fn, id) {
+    const k = favKey(fn, id), i = FAVS.indexOf(k), on = i < 0;
+    if (on) FAVS.push(k); else FAVS.splice(i, 1);
+    saveFavs(); try { haptic('select'); } catch (e) {}
+    document.querySelectorAll('.layer[data-board="' + fn + '"] section[id="sec-' + id + '"] > .fav').forEach(b => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    const n = FAVS.length;
+    toast(on ? '★ Added to Custom flow · ' + n + (n === 1 ? ' section' : ' sections') : 'Removed from Custom flow' + (n ? ' · ' + n + ' left' : ''));
+    updateFlowCount();
+  }
+  function updateFlowCount(root) {
+    (root || document).querySelectorAll('[data-x="Custom flow"] .cf-n').forEach(n => { n.textContent = FAVS.length; n.style.display = FAVS.length ? '' : 'none'; });
+  }
+  function setupFlowBtn(layer) {
+    layer.querySelectorAll('[data-x="Custom flow"]').forEach(b => {
+      ['pointerdown', 'touchstart'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); startFlow(); });
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startFlow(); } });
+    });
+    updateFlowCount(layer);
+  }
+  function startFlow() {
+    const L = flowList();
+    if (!L.length) { toast('Tap ☆ on any section to add it to your Custom flow'); return; }
+    FLOW = true; ssSet('fr_flow', '1'); document.documentElement.classList.add('flow'); try { haptic('select'); } catch (e) {}
+    go(L[0].secs[0].x.aid, 'dissolve', 0.35, 'ease-out');
+  }
+  function endFlow(goHome) {
+    FLOW = false; ssSet('fr_flow', null); document.documentElement.classList.remove('flow');
+    Object.keys(flowTops).forEach(k => delete flowTops[k]);
+    drawFlowBar();
+    if (goHome) { const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (aid) go(aid, 'dissolve', 0.3, 'ease-out'); }
+  }
+  // in the flow, a page keeps only its starred sections; the page's code gets the new positions so its backgrounds and
+  // animations line up (a dropped section becomes zero-height at the spot where the next kept one starts)
+  function flowCompact(layer) {
+    const fn = layer._fn, inst = layer._inst, sc = inst && inst.scroller;
+    if (!FLOW || !sc || !inst.sections) return;
+    const keep = new Set(inst.sections.filter(x => isFav(fn, x.id)).map(x => x.id));
+    if (!keep.size) return;
+    layer.dataset.flow = '1';
+    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
+    let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
+    flowTops[fn] = inst.sections.map(x => x.top);
+    // the page's own previous/next arrows give way to the flow bar
+    (P.boards[fn].ia || []).filter(x => x.tr === 'push-left' || x.tr === 'push-right').forEach(x => {
+      const h = layer.querySelector('[id="' + x.el + '"]'); if (!h || !h.parentElement) return;
+      const L = parseFloat(h.style.left), T = parseFloat(h.style.top), W = parseFloat(h.style.width), HH = parseFloat(h.style.height);
+      [...h.parentElement.children].forEach(c => { const l = parseFloat(c.style.left), tp = parseFloat(c.style.top), w = parseFloat(c.style.width) || 0; if (l <= L + W && l + w >= L - 6 && tp >= T - 6 && tp <= T + HH) c.classList.add('flowhide'); });
+    });
+    if (inst.__sched) inst.__sched();
+  }
+  function drawFlowBar() {
+    let b = document.querySelector('.fbar');
+    if (!(FLOW && current && current.layer && current.layer.dataset.flow)) { if (b) b.remove(); return; }
+    const L = flowList(), i = L.findIndex(x => x.fn === current.board), prev = L[i - 1], next = L[i + 1];
+    if (!b) {
+      b = document.createElement('div'); b.className = 'fbar'; b.setAttribute('role', 'navigation'); b.setAttribute('aria-label', 'Custom flow'); document.body.appendChild(b);
+      ['pointerdown', 'touchstart'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      b.addEventListener('click', e => { const t = e.target.closest('button'); if (!t) return; e.stopPropagation(); if (t.dataset.d === 'x') endFlow(true); else swipeTo(+t.dataset.d); });
+    }
+    b.innerHTML = '<button type="button" data-d="-1" aria-label="Previous page"' + (prev ? '' : ' disabled') + '>' + CHEV(-1) + '<span>' + (prev ? pageName(prev.fn) : '') + '</span></button>'
+      + '<div class="fb-mid"><b><svg width="11" height="11" viewBox="0 0 24 24"><path fill="rgb(' + (getComputedStyle(document.documentElement).getPropertyValue('--acr') || '5,229,175') + ')" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>Custom flow</b><span>' + pageName(current.board) + ' · ' + (i + 1) + ' of ' + L.length + '</span></div>'
+      + '<button type="button" data-d="1" aria-label="Next page"' + (next ? '' : ' disabled') + '><span>' + (next ? pageName(next.fn) : '') + '</span>' + CHEV(1) + '</button>'
+      + '<button type="button" class="fb-x" data-d="x" aria-label="Exit custom flow"><svg width="13" height="13" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>';
+  }
   const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   let menuEl = null;
@@ -1402,7 +1554,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
   const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], input:not(.hapsw), textarea, select';
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
-  const neighbour = dir => { const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
+  const neighbour = dir => { if (FLOW && current && current.layer && current.layer.dataset.flow) { const L = flowList().map(x => x.fn), k = L.indexOf(current.board), j = k + dir; return k < 0 || j < 0 || j >= L.length ? null : L[j]; }
+    const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
   function swipeTo(dir, from) {
     const fn = neighbour(dir); if (!fn || busy || performance.now() < navReady) return false;
     pushFrom = from || 0;
