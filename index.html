@@ -166,6 +166,7 @@
   .nm-quick .nm-page { margin: 0; }
   .nm-quick .nm-page.on .nm-ptitle { border-color: rgba(var(--acr),0.7); background: rgba(var(--acr),0.12); }
   .nm-quick .nm-guide { margin: 0 0 0 auto; }
+  .nm-bottom { margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.14); display: flex; }
   .nm-cols { margin-top: 30px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 36px; align-items: start; }
   .nm-cols .nm-ptitle { padding: 0 0 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.14); }
   .nm-cols .nm-page.on .nm-ptitle { border-bottom-color: rgba(var(--acr),0.6); }
@@ -887,10 +888,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
       + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
-      + '<div class="nm-cols">' + cols + '</div></div>';
+      + '<div class="nm-cols">' + cols + '</div>'
+      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button></div></div>';
     m.addEventListener('click', e => {
       e.stopPropagation();
       const t = e.target.closest('[data-aid], .nm-x, .nm-scrim, .nm-guide'); if (!t) return;
+      if (t.classList.contains('nm-social')) { savePos(); location.href = 'social.html'; return; }
       if (t.classList.contains('nm-guide')) { closeMenu(true); openOverlay(GUIDE_AID, 'none'); return; }
       if (t.dataset.aid) { const aid = t.dataset.aid; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); return; }
       closeMenu();

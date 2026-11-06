@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>Social Media Content</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="stylesheet" href="fonts.css">
+<style>
+  :root { --acc: #05E5AF; --line: rgba(255,255,255,0.16); --mut: rgba(255,255,255,0.6); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: #000; color: #fff; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; background: radial-gradient(900px 600px at 0% 0%, rgba(5,229,175,0.14), transparent 70%), #000; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 60px max(16px, env(safe-area-inset-left)); }
+  header { display: flex; align-items: center; gap: 14px; height: 56px; }
+  .back { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.28); color: #fff; text-decoration: none; font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; background: rgba(255,255,255,0.06); }
+  header img { height: 22px; margin-left: auto; }
+  .eye { margin-top: 26px; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--acc); }
+  h1 { margin: 8px 0 0; font-size: clamp(34px, 6vw, 56px); line-height: 1.02; font-weight: 600; letter-spacing: -.04em; }
+  h1 span { color: rgba(255,255,255,0.5); }
+  .tabs { margin-top: 22px; display: inline-flex; padding: 4px; border-radius: 24px; border: 1px solid var(--line); background: rgba(255,255,255,0.05); }
+  .tabs button { height: 38px; padding: 0 18px; border-radius: 19px; border: 0; background: none; color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .tabs button.on { background: var(--acc); color: #000; }
+  .grid { margin-top: 22px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; } }
+  .card { position: relative; border: 0; padding: 0; background: none; color: #fff; text-align: left; cursor: pointer; font: inherit; }
+  .card .im { position: relative; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #0a0f0e; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge { position: absolute; left: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.22); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+  .badge.v { background: var(--acc); color: #000; border-color: transparent; }
+  .card .nm { margin-top: 10px; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+  .card .sub { margin-top: 2px; font-size: 12px; color: var(--mut); }
+  .card:active .im { transform: scale(.98); }
+  /* viewer */
+  .vw { position: fixed; inset: 0; z-index: 10; background: rgba(0,0,0,0.94); display: none; flex-direction: column; align-items: center; justify-content: center; padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)); }
+  .vw.on { display: flex; }
+  .stage { position: relative; height: min(76vh, calc((100vw - 28px) * 16 / 9)); aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: #050908; }
+  .stage img, .stage video { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .bar { margin-top: 14px; display: flex; gap: 10px; align-items: center; }
+  .btn { height: 46px; padding: 0 20px; border-radius: 23px; border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.08); color: #fff; font: inherit; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
+  .btn.pri { background: var(--acc); color: #000; border-color: transparent; }
+  .btn.ic { width: 46px; padding: 0; justify-content: center; }
+  .hint { margin-top: 10px; font-size: 12px; color: var(--mut); text-align: center; min-height: 16px; }
+  @media (orientation: landscape) and (max-height: 520px) { .vw { flex-direction: row; gap: 18px; } .stage { height: calc(100vh - 28px); } .bar { flex-direction: column; margin: 0; } .hint { display: none; } }
+</style></head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="index.html#opportunity"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>Back</a>
+    <img src="a_c5cf5e5b726ee7bad5533a2bf3b59ee2.png" alt="Vivint">
+  </header>
+  <div class="eye">Social Media Content</div>
+  <h1>Post the opportunity.<br><span>Stories for every tool.</span></h1>
+  <div class="tabs" role="tablist"><button class="on" data-f="all">All</button><button data-f="vid">Videos</button><button data-f="pic">Pictures</button></div>
+  <div class="grid" id="grid"></div>
+</div>
+<div class="vw" id="vw" role="dialog" aria-label="Story viewer">
+  <div class="stage" id="stage"></div>
+  <div class="bar">
+    <button class="btn ic" id="prev" aria-label="Previous"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button class="btn pri" id="save"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Save</button>
+    <button class="btn ic" id="next" aria-label="Next"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="btn ic" id="close" aria-label="Close"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>
+  </div>
+  <div class="hint" id="hint">Save, then share it to your Instagram story.</div>
+</div>
+<script>
+const ITEMS = [{"id": "us-salaries", "name": "US Salaries by Age", "line": "The average 25-year-old makes $50,485.", "dur": 7}, {"id": "career-comparison", "name": "Career Comparison", "line": "Four years of school. About $70k to start.", "dur": 7}, {"id": "summer-jobs", "name": "Summer Job Comparison", "line": "The average summer job pays $17,009.", "dur": 7}, {"id": "hourly", "name": "Hourly Comparison", "line": "800 hours this summer. What are they worth?", "dur": 8}, {"id": "rookie-scenarios", "name": "Rookie Scenarios", "line": "Pick your pace. See your summer.", "dur": 11}, {"id": "preseason", "name": "Preseason Projections", "line": "One preseason sale. 5\u00d7 the summer.", "dur": 8}, {"id": "averages", "name": "Averages", "line": "Rookies average $38,000. Managers, $249,679.", "dur": 7}, {"id": "income-streams", "name": "5 Streams of Income", "line": "More than a summer job.", "dur": 9}, {"id": "commission", "name": "Commission Calculator", "line": "Your summer. Your number.", "dur": 10}, {"id": "override", "name": "Override Calculator", "line": "Build a team. Earn on every sale.", "dur": 9}, {"id": "three-year-plan", "name": "3 Year Plan", "line": "Year 3: $183,138.", "dur": 9}, {"id": "path", "name": "Path to Progression", "line": "Age 19 to 24: $34k to $304k.", "dur": 8}], DIR = 'social_';
+const list = []; ITEMS.forEach(t => { if (t.dur) list.push({ ...t, kind: 'vid' }); list.push({ ...t, kind: 'pic' }); });
+let filter = 'all', shown = [], cur = -1;
+const grid = document.getElementById('grid'), vw = document.getElementById('vw'), stage = document.getElementById('stage'), hint = document.getElementById('hint');
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function draw() {
+  shown = list.filter(x => filter === 'all' || x.kind === filter);
+  grid.innerHTML = shown.map((x, i) => '<button class="card" data-i="' + i + '"><div class="im"><img loading="lazy" decoding="async" src="' + DIR + x.id + (x.kind === 'vid' ? '-vthumb.jpg' : '-thumb.jpg') + '" alt="">'
+    + (x.kind === 'vid' ? '<span class="badge v"><svg width="9" height="10" viewBox="0 0 9 10"><path d="M0 0l9 5-9 5z" fill="#000"/></svg>Video · ' + x.dur + 's</span>' : '<span class="badge">Picture</span>')
+    + '</div><div class="nm">' + esc(x.name) + '</div><div class="sub">' + esc(x.line) + '</div></button>').join('');
+}
+document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; filter = b.dataset.f; document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b)); draw(); });
+grid.addEventListener('click', e => { const c = e.target.closest('.card'); if (c) open(+c.dataset.i); });
+const src = x => DIR + x.id + (x.kind === 'vid' ? '.mp4' : '.jpg');
+function open(i) {
+  cur = (i + shown.length) % shown.length; const x = shown[cur];
+  stage.innerHTML = x.kind === 'vid' ? '<video src="' + src(x) + '" poster="' + DIR + x.id + '-vthumb.jpg" autoplay muted loop playsinline></video>' : '<img src="' + src(x) + '" alt="">';
+  hint.textContent = 'Save, then share it to your Instagram story.'; vw.classList.add('on'); document.body.style.overflow = 'hidden';
+}
+function close() { vw.classList.remove('on'); stage.innerHTML = ''; document.body.style.overflow = ''; }
+document.getElementById('close').onclick = close; document.getElementById('prev').onclick = () => open(cur - 1); document.getElementById('next').onclick = () => open(cur + 1);
+vw.addEventListener('click', e => { if (e.target === vw) close(); });
+addEventListener('keydown', e => { if (!vw.classList.contains('on')) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowRight') open(cur + 1); if (e.key === 'ArrowLeft') open(cur - 1); });
+{ let x0 = null; stage.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', e => { if (x0 == null) return; const d = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(d) > 50) open(cur + (d < 0 ? 1 : -1)); }); }
+// Save: the share sheet on phones (Save Image / Save Video, or straight to Instagram), a download elsewhere
+document.getElementById('save').onclick = async () => {
+  const x = shown[cur]; if (!x) return; const name = 'vivint-' + x.id + (x.kind === 'vid' ? '.mp4' : '.jpg');
+  try {
+    hint.textContent = 'Preparing…';
+    const blob = await (await fetch(src(x))).blob(); const file = new File([blob], name, { type: blob.type || (x.kind === 'vid' ? 'video/mp4' : 'image/jpeg') });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); hint.textContent = 'Saved. Share it to your Instagram story.'; return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    hint.textContent = 'Downloaded.';
+  } catch (e) { hint.textContent = e && e.name === 'AbortError' ? '' : 'Couldn’t save. Press and hold the story to save it instead.'; }
+};
+draw();
+</script>
+</body></html>
