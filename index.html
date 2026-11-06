@@ -1174,7 +1174,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     layer.querySelectorAll('p.hot[data-name^="("]').forEach(el => { const b = byEl[el.id]; if (!b || b === 'Main.dc.html') return; const par = el.parentElement; if (!groups.has(par)) groups.set(par, []); groups.get(par).push({ el, b }); });
     groups.forEach((list, par) => {
       list.sort((a, b) => parseFloat(a.el.style.left) - parseFloat(b.el.style.left));
-      const vis = list.filter(o => inFlow.has(o.b)); list.forEach(o => { if (!inFlow.has(o.b)) o.el.classList.add('flowhide'); });
+      const pageOrder = []; S.forEach(g => { if (pageOrder.indexOf(g.fn) < 0) pageOrder.push(g.fn); });   // your page order
+      const vis = list.filter(o => inFlow.has(o.b)).sort((a, b) => pageOrder.indexOf(a.b) - pageOrder.indexOf(b.b)); list.forEach(o => { if (!inFlow.has(o.b)) o.el.classList.add('flowhide'); });
       const BW = 150, total = vis.length * BW, x0 = Math.max(200, Math.min(733 - total / 2, 1150 - total));
       vis.forEach((o, q) => { o.el.style.left = (x0 + q * BW) + 'px'; o.el.style.width = BW + 'px'; });
       return;   // (Exit custom flow lives beside the edit button on each section)
