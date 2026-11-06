@@ -75,7 +75,7 @@
   .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
   html.pland .board .pmid > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
-  html.pland .board .pmid > [data-name="In memory"] { margin-left: var(--MXL, 0px) !important; scale: var(--CS); transform-origin: 0 100%; }
+  html.pland .board .pmid > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
   html.pland .board .pmid > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
@@ -166,7 +166,7 @@
   .nm-quick .nm-page { margin: 0; }
   .nm-quick .nm-page.on .nm-ptitle { border-color: rgba(var(--acr),0.7); background: rgba(var(--acr),0.12); }
   .nm-quick .nm-guide { margin: 0 0 0 auto; }
-  .nm-bottom { margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.14); display: flex; }
+  .nm-bottom { margin-top: 30px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.14); display: flex; gap: 12px; flex-wrap: wrap; }
   .nm-cols { margin-top: 30px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 36px; align-items: start; }
   .nm-cols .nm-ptitle { padding: 0 0 10px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.14); }
   .nm-cols .nm-page.on .nm-ptitle { border-bottom-color: rgba(var(--acr),0.6); }
@@ -183,20 +183,19 @@
   .nm-guide { margin-top: 6px; height: 46px; padding: 0 22px; border-radius: 23px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .04em; }
 
   /* ---- favorites: Liquid Glass star on every section ---- */
-  .favw { position: absolute; right: 26px; top: 68px; z-index: 30; display: flex; gap: 10px; scale: var(--SS, 1); transform-origin: 100% 0; }
-  .fav { position: relative; width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.38); background: linear-gradient(145deg, rgba(255,255,255,0.32), rgba(255,255,255,0.07) 55%, rgba(255,255,255,0.14));
-    backdrop-filter: blur(18px) saturate(1.8); -webkit-backdrop-filter: blur(18px) saturate(1.8);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 1px rgba(255,255,255,0.12), 0 10px 28px rgba(0,0,0,0.35);
+  .favw { position: absolute; right: 26px; top: 68px; z-index: 30; display: flex; gap: 8px; scale: var(--SS, 1); transform-origin: 100% 0; }
+  .fav { position: relative; width: 40px; height: 40px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+    border: 1.5px solid rgb(var(--acr)); background: transparent; box-shadow: none;
     transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
   html.stack .favw, html.phone:not(.pland) .favw { top: auto; bottom: 10px; right: 8px; transform-origin: 100% 100%; }
   html.pland .favw { top: 104px; right: calc(26px + var(--MXR, 0px)); }
-  .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
+  .fav svg { width: 18px; height: 18px; display: block; overflow: visible; }
+  .fav.fexitb svg { width: 13px; height: 13px; }
   .fav svg path { fill: none; stroke: #fff; stroke-width: 1.7; transition: fill .25s ease, stroke .25s ease; }
-  .fav.on { border-color: rgba(var(--acr),0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 28px rgba(0,0,0,0.35), 0 0 22px rgba(var(--acr),0.35); }
+  .fav.on { box-shadow: 0 0 16px rgba(var(--acr),0.35); }
   .fav.on svg path { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); }
   .fav:active { transform: scale(0.88); }
-  html.lite .fav { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: rgba(22,26,25,0.78); }
+
   .ftoast { position: fixed; left: 50%; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 90; translate: -50% 12px; opacity: 0; pointer-events: none;
     padding: 11px 18px; border-radius: 22px; background: rgba(14,18,17,0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; font: 600 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif;
     box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: opacity .2s ease, translate .25s ease; white-space: nowrap; }
@@ -220,7 +219,7 @@
   .fbar svg { display: block; flex: none; }
   @media (max-width: 560px) { .fbar button:not(.fb-mid) span { display: none; } .fbar button:not(.fb-mid) { padding: 0; width: 42px; justify-content: center; } .fbar .fb-mid { padding: 0 8px; } }
   [data-x="Custom flow"] { cursor: pointer; }
-  .fav.fedit svg { width: 20px; height: 20px; }
+  .fav.fedit svg { width: 17px; height: 17px; }
   /* the flow's section rail (board coordinates, sits where the page's side menu was) */
   .fnav { position: absolute; left: 30px; top: 96px; width: 238px; max-height: 800px; overflow: hidden auto; z-index: 46; pointer-events: auto; scrollbar-width: none; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
   .fnav::-webkit-scrollbar { display: none; }
@@ -387,7 +386,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
-    document.documentElement.style.setProperty('--SS', Math.max(1, 34 / (46 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
+    document.documentElement.style.setProperty('--SS', Math.max(1, 32 / (40 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
   }
 
   // ---------------- tiny runtime for the design-canvas board format ----------------
@@ -1060,6 +1059,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (flow) {
         const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'fav fedit'; ed.setAttribute('aria-label', 'Edit your Custom flow'); ed.innerHTML = PEN;
         noDrag(ed); ed.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openEdit(); }); w.appendChild(ed);
+        const xb = document.createElement('button'); xb.type = 'button'; xb.className = 'fav fexitb'; xb.setAttribute('aria-label', 'Exit custom flow'); xb.innerHTML = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>';
+        noDrag(xb); xb.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); endFlow(true); }); w.appendChild(xb);
       }
       if (flow) { sec.appendChild(w); return; }   // in the flow, sections are removed from the edit menu only
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
@@ -1167,8 +1168,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     groups.forEach((list, par) => {
       list.sort((a, b) => parseFloat(a.el.style.left) - parseFloat(b.el.style.left));
       const vis = list.filter(o => inFlow.has(o.b)); list.forEach(o => { if (!inFlow.has(o.b)) o.el.classList.add('flowhide'); });
-      const BW = vis.length >= 5 ? 138 : 150, EW = 210, total = vis.length * BW + EW, x0 = Math.max(200, Math.min(733 - total / 2, 1150 - total));
+      const BW = 150, total = vis.length * BW, x0 = Math.max(200, Math.min(733 - total / 2, 1150 - total));
       vis.forEach((o, q) => { o.el.style.left = (x0 + q * BW) + 'px'; o.el.style.width = BW + 'px'; });
+      return;   // (Exit custom flow lives beside the edit button on each section)
       const ref = vis[0] || list[0]; if (!ref) return;
       const ex = ref.el.cloneNode(false); ex.removeAttribute('id'); ex.className = (ref.el.className.replace(/\bhot\b/, '') + ' fexit').trim(); ex.setAttribute('data-name', '(Exit custom flow)'); ex.setAttribute('role', 'button'); ex.setAttribute('tabindex', '0');
       ex.style.left = (x0 + vis.length * BW) + 'px'; ex.style.width = EW + 'px'; ex.textContent = 'Exit custom flow';
@@ -1326,10 +1328,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
       + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
       + '<div class="nm-cols">' + cols + '</div>'
-      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button></div></div>';
+      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button><button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button></div></div>';
     m.addEventListener('click', e => {
       e.stopPropagation();
       const t = e.target.closest('[data-aid], .nm-x, .nm-scrim, .nm-guide'); if (!t) return;
+      if (t.classList.contains('nm-flow')) { closeMenu(true); if (FLOW) openEdit(); else startFlow(); return; }
       if (t.classList.contains('nm-social')) { savePos(); location.href = 'social.html'; return; }
       if (t.classList.contains('nm-guide')) { closeMenu(true); openOverlay(GUIDE_AID, 'none'); return; }
       if (t.dataset.aid) { const aid = t.dataset.aid; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); return; }
