@@ -183,13 +183,14 @@
   .nm-guide { margin-top: 6px; height: 46px; padding: 0 22px; border-radius: 23px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .04em; }
 
   /* ---- favorites: Liquid Glass star on every section ---- */
-  .fav { position: absolute; right: 26px; top: 68px; z-index: 30; width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  .favw { position: absolute; right: 26px; top: 68px; z-index: 30; display: flex; gap: 10px; scale: var(--SS, 1); transform-origin: 100% 0; }
+  .fav { position: relative; width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
     border: 1px solid rgba(255,255,255,0.38); background: linear-gradient(145deg, rgba(255,255,255,0.32), rgba(255,255,255,0.07) 55%, rgba(255,255,255,0.14));
     backdrop-filter: blur(18px) saturate(1.8); -webkit-backdrop-filter: blur(18px) saturate(1.8);
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -1px 1px rgba(255,255,255,0.12), 0 10px 28px rgba(0,0,0,0.35);
-    scale: var(--SS, 1); transform-origin: 100% 0; transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
-  html.stack .fav, html.phone:not(.pland) .fav { top: 6px; right: 8px; }
-  html.pland .fav { top: 104px; right: calc(26px + var(--MXR, 0px)); }
+    transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
+  html.stack .favw, html.phone:not(.pland) .favw { top: auto; bottom: 10px; right: 8px; transform-origin: 100% 100%; }
+  html.pland .favw { top: 104px; right: calc(26px + var(--MXR, 0px)); }
   .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
   .fav svg path { fill: none; stroke: #fff; stroke-width: 1.7; transition: fill .25s ease, stroke .25s ease; }
   .fav.on { border-color: rgba(var(--acr),0.75); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 28px rgba(0,0,0,0.35), 0 0 22px rgba(var(--acr),0.35); }
@@ -200,9 +201,10 @@
     padding: 11px 18px; border-radius: 22px; background: rgba(14,18,17,0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; font: 600 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif;
     box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: opacity .2s ease, translate .25s ease; white-space: nowrap; }
   .ftoast.on { opacity: 1; translate: -50% 0; }
-  html.flow .ftoast { bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px)); }
   /* ---- custom flow: only the starred sections; the page's own arrows + section rail give way to the flow bar ---- */
-  html.flow .layer[data-flow] .flowhide, html.flow .layer[data-flow] nav[aria-label$=" sections"], html.flow .layer[data-flow] button[aria-label$="section menu"] { display: none !important; }
+  html.flow .layer[data-flow] .flowhide { display: none !important; }
+  .fexit { cursor: pointer; pointer-events: auto !important; color: rgb(var(--acr)) !important; }
+  .fexit:active { opacity: .6; }
   .fbar { position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); translate: -50% 0; z-index: 80; display: flex; align-items: center; gap: 6px; padding: 6px;
     border-radius: 30px; border: 1px solid rgba(255,255,255,0.26); background: linear-gradient(145deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05)), rgba(8,12,11,0.62);
     backdrop-filter: blur(24px) saturate(1.7); -webkit-backdrop-filter: blur(24px) saturate(1.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 14px 40px rgba(0,0,0,0.5);
@@ -212,12 +214,70 @@
     font: 600 13px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
   .fbar button[disabled] { opacity: .3; pointer-events: none; }
   .fbar button.fb-x { padding: 0; width: 42px; justify-content: center; }
-  .fbar .fb-mid { padding: 0 12px; text-align: center; line-height: 1.15; }
-  .fbar .fb-mid b { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--acr)); font-weight: 600; }
+  .fbar .fb-mid { display: block; height: 42px; padding: 0 14px; border-color: transparent; background: none; text-align: center; line-height: 1.15; text-transform: none; letter-spacing: 0; }
+  .fbar .fb-mid b { white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--acr)); font-weight: 600; }
   .fbar .fb-mid span { display: block; margin-top: 3px; font-size: 14px; font-weight: 600; white-space: nowrap; }
   .fbar svg { display: block; flex: none; }
-  @media (max-width: 560px) { .fbar button span { display: none; } .fbar button { padding: 0; width: 42px; justify-content: center; } }
+  @media (max-width: 560px) { .fbar button:not(.fb-mid) span { display: none; } .fbar button:not(.fb-mid) { padding: 0; width: 42px; justify-content: center; } .fbar .fb-mid { padding: 0 8px; } }
   [data-x="Custom flow"] { cursor: pointer; }
+  .fav.fedit svg { width: 20px; height: 20px; }
+  /* the flow's section rail (board coordinates, sits where the page's side menu was) */
+  .fnav { position: absolute; left: 30px; top: 96px; width: 238px; max-height: 800px; overflow: hidden auto; z-index: 46; pointer-events: auto; scrollbar-width: none; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
+  .fnav::-webkit-scrollbar { display: none; }
+  html.pland .fnav { top: 150px; max-height: 600px; translate: var(--MXL, 0px) 0; scale: var(--CS, 1); transform-origin: 0 0; }
+  html.phone:not(.pland) .fnav { display: none; }
+  .fnav .fn-pg { margin: 16px 0 4px 22px; font-size: 10.5px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .fnav .fn-pg:first-child { margin-top: 0; }
+  .fnav .fn-it { display: flex; align-items: center; gap: 12px; width: 100%; padding: 7px 0; border: 0; background: none; cursor: pointer; text-align: left; color: rgba(255,255,255,0.62); font: 500 12.5px/1.25 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
+  .fnav .fn-it i { flex: none; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid rgba(255,255,255,0.55); transition: all .25s ease; }
+  .fnav .fn-it.on { color: #fff; font-weight: 600; }
+  .fnav .fn-it.on i { border-color: rgb(var(--acr)); background: rgb(var(--acr)); box-shadow: 0 0 0 4px rgba(var(--acr),0.18), 0 0 14px rgba(var(--acr),0.6); }
+  .fnav .fn-it:hover { color: #fff; }
+  /* sheets: edit (reorder), add sections, jump */
+  .fsheet { position: fixed; inset: 0; z-index: 95; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
+  .fsheet .fs-scrim { position: absolute; inset: 0; background: rgba(0,0,0,0.35); opacity: 0; transition: opacity .2s ease; }
+  .fsheet .fs-card { position: absolute; right: max(16px, env(safe-area-inset-right)); top: max(70px, calc(env(safe-area-inset-top) + 56px)); width: min(380px, calc(100vw - 32px)); max-height: calc(100vh - 150px); display: flex; flex-direction: column;
+    border-radius: 22px; border: 1px solid rgba(255,255,255,0.22); background: linear-gradient(150deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%), rgba(10,14,13,0.86);
+    backdrop-filter: blur(28px) saturate(1.7); -webkit-backdrop-filter: blur(28px) saturate(1.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 24px 60px rgba(0,0,0,0.6);
+    opacity: 0; translate: 0 -10px; transition: opacity .2s ease, translate .25s ease; overflow: hidden; }
+  html.lite .fsheet .fs-card { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(14,18,17); }
+  .fsheet.on .fs-scrim { opacity: 1; } .fsheet.on .fs-card { opacity: 1; translate: 0 0; }
+  @media (max-height: 520px) { .fsheet .fs-card { top: max(10px, env(safe-area-inset-top)); max-height: calc(100vh - 20px); } }
+  .fs-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .fs-eye { font-size: 10.5px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .fs-t { margin-top: 4px; font-size: 22px; font-weight: 600; letter-spacing: -.02em; }
+  .fs-x { flex: none; width: 36px; height: 36px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.22); background: rgba(255,255,255,0.08); display: grid; place-items: center; cursor: pointer; padding: 0; }
+  .fs-list { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; overscroll-behavior: contain; }
+  .fs-it { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 0; margin: 4px 0; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); transition: opacity .18s ease, background .15s ease; position: relative; }
+  .fs-it.drag { z-index: 2; background: rgba(255,255,255,0.14); border-color: rgba(var(--acr),0.6); box-shadow: 0 12px 30px rgba(0,0,0,0.5); transition: none; }
+  .fs-it.gone { opacity: 0; }
+  .fs-grip { flex: none; width: 40px; height: 40px; display: grid; place-items: center; cursor: grab; touch-action: none; }
+  .fs-it.drag .fs-grip { cursor: grabbing; }
+  .fs-txt { flex: 1; min-width: 0; } .fs-txt small { display: block; font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .fs-txt span { display: block; margin-top: 2px; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fs-rm { flex: none; width: 34px; height: 34px; border-radius: 17px; border: 0; background: none; display: grid; place-items: center; cursor: pointer; opacity: .6; padding: 0; }
+  .fs-rm:hover { opacity: 1; }
+  .fs-empty { padding: 4px 20px 10px; font-size: 14px; color: rgba(255,255,255,0.6); }
+  .fs-foot { display: flex; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid rgba(255,255,255,0.1); }
+  .fs-foot button { flex: 1; height: 46px; border-radius: 23px; border: 1px solid rgba(255,255,255,0.24); background: rgba(255,255,255,0.08); color: #fff; font: 600 14px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .04em; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
+  .fs-foot .fs-add b { width: 24px; height: 24px; border-radius: 12px; background: rgb(var(--acr)); color: #000; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+  .fs-foot .fs-done { background: rgb(var(--acr)); color: #000; border-color: transparent; }
+  .fs-foot .fs-done:disabled { opacity: .35; }
+  .fa-pg { display: flex; align-items: center; justify-content: space-between; margin: 12px 8px 4px; font-size: 11px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .fa-pg:first-child { margin-top: 4px; }
+  .fa-all { border: 0; background: none; color: rgba(255,255,255,0.6); font: 600 11px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .08em; text-transform: none; cursor: pointer; padding: 6px; }
+  .fa-it { display: flex; align-items: center; gap: 12px; padding: 10px 10px; border-radius: 12px; cursor: pointer; }
+  .fa-it:hover { background: rgba(255,255,255,0.05); }
+  .fa-it input { position: absolute; opacity: 0; pointer-events: none; }
+  .fa-it i { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid rgba(255,255,255,0.45); display: grid; place-items: center; transition: all .15s ease; }
+  .fa-it input:checked + i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
+  .fa-it input:checked + i::after { content: ''; width: 10px; height: 5px; border: solid #000; border-width: 0 0 2.4px 2.4px; rotate: -45deg; translate: 0 -1px; }
+  .fa-it span { flex: 1; font-size: 15px; font-weight: 500; }
+  .fa-it em { font-style: normal; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .fa-it.in { cursor: default; } .fa-it.in span { color: rgba(255,255,255,0.55); }
+  .fj-it { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 10px; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,0.75); font: 500 15px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; text-align: left; cursor: pointer; }
+  .fj-it i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55); }
+  .fj-it.on { color: #fff; font-weight: 600; background: rgba(255,255,255,0.06); } .fj-it.on i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
   [data-x="Custom flow"] .cf-n { min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: #DFFF1A; color: #000; font-size: 13px; line-height: 22px; text-align: center; }
 </style>
 <script>
@@ -463,15 +523,18 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     layer.querySelectorAll('img.hot[data-name="Vivint Logo"]').forEach(im => {
       im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home');
       let p0 = null;
-      const home = () => { const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (!aid) return; if (overlay) closeOverlay(true); haptic('select'); go(aid, 'dissolve', 0.3, 'ease-out'); };
+      const home = () => {
+        if (FLOW) { const S = segs(); if (S.length) { if (overlay) closeOverlay(true); haptic('select'); flowGoSeg = 0; go(aidOf(S[0].fn, S[0].ids[0]), 'dissolve', 0.3, 'ease-out'); return; } }
+        const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (!aid) return; if (overlay) closeOverlay(true); haptic('select'); go(aid, 'dissolve', 0.3, 'ease-out'); };
       im.addEventListener('pointerdown', e => { p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; e.stopPropagation(); }, true);
       im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
       im.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (Date.now() - (im.__fired || 0) > 800) home(); }, true);
     });
     setupQnav(layer);
     host.__onrender = () => navShift(layer);
+    flowCompact(layer);   // before the phone layout, so it lays out the trimmed header
     phoneChrome(layer); stackDim(layer);
-    flowCompact(layer); addStars(layer); setupFlowBtn(layer);
+    addStars(layer); setupFlowBtn(layer); buildFlowNav(layer);
     setupScrollGroups(layer);
     setupVirtual(layer);
     // prefetch destinations
@@ -525,12 +588,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // ---- phone: bigger header / section menu / arrow buttons ----
   // Each piece grows from the screen edge or corner it is pinned to (left, right or centre; top or bottom), so nothing
   // drifts off screen. The section menu (whose own scale animation must keep its pivot) is wrapped and grown from the corner.
-  let pcSheet = null; const pcRules = new Set();
+  let pcSheet = null, pcFlowSeq = 0; const pcRules = new Set();
   const pcRule = (id, css) => { if (pcRules.has(id)) return; pcRules.add(id); if (!pcSheet) { pcSheet = document.createElement('style'); document.head.appendChild(pcSheet); } pcSheet.textContent += css + '\n'; };
   function phoneChrome(layer) {
     const host = layer.querySelector('.board'), root = host && host.firstElementChild, sc = scrollerOf(layer); if (!root) return;
     if (!layer.__pc) {
-      layer.__pc = true; const b = slug(layer._fn || 'b'); let n = 0;
+      layer.__pc = true; const b = slug(layer._fn || 'b') + (layer.dataset.flow ? '-f' + (++pcFlowSeq) : ''); let n = 0;   // a trimmed custom-flow page gets its own rules
       const num = (el, k) => numIn(el.getAttribute('style') || '', k);
       const leaf = (el, x0, y0, low) => {
         const l = num(el, 'left'), t = num(el, 'top'), w = num(el, 'width') || 0;
@@ -764,8 +827,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   function currentAid() {
     if (!current) return null;
     const secs = P.boards[current.board].sections, sc = scrollerOf(current.layer);
-    const y = sc ? vScroll(sc) + 1 : 0, ft = FLOW && flowTops[current.board]; let a = ft ? (secs.find(s => isFav(current.board, s.sid)) || secs[0]) : secs[0];
-    secs.forEach((s, k) => { if (ft ? (isFav(current.board, s.sid) && y >= ft[k]) : y >= s.top) a = s; });
+    const keep = FLOW && current.layer && current.layer._keep, ft = keep && flowTops[current.board];
+    const y = sc ? vScroll(sc) + 1 : 0; let a = ft ? (secs.find(s => keep.has(s.sid)) || secs[0]) : secs[0];
+    secs.forEach((s, k) => { if (ft ? (keep.has(s.sid) && y >= ft[k]) : y >= s.top) a = s; });
     return a.aid;
   }
 
@@ -806,18 +870,24 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   async function go(aid, tr, dur, ease, restore) {
     let t = P.artboards[aid];
     if (!t) return;
-    let fresh = false;
+    let fresh = false, fSeg = null;
     if (FLOW) {
-      const sx = (P.boards[t.board].sections || [])[t.section || 0];
-      if (!(sx && isFav(t.board, sx.sid))) {
-        const fl = flowList().find(x => x.fn === t.board);
-        if (fl && !(t.section)) { aid = fl.secs[0].x.aid; t = P.artboards[aid]; }
-        else { endFlow(false); fresh = !!(current && current.board === t.board); }
+      const S = segs(), sx = secList(t.board)[t.section || 0];
+      let si = flowGoSeg != null && S[flowGoSeg] && S[flowGoSeg].fn === t.board ? flowGoSeg : -1; flowGoSeg = null;
+      if (si < 0 && sx) { const c = S.map((g, k) => k).filter(k => S[k].fn === t.board && S[k].ids.indexOf(sx.sid) >= 0); si = c.indexOf(SEG) >= 0 ? SEG : (c.length ? c[0] : -1); }
+      if (si < 0 && !t.section) si = S.findIndex(g => g.fn === t.board);   // a page link: its first run
+      if (si < 0) { endFlow(false); fresh = !!(current && current.board === t.board); }
+      else {
+        if (!sx || S[si].ids.indexOf(sx.sid) < 0) { aid = aidOf(S[si].fn, S[si].ids[0]); t = P.artboards[aid]; }
+        fSeg = si;
+        if (flowFresh || !(current && current.layer && current.layer.dataset.flow && +current.layer.dataset.seg === si)) fresh = true;
+        flowFresh = false;
       }
     } else if (current && current.layer && current.layer.dataset.flow) fresh = true;   // left the flow: rebuild the full page
     if (zoomed() && !(current && current.board === t.board && !restore && !fresh)) resetZoom();
     const samePage = current && current.board === t.board && !restore && !fresh;
     if (!samePage && (busy || performance.now() < navReady)) {
+      if (fSeg != null) { flowGoSeg = fSeg; if (fresh) flowFresh = true; }
       navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer);
       navTimer = setTimeout(runPending, Math.max(60, navReady - performance.now()));
       return;
@@ -826,9 +896,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (current && current.board === t.board && !restore && !fresh) {
       const sc = scrollerOf(current.layer);
       if (sc) sc.scrollTo({ top: rScroll(sc, sectionTop(t.board, t.section)), behavior: 'smooth' });
-      setHash(aid); return;
+      setHash(aid); if (fSeg != null) SEG = fSeg; return;
     }
     busy = true;
+    if (fSeg != null) { SEG = fSeg; ssSet('fr_seg', String(SEG)); }
     try {
       const layer = await makeLayer(t.board);
       let old = current && current.layer;
@@ -851,7 +922,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (old) destroyLayer(old);
       startScreen(layer);
       setHash(restore ? (currentAid() || aid) : aid);
-      savePos(); drawFlowBar();
+      savePos(); drawFlowBar(); markFlowNav(layer);
     } finally { busy = false; navReady = performance.now() + NAV_GAP; if (navPending) { clearTimeout(navTimer); navTimer = setTimeout(runPending, NAV_GAP); } }
   }
   function runPending() { const p = navPending; navPending = null; if (p) go(...p); }
@@ -917,105 +988,287 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // ---------------- all-pages menu (hamburger in the header) ----------------
 
   // ---------------- favorites + custom flow ----------------
-  // Every section (all pages but Home) has a star. Starred sections make up the Custom flow: the same pages, in the
-  // same order and with the same scrolling and page swipes, but showing only the starred sections.
+  // Every section (all pages but Home) has a star. Starred sections make up the Custom flow, in an order you can change.
+  // The flow plays as "runs": back-to-back sections from the same page scroll as one page (only those sections shown),
+  // and moving to a section on another page is a page change — the same feel as the regular flow.
   const FAVK = 'fr_favs';
   let FAVS = (() => { try { const a = JSON.parse(localStorage.getItem(FAVK) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } })();
   const favKey = (fn, id) => fn + '#' + id, isFav = (fn, id) => FAVS.indexOf(favKey(fn, id)) >= 0;
   const saveFavs = () => { try { localStorage.setItem(FAVK, JSON.stringify(FAVS)); } catch (e) {} };
-  let FLOW = ssGet('fr_flow') === '1';
+  let FLOW = ssGet('fr_flow') === '1', SEG = +(ssGet('fr_seg') || 0) || 0, flowGoSeg = null, flowFresh = false;
   if (FLOW) document.documentElement.classList.add('flow');
   const flowTops = {};
-  const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" stroke-linecap="round" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>';
+  const STARP = 'M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z';
+  const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path stroke-linejoin="round" stroke-linecap="round" d="' + STARP + '"/></svg>';
+  const PEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 7h10M4 12h7M4 17h5M15.5 18.5l5-5-2-2-5 5-.6 2.6z"/></svg>';
   const CHEV = d => '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="' + (d < 0 ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6') + '"/></svg>';
+  const XIC = '<svg width="13" height="13" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+  const GRIP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  const esc2 = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
   const pageName = fn => (MENU.find(m => m[0] === fn) || [0, ''])[1];
-  // pages in app order, each with its starred sections
-  const flowList = () => ORDER.filter(fn => fn !== 'Main.dc.html').map(fn => {
-    const B = P.boards[fn]; if (!B || !B.sections) return null;
-    const secs = B.sections.map((x, i) => ({ x, i })).filter(o => isFav(fn, o.x.sid));
-    return secs.length ? { fn, secs } : null;
-  }).filter(Boolean);
+  const secList = fn => (P.boards[fn] && P.boards[fn].sections) || [];
+  const secIdx = (fn, sid) => secList(fn).findIndex(x => x.sid === sid);
+  const secOf = k => { const h = k.indexOf('#'), fn = k.slice(0, h), sid = k.slice(h + 1), i = secIdx(fn, sid); return i < 0 ? null : { fn, sid, i, x: secList(fn)[i] }; };
+  const aidOf = (fn, sid) => { const x = secList(fn).find(y => y.sid === sid); return x && x.aid; };
+  const FLOWPAGES = () => ORDER.filter(fn => fn !== 'Main.dc.html' && secList(fn).length);
+  const validFavs = () => FAVS.filter(k => { const o = secOf(k); return o && o.fn !== 'Main.dc.html'; });
+  // the flow as runs of same-page sections (a run continues while sections keep going down the page)
+  function segs() {
+    const out = []; let cur = null;
+    validFavs().forEach(k => { const o = secOf(k);
+      if (!cur || cur.fn !== o.fn || o.i <= cur.last) { cur = { fn: o.fn, ids: [], last: -1 }; out.push(cur); }
+      cur.ids.push(o.sid); cur.last = o.i; });
+    return out;
+  }
+  const rank = k => { const o = secOf(k); return o ? ORDER.indexOf(o.fn) * 1000 + o.i : 1e9; };
+  function addFav(k, atEnd) { if (FAVS.indexOf(k) >= 0) return; if (atEnd) { FAVS.push(k); return; } const r = rank(k), j = FAVS.findIndex(x => rank(x) > r); if (j < 0) FAVS.push(k); else FAVS.splice(j, 0, k); }
   let toastT = 0;
   function toast(msg) {
     let t = document.querySelector('.ftoast'); if (!t) { t = document.createElement('div'); t.className = 'ftoast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
     t.textContent = msg; requestAnimationFrame(() => t.classList.add('on')); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1900);
   }
+  const noDrag = b => ['pointerdown', 'touchstart', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
   function addStars(layer) {
-    const fn = layer._fn, sc = scrollerOf(layer);
+    const fn = layer._fn, sc = scrollerOf(layer), flow = !!layer.dataset.flow;
     if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
     (sc ? [...sc.querySelectorAll(':scope > section[id^="sec-"]')] : [...layer.querySelectorAll('section[id^="sec-"]')]).forEach(sec => {
-      const id = sec.id.slice(4); if (sec.querySelector(':scope > .fav')) return;
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'fav' + (isFav(fn, id) ? ' on' : '');
+      const id = sec.id.slice(4); if (sec.querySelector(':scope > .favw')) return;
+      const w = document.createElement('div'); w.className = 'favw';
+      if (flow) {
+        const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'fav fedit'; ed.setAttribute('aria-label', 'Edit your Custom flow'); ed.innerHTML = PEN;
+        noDrag(ed); ed.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openEdit(); }); w.appendChild(ed);
+      }
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
       b.setAttribute('aria-label', 'Star this section for your Custom flow'); b.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); b.innerHTML = STAR;
-      ['pointerdown', 'touchstart', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
-      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
-      sec.appendChild(b);
+      noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
+      w.appendChild(b); sec.appendChild(w);
     });
   }
+  const syncStars = () => document.querySelectorAll('.fstar').forEach(b => { const on = FAVS.indexOf(b.dataset.k) >= 0; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
   function toggleFav(fn, id) {
     const k = favKey(fn, id), i = FAVS.indexOf(k), on = i < 0;
-    if (on) FAVS.push(k); else FAVS.splice(i, 1);
+    if (on) addFav(k); else FAVS.splice(i, 1);
     saveFavs(); try { haptic('select'); } catch (e) {}
-    document.querySelectorAll('.layer[data-board="' + fn + '"] section[id="sec-' + id + '"] > .fav').forEach(b => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-    const n = FAVS.length;
+    syncStars(); updateFlowCount();
+    const n = validFavs().length;
     toast(on ? '★ Added to Custom flow · ' + n + (n === 1 ? ' section' : ' sections') : 'Removed from Custom flow' + (n ? ' · ' + n + ' left' : ''));
-    updateFlowCount();
+    if (FLOW) { buildFlowNav(current && current.layer); drawFlowBar(); }
   }
   function updateFlowCount(root) {
-    (root || document).querySelectorAll('[data-x="Custom flow"] .cf-n').forEach(n => { n.textContent = FAVS.length; n.style.display = FAVS.length ? '' : 'none'; });
+    const n = validFavs().length;
+    (root || document).querySelectorAll('[data-x="Custom flow"] .cf-n').forEach(x => { x.textContent = n; x.style.display = n ? '' : 'none'; });
   }
   function setupFlowBtn(layer) {
     layer.querySelectorAll('[data-x="Custom flow"]').forEach(b => {
-      ['pointerdown', 'touchstart'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      noDrag(b);
       b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); startFlow(); });
       b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startFlow(); } });
     });
     updateFlowCount(layer);
   }
   function startFlow() {
-    const L = flowList();
-    if (!L.length) { toast('Tap ☆ on any section to add it to your Custom flow'); return; }
+    const S = segs();
+    if (!S.length) { openAdd(true); return; }
     FLOW = true; ssSet('fr_flow', '1'); document.documentElement.classList.add('flow'); try { haptic('select'); } catch (e) {}
-    go(L[0].secs[0].x.aid, 'dissolve', 0.35, 'ease-out');
+    flowGoSeg = 0; go(aidOf(S[0].fn, S[0].ids[0]), 'dissolve', 0.35, 'ease-out');
   }
   function endFlow(goHome) {
-    FLOW = false; ssSet('fr_flow', null); document.documentElement.classList.remove('flow');
+    FLOW = false; ssSet('fr_flow', null); ssSet('fr_seg', null); document.documentElement.classList.remove('flow');
     Object.keys(flowTops).forEach(k => delete flowTops[k]);
-    drawFlowBar();
+    closeSheet(); drawFlowBar();
     if (goHome) { const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (aid) go(aid, 'dissolve', 0.3, 'ease-out'); }
   }
-  // in the flow, a page keeps only its starred sections; the page's code gets the new positions so its backgrounds and
-  // animations line up (a dropped section becomes zero-height at the spot where the next kept one starts)
+  // after the flow is edited: rebuild the view, staying on the section you were on if it's still in the flow
+  function flowRefresh() {
+    if (!FLOW || !current) return;
+    const S = segs(); if (!S.length) { endFlow(true); return; }
+    const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
+    let si = sx ? S.findIndex(g => g.fn === ab.board && g.ids.indexOf(sx.sid) >= 0) : -1, sid = sx && sx.sid;
+    if (si < 0) { si = Math.min(SEG, S.length - 1); sid = S[si].ids[0]; }
+    flowGoSeg = si; flowFresh = true; go(aidOf(S[si].fn, sid), 'dissolve', 0.25, 'ease-out');
+  }
+  // move one run forward/back (swipes, arrows, flow bar)
+  function flowStep(d, from) {
+    const S = segs(), j = SEG + d; if (j < 0 || j >= S.length || busy || performance.now() < navReady) return false;
+    pushFrom = from || 0; flowGoSeg = j; const g = S[j];
+    go(aidOf(g.fn, d > 0 ? g.ids[0] : g.ids[0]), d > 0 ? 'push-left' : 'push-right', 0.62, 'snap');
+    return true;
+  }
+  // in the flow, a page keeps only the sections of the current run; the page's code gets their new positions so its
+  // backgrounds and animations line up (a dropped section becomes zero-height where the next kept one starts)
   function flowCompact(layer) {
     const fn = layer._fn, inst = layer._inst, sc = inst && inst.scroller;
     if (!FLOW || !sc || !inst.sections) return;
-    const keep = new Set(inst.sections.filter(x => isFav(fn, x.id)).map(x => x.id));
-    if (!keep.size) return;
-    layer.dataset.flow = '1';
+    const g = segs()[SEG]; if (!g || g.fn !== fn) return;
+    const keep = new Set(g.ids);
+    layer.dataset.flow = '1'; layer.dataset.seg = SEG; layer._keep = keep;
     sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
     let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
     flowTops[fn] = inst.sections.map(x => x.top);
-    // the page's own previous/next arrows give way to the flow bar
+    // side menu: only the run's sections, evenly spaced; a dropped section's star sits on the next kept one (so the
+    // progress line still runs between kept stars) and is hidden
+    let css = '';
+    if (Array.isArray(inst.starY) && inst.starY.length) {
+      const sy = inst.starY.slice(), gap = sy.length > 1 ? sy[1] - sy[0] : 52, nav = inst.sections.slice(1);
+      let k = 0; const ny = nav.map(x => keep.has(x.id) ? sy[0] + gap * (k++) : null);
+      for (let q = ny.length - 1, nextY = ny.filter(v => v != null).pop() || sy[0]; q >= 0; q--) { if (ny[q] == null) ny[q] = nextY; else nextY = ny[q]; }
+      inst.starY = ny;
+      nav.forEach(x => { if (!keep.has(x.id)) css += '.layer[data-seg="' + SEG + '"] nav a[href="#sec-' + x.id + '"]{display:none!important}'; });
+      const last = Math.max(...nav.map((x, q) => keep.has(x.id) ? ny[q] : -1));
+      if (inst.lineTop != null && last > 0) css += '.layer[data-seg="' + SEG + '"] nav > div:first-of-type{height:' + Math.max(0, last - inst.lineTop) + 'px!important}';
+    }
+    // page arrows: previous / next page in the flow (hidden at the ends)
+    const S = segs(), nb = { 'push-right': S[SEG - 1], 'push-left': S[SEG + 1] };
     (P.boards[fn].ia || []).filter(x => x.tr === 'push-left' || x.tr === 'push-right').forEach(x => {
       const h = layer.querySelector('[id="' + x.el + '"]'); if (!h || !h.parentElement) return;
-      const L = parseFloat(h.style.left), T = parseFloat(h.style.top), W = parseFloat(h.style.width), HH = parseFloat(h.style.height);
-      [...h.parentElement.children].forEach(c => { const l = parseFloat(c.style.left), tp = parseFloat(c.style.top), w = parseFloat(c.style.width) || 0; if (l <= L + W && l + w >= L - 6 && tp >= T - 6 && tp <= T + HH) c.classList.add('flowhide'); });
+      const L = parseFloat(h.style.left), T = parseFloat(h.style.top), W = parseFloat(h.style.width), HH = parseFloat(h.style.height), to = nb[x.tr];
+      [...h.parentElement.children].forEach(c => { const l = parseFloat(c.style.left), tp = parseFloat(c.style.top), w = parseFloat(c.style.width) || 0;
+        if (!(l <= L + W && l + w >= L - 6 && tp >= T - 6 && tp <= T + HH)) return;
+        if (!to) c.classList.add('flowhide');
+        else if (c.tagName === 'P' && c.textContent.trim()) {
+          c.textContent = pageName(to.fn);
+          // keep the (possibly longer) page name inside the pill, beside its arrow
+          const id = 'fpl' + Math.random().toString(36).slice(2, 8); c.dataset.fpl = id; const right = x.tr === 'push-left';
+          css += '.layer [data-fpl="' + id + '"]{left:' + (L + (right ? 10 : 50)) + 'px!important;width:' + (W - 60) + 'px!important;text-align:' + (right ? 'right' : 'left') + '!important;overflow:hidden;text-overflow:ellipsis' + (pageName(to.fn).length > 9 ? ';font-size:16px!important' : '') + '}';
+        } });
+    });
+    if (css) { const st = document.createElement('style'); st.textContent = css; layer.appendChild(st); }
+    // header: only the pages in the flow, then Exit custom flow (in the page's colour)
+    const inFlow = new Set(S.map(g => g.fn)), byEl = {};
+    (P.boards[fn].ia || []).forEach(x => { const ab = x.dest && P.artboards[x.dest]; if (ab) byEl[x.el] = ab.board; });
+    const groups = new Map();
+    layer.querySelectorAll('p.hot[data-name^="("]').forEach(el => { const b = byEl[el.id]; if (!b || b === 'Main.dc.html') return; const par = el.parentElement; if (!groups.has(par)) groups.set(par, []); groups.get(par).push({ el, b }); });
+    groups.forEach((list, par) => {
+      list.sort((a, b) => parseFloat(a.el.style.left) - parseFloat(b.el.style.left));
+      const vis = list.filter(o => inFlow.has(o.b)); list.forEach(o => { if (!inFlow.has(o.b)) o.el.classList.add('flowhide'); });
+      const BW = vis.length >= 5 ? 138 : 150, EW = 210, total = vis.length * BW + EW, x0 = Math.max(200, Math.min(733 - total / 2, 1150 - total));
+      vis.forEach((o, q) => { o.el.style.left = (x0 + q * BW) + 'px'; o.el.style.width = BW + 'px'; });
+      const ref = vis[0] || list[0]; if (!ref) return;
+      const ex = ref.el.cloneNode(false); ex.removeAttribute('id'); ex.className = (ref.el.className.replace(/\bhot\b/, '') + ' fexit').trim(); ex.setAttribute('data-name', '(Exit custom flow)'); ex.setAttribute('role', 'button'); ex.setAttribute('tabindex', '0');
+      ex.style.left = (x0 + vis.length * BW) + 'px'; ex.style.width = EW + 'px'; ex.textContent = 'Exit custom flow';
+      noDrag(ex); ex.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); endFlow(true); });
+      par.appendChild(ex);
     });
     if (inst.__sched) inst.__sched();
   }
+  // ---- the flow's own section rail (replaces the page's side menu while in the flow) ----
+  function flowItems() { const S = segs(), out = []; S.forEach((g, si) => g.ids.forEach(sid => { const x = secList(g.fn)[secIdx(g.fn, sid)]; out.push({ si, fn: g.fn, sid, name: x ? x.name : sid, first: g.ids[0] === sid }); })); return out; }
+  function jumpTo(si, sid) {
+    closeSheet();
+    const aid = aidOf(segs()[si].fn, sid); if (!aid) return;
+    if (si === SEG) go(aid, 'dissolve', 0.3, 'ease-out'); else { flowGoSeg = si; go(aid, si > SEG ? 'push-left' : 'push-right', 0.55, 'snap'); }
+  }
+  function buildFlowNav(layer) {
+    if (!layer) return; const old = layer.querySelector('.fnav'); if (old) old.remove();
+    return;   // the custom flow uses each page's own side menu (trimmed to the starred sections) instead
+    if (!layer.dataset.flow) return;
+    const c = chromeOf(layer) || layer.querySelector('.board'); if (!c) return;
+    const n = document.createElement('nav'); n.className = 'fnav'; n.setAttribute('aria-label', 'Custom flow navigation');
+    let html = '', last = -1;
+    flowItems().forEach(it => {
+      if (it.si !== last) { html += '<div class="fn-pg">' + esc2(pageName(it.fn)) + '</div>'; last = it.si; }
+      html += '<button type="button" class="fn-it" data-si="' + it.si + '" data-sid="' + esc2(it.sid) + '"><i></i><span>' + esc2(it.name) + '</span></button>';
+    });
+    n.innerHTML = html; noDrag(n);
+    n.addEventListener('click', e => { const b = e.target.closest('.fn-it'); if (!b) return; e.preventDefault(); e.stopPropagation(); jumpTo(+b.dataset.si, b.dataset.sid); });
+    c.appendChild(n); markFlowNav(layer);
+    const sc = scrollerOf(layer);
+    if (sc && !sc.__fnav) { sc.__fnav = true; let r = 0; sc.addEventListener('scroll', () => { if (!r) r = requestAnimationFrame(() => { r = 0; markFlowNav(layer); }); }, { passive: true }); }
+  }
+  function markFlowNav(layer) {
+    if (!layer || !current || current.layer !== layer) return;
+    const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
+    layer.querySelectorAll('.fnav .fn-it').forEach(b => b.classList.toggle('on', +b.dataset.si === SEG && sx && b.dataset.sid === sx.sid));
+  }
+  // ---- sheets: edit (drag to reorder), add sections, jump list ----
+  function closeSheet() { const s0 = document.querySelector('.fsheet'); if (s0) { s0.classList.remove('on'); setTimeout(() => s0.remove(), 200); } }
+  function sheet(html) {
+    const old = document.querySelector('.fsheet'); if (old) old.remove();
+    const sh = document.createElement('div'); sh.className = 'fsheet'; sh.innerHTML = '<div class="fs-scrim"></div><div class="fs-card" role="dialog">' + html + '</div>';
+    ['pointerdown', 'touchstart', 'mousedown', 'click', 'wheel'].forEach(ev => sh.addEventListener(ev, e => e.stopPropagation(), { passive: ev !== 'click' }));
+    document.body.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on'));
+    return sh;
+  }
+  function openEdit() {
+    const items = validFavs();
+    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Drag to reorder</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+      + '<div class="fs-list">' + items.map(k => { const o = secOf(k); return '<div class="fs-it" data-k="' + esc2(k) + '"><span class="fs-grip" aria-label="Drag to reorder">' + GRIP + '</span><div class="fs-txt"><small>' + esc2(pageName(o.fn)) + '</small><span>' + esc2(o.x.name) + '</span></div><button type="button" class="fs-rm" aria-label="Remove from flow">' + XIC + '</button></div>'; }).join('') + '</div>'
+      + (items.length ? '' : '<div class="fs-empty">No sections yet. Add some below.</div>')
+      + '<div class="fs-foot"><button type="button" class="fs-add"><b>+</b>Add sections</button><button type="button" class="fs-done">Done</button></div>');
+    const list = sh.querySelector('.fs-list'); let changed = false, drag = null;
+    const order = () => { FAVS = [...list.querySelectorAll('.fs-it')].map(x => x.dataset.k).concat(FAVS.filter(k => !secOf(k))); };
+    const finish = () => { closeSheet(); if (changed) { order(); saveFavs(); syncStars(); updateFlowCount(); if (FLOW) flowRefresh(); } };
+    sh.querySelector('.fs-scrim').addEventListener('click', finish); sh.querySelector('.fs-x').addEventListener('click', finish); sh.querySelector('.fs-done').addEventListener('click', finish);
+    sh.querySelector('.fs-add').addEventListener('click', () => { if (changed) { order(); saveFavs(); } openAdd(false, changed); });
+    list.addEventListener('click', e => { const r = e.target.closest('.fs-rm'); if (!r) return; const it = r.closest('.fs-it'); it.classList.add('gone'); changed = true; setTimeout(() => it.remove(), 180); });
+    list.addEventListener('pointerdown', e => { const gp = e.target.closest('.fs-grip'); if (!gp) return; const it = gp.closest('.fs-it'); e.preventDefault();
+      drag = { it, y0: e.clientY, id: e.pointerId }; it.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} });
+    list.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; const it = drag.it; let dy = e.clientY - drag.y0;
+      const nx = it.nextElementSibling, pv = it.previousElementSibling;
+      if (nx && dy > nx.offsetHeight / 2) { list.insertBefore(nx, it); drag.y0 += nx.offsetHeight; dy -= nx.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
+      else if (pv && dy < -pv.offsetHeight / 2) { list.insertBefore(it, pv); drag.y0 -= pv.offsetHeight; dy += pv.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
+      it.style.transform = 'translateY(' + dy + 'px)';
+      const lr = list.getBoundingClientRect(); if (e.clientY < lr.top + 30) list.scrollTop -= 8; else if (e.clientY > lr.bottom - 30) list.scrollTop += 8; });
+    const end = () => { if (!drag) return; drag.it.style.transform = ''; drag.it.classList.remove('drag'); drag = null; };
+    list.addEventListener('pointerup', end); list.addEventListener('pointercancel', end);
+  }
+  // every section in the app, grouped by page — tick several, add them all at once (they join the end of the flow)
+  function openAdd(fromHome, reorderedBefore) {
+    let body = '';
+    FLOWPAGES().forEach(fn => {
+      body += '<div class="fa-pg"><span>' + esc2(pageName(fn)) + '</span><button type="button" class="fa-all" data-fn="' + esc2(fn) + '">Select all</button></div>';
+      secList(fn).forEach(x => { const k = favKey(fn, x.sid), inF = FAVS.indexOf(k) >= 0;
+        body += '<label class="fa-it' + (inF ? ' in' : '') + '"><input type="checkbox" value="' + esc2(k) + '"' + (inF ? ' checked disabled' : '') + '><i></i><span>' + esc2(x.name) + '</span>' + (inF ? '<em>Added</em>' : '') + '</label>'; });
+    });
+    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Add sections</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+      + '<div class="fs-list fa-list">' + body + '</div>'
+      + '<div class="fs-foot"><button type="button" class="fs-back">' + (fromHome ? 'Cancel' : 'Back') + '</button><button type="button" class="fs-done fa-go" disabled>Add</button></div>');
+    const go_ = sh.querySelector('.fa-go');
+    const picked = () => [...sh.querySelectorAll('.fa-list input:checked:not(:disabled)')].map(x => x.value);
+    const upd = () => { const n = picked().length; go_.disabled = !n; go_.textContent = n ? 'Add ' + n : 'Add'; };
+    sh.querySelector('.fa-list').addEventListener('change', upd);
+    sh.querySelectorAll('.fa-all').forEach(b => b.addEventListener('click', () => {
+      const boxes = [...sh.querySelectorAll('.fa-list input:not(:disabled)')].filter(x => x.value.indexOf(b.dataset.fn + '#') === 0), all = boxes.every(x => x.checked);
+      boxes.forEach(x => { x.checked = !all; }); upd(); }));
+    const back = () => { if (fromHome) { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); } else { openEdit(); } };
+    sh.querySelector('.fs-scrim').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
+    sh.querySelector('.fs-x').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
+    sh.querySelector('.fs-back').addEventListener('click', back);
+    go_.addEventListener('click', () => {
+      const ks = picked(); if (!ks.length) return;
+      ks.sort((a, b) => rank(a) - rank(b)).forEach(k => addFav(k, true)); saveFavs(); syncStars(); updateFlowCount();
+      toast('★ Added ' + ks.length + (ks.length === 1 ? ' section' : ' sections') + ' to Custom flow');
+      if (fromHome && !FLOW) { closeSheet(); startFlow(); }
+      else if (FLOW) { closeSheet(); flowRefresh(); }
+      else openEdit();
+    });
+  }
+  function openJump() {
+    const items = flowItems(); let last = -1, body = '';
+    const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
+    items.forEach(it => { if (it.si !== last) { body += '<div class="fa-pg"><span>' + esc2(pageName(it.fn)) + '</span></div>'; last = it.si; }
+      body += '<button type="button" class="fj-it' + (it.si === SEG && sx && sx.sid === it.sid ? ' on' : '') + '" data-si="' + it.si + '" data-sid="' + esc2(it.sid) + '"><i></i><span>' + esc2(it.name) + '</span></button>'; });
+    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Jump to a section</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+      + '<div class="fs-list">' + body + '</div><div class="fs-foot"><button type="button" class="fs-add"><b>✎</b>Edit flow</button></div>');
+    sh.querySelector('.fs-scrim').addEventListener('click', closeSheet); sh.querySelector('.fs-x').addEventListener('click', closeSheet);
+    sh.querySelector('.fs-add').addEventListener('click', openEdit);
+    sh.querySelector('.fs-list').addEventListener('click', e => { const b = e.target.closest('.fj-it'); if (b) jumpTo(+b.dataset.si, b.dataset.sid); });
+  }
   function drawFlowBar() {
     let b = document.querySelector('.fbar');
+    if (b) b.remove(); return;   // no separate bar: the page arrows walk the flow, the header has Exit custom flow
     if (!(FLOW && current && current.layer && current.layer.dataset.flow)) { if (b) b.remove(); return; }
-    const L = flowList(), i = L.findIndex(x => x.fn === current.board), prev = L[i - 1], next = L[i + 1];
+    const S = segs(), prev = S[SEG - 1], next = S[SEG + 1], all = flowItems(), here = all.filter(x => x.si === SEG);
     if (!b) {
-      b = document.createElement('div'); b.className = 'fbar'; b.setAttribute('role', 'navigation'); b.setAttribute('aria-label', 'Custom flow'); document.body.appendChild(b);
-      ['pointerdown', 'touchstart'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
-      b.addEventListener('click', e => { const t = e.target.closest('button'); if (!t) return; e.stopPropagation(); if (t.dataset.d === 'x') endFlow(true); else swipeTo(+t.dataset.d); });
+      b = document.createElement('div'); b.className = 'fbar'; b.setAttribute('role', 'navigation'); b.setAttribute('aria-label', 'Custom flow'); document.body.appendChild(b); noDrag(b);
+      b.addEventListener('click', e => { const t = e.target.closest('button'); if (!t) return; e.stopPropagation();
+        if (t.dataset.d === 'x') endFlow(true); else if (t.dataset.d === 'j') openJump(); else flowStep(+t.dataset.d); });
     }
-    b.innerHTML = '<button type="button" data-d="-1" aria-label="Previous page"' + (prev ? '' : ' disabled') + '>' + CHEV(-1) + '<span>' + (prev ? pageName(prev.fn) : '') + '</span></button>'
-      + '<div class="fb-mid"><b><svg width="11" height="11" viewBox="0 0 24 24"><path fill="rgb(' + (getComputedStyle(document.documentElement).getPropertyValue('--acr') || '5,229,175') + ')" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>Custom flow</b><span>' + pageName(current.board) + ' · ' + (i + 1) + ' of ' + L.length + '</span></div>'
-      + '<button type="button" data-d="1" aria-label="Next page"' + (next ? '' : ' disabled') + '><span>' + (next ? pageName(next.fn) : '') + '</span>' + CHEV(1) + '</button>'
-      + '<button type="button" class="fb-x" data-d="x" aria-label="Exit custom flow"><svg width="13" height="13" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button>';
+    const pos = all.findIndex(x => x.si === SEG) + 1;
+    b.innerHTML = '<button type="button" data-d="-1" aria-label="Previous page"' + (prev ? '' : ' disabled') + '>' + CHEV(-1) + '<span>' + (prev ? esc2(pageName(prev.fn)) : '') + '</span></button>'
+      + '<button type="button" class="fb-mid" data-d="j" aria-label="All sections in your flow"><b><svg width="11" height="11" viewBox="0 0 24 24"><path fill="rgb(' + ((getComputedStyle(document.documentElement).getPropertyValue('--acr') || '5,229,175').trim()) + ')" d="' + STARP + '"/></svg>Custom flow</b><span>' + esc2(pageName(current.board)) + ' · ' + pos + (here.length > 1 ? '–' + (pos + here.length - 1) : '') + ' of ' + all.length + '</span></button>'
+      + '<button type="button" data-d="1" aria-label="Next page"' + (next ? '' : ' disabled') + '><span>' + (next ? esc2(pageName(next.fn)) : '') + '</span>' + CHEV(1) + '</button>'
+      + '<button type="button" class="fb-x" data-d="x" aria-label="Exit custom flow">' + XIC + '</button>';
   }
   const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
@@ -1032,7 +1285,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const page = ([fn, label], k) => {
       const B = P.boards[fn]; if (!B || !B.sections || !B.sections.length) return '';
-      const secs = B.sections.slice(1).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
+      if (FLOW && !B.sections.some(x => isFav(fn, x.sid))) return '';
+      const secs = B.sections.slice(1).filter(x => !FLOW || isFav(fn, x.sid)).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
       return '<div class="nm-page' + (fn === cur ? ' on' : '') + '"><div class="nm-ptitle" data-aid="' + B.sections[0].aid + '"><span class="n">' + String(k + 1).padStart(2, '0') + '</span>' + esc(label) + '</div>' + secs + '</div>';
     };
     const hasSecs = fn => { const B = P.boards[fn]; return B && B.sections && B.sections.length > 1; };
@@ -1554,9 +1808,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
   const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], input:not(.hapsw), textarea, select';
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
-  const neighbour = dir => { if (FLOW && current && current.layer && current.layer.dataset.flow) { const L = flowList().map(x => x.fn), k = L.indexOf(current.board), j = k + dir; return k < 0 || j < 0 || j >= L.length ? null : L[j]; }
+  const neighbour = dir => { if (FLOW && current && current.layer && current.layer.dataset.flow) { const S = segs(), j = SEG + dir; return j < 0 || j >= S.length ? null : S[j].fn; }
     const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
   function swipeTo(dir, from) {
+    if (FLOW && current && current.layer && current.layer.dataset.flow) return flowStep(dir, from);
     const fn = neighbour(dir); if (!fn || busy || performance.now() < navReady) return false;
     pushFrom = from || 0;
     // swiping back to a page you've visited lands where you left it
