@@ -250,7 +250,13 @@
   .fs-list { flex: 1; min-height: 0; overflow: auto; padding: 8px 10px; overscroll-behavior: contain; }
   .fs-it { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 0; margin: 4px 0; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); transition: opacity .18s ease, background .15s ease; position: relative; }
   .fs-it.drag { z-index: 2; background: rgba(255,255,255,0.14); border-color: rgba(var(--acr),0.6); box-shadow: 0 12px 30px rgba(0,0,0,0.5); transition: none; }
-  .fs-it.gone { opacity: 0; }
+  .fs-it.gone, .fs-pg.gone { opacity: 0; }
+  .fs-pg { position: relative; margin: 6px 0 10px; padding: 4px 6px 6px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); transition: opacity .18s ease; }
+  .fs-pg.drag { z-index: 3; background: rgba(20,26,25,0.96); border-color: rgba(var(--acr),0.6); box-shadow: 0 16px 40px rgba(0,0,0,0.6); transition: none; }
+  .fs-pgh { display: flex; align-items: center; gap: 4px; padding-right: 8px; }
+  .fs-pgh b { flex: 1; font-size: 12px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .fs-pgh small { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .fs-pg .fs-it { margin: 4px 0 4px 10px; }
   .fs-grip { flex: none; width: 40px; height: 40px; display: grid; place-items: center; cursor: grab; touch-action: none; }
   .fs-it.drag .fs-grip { cursor: grabbing; }
   .fs-txt { flex: 1; min-width: 0; } .fs-txt small { display: block; font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
@@ -1021,7 +1027,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     return out;
   }
   const rank = k => { const o = secOf(k); return o ? ORDER.indexOf(o.fn) * 1000 + o.i : 1e9; };
-  function addFav(k, atEnd) { if (FAVS.indexOf(k) >= 0) return; if (atEnd) { FAVS.push(k); return; } const r = rank(k), j = FAVS.findIndex(x => rank(x) > r); if (j < 0) FAVS.push(k); else FAVS.splice(j, 0, k); }
+  const fnOf = k => k.slice(0, k.indexOf('#'));
+  // keep each page's sections together (pages in order of first appearance, sections in their saved order)
+  function groupFavs() { const pages = []; FAVS.forEach(k => { const f = fnOf(k); if (pages.indexOf(f) < 0) pages.push(f); }); FAVS = pages.flatMap(f => FAVS.filter(k => fnOf(k) === f)); }
+  function addFav(k) {
+    if (FAVS.indexOf(k) >= 0) return; groupFavs();
+    const f = fnOf(k), mine = FAVS.filter(x => fnOf(x) === f);
+    if (mine.length) { const r = rank(k), after = mine.find(x => rank(x) > r), j = after ? FAVS.indexOf(after) : FAVS.indexOf(mine[mine.length - 1]) + 1; FAVS.splice(j, 0, k); return; }
+    const pi = ORDER.indexOf(f), nxt = FAVS.find(x => ORDER.indexOf(fnOf(x)) > pi); if (nxt) FAVS.splice(FAVS.indexOf(nxt), 0, k); else FAVS.push(k);
+  }
   let toastT = 0;
   function toast(msg) {
     let t = document.querySelector('.ftoast'); if (!t) { t = document.createElement('div'); t.className = 'ftoast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
@@ -1090,8 +1104,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // move one run forward/back (swipes, arrows, flow bar)
   function flowStep(d, from) {
     const S = segs(), j = SEG + d; if (j < 0 || j >= S.length || busy || performance.now() < navReady) return false;
-    pushFrom = from || 0; flowGoSeg = j; const g = S[j];
-    go(aidOf(g.fn, d > 0 ? g.ids[0] : g.ids[0]), d > 0 ? 'push-left' : 'push-right', 0.62, 'snap');
+    pushFrom = from || 0; flowGoSeg = j; const g = S[j], same = S[SEG] && S[SEG].fn === g.fn;
+    go(aidOf(g.fn, g.ids[0]), same ? (d > 0 ? 'slide-up' : 'slide-down') : (d > 0 ? 'push-left' : 'push-right'), same ? 0.5 : 0.62, 'snap');
     return true;
   }
   // in the flow, a page keeps only the sections of the current run; the page's code gets their new positions so its
@@ -1190,9 +1204,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     return sh;
   }
   function openEdit() {
-    const items = validFavs();
+    groupFavs(); const items = validFavs(), pages = [];
+    items.forEach(k => { const f = fnOf(k); let g = pages.find(x => x.fn === f); if (!g) { g = { fn: f, ks: [] }; pages.push(g); } g.ks.push(k); });
     const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Drag to reorder</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
-      + '<div class="fs-list">' + items.map(k => { const o = secOf(k); return '<div class="fs-it" data-k="' + esc2(k) + '"><span class="fs-grip" aria-label="Drag to reorder">' + GRIP + '</span><div class="fs-txt"><small>' + esc2(pageName(o.fn)) + '</small><span>' + esc2(o.x.name) + '</span></div><button type="button" class="fs-rm" aria-label="Remove from flow">' + XIC + '</button></div>'; }).join('') + '</div>'
+      + '<div class="fs-list">' + pages.map(g => '<div class="fs-pg" data-fn="' + esc2(g.fn) + '"><div class="fs-pgh"><span class="fs-grip" data-kind="pg" aria-label="Drag to reorder pages">' + GRIP + '</span><b>' + esc2(pageName(g.fn)) + '</b><small>' + g.ks.length + (g.ks.length === 1 ? ' section' : ' sections') + '</small></div>'
+        + g.ks.map(k => { const o = secOf(k); return '<div class="fs-it" data-k="' + esc2(k) + '"><span class="fs-grip" data-kind="it" aria-label="Drag to reorder">' + GRIP + '</span><div class="fs-txt"><span>' + esc2(o.x.name) + '</span></div><button type="button" class="fs-rm" aria-label="Remove from flow">' + XIC + '</button></div>'; }).join('') + '</div>').join('') + '</div>'
       + (items.length ? '' : '<div class="fs-empty">No sections yet. Add some below.</div>')
       + '<div class="fs-foot"><button type="button" class="fs-add"><b>+</b>Add sections</button><button type="button" class="fs-done">Done</button></div>');
     const list = sh.querySelector('.fs-list'); let changed = false, drag = null;
@@ -1200,16 +1216,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const finish = () => { closeSheet(); if (changed) { order(); saveFavs(); syncStars(); updateFlowCount(); if (FLOW) flowRefresh(); } };
     sh.querySelector('.fs-scrim').addEventListener('click', finish); sh.querySelector('.fs-x').addEventListener('click', finish); sh.querySelector('.fs-done').addEventListener('click', finish);
     sh.querySelector('.fs-add').addEventListener('click', () => { if (changed) { order(); saveFavs(); } openAdd(false, changed); });
-    list.addEventListener('click', e => { const r = e.target.closest('.fs-rm'); if (!r) return; const it = r.closest('.fs-it'); it.classList.add('gone'); changed = true; setTimeout(() => it.remove(), 180); });
-    list.addEventListener('pointerdown', e => { const gp = e.target.closest('.fs-grip'); if (!gp) return; const it = gp.closest('.fs-it'); e.preventDefault();
-      drag = { it, y0: e.clientY, id: e.pointerId }; it.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} });
-    list.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; const it = drag.it; let dy = e.clientY - drag.y0;
-      const nx = it.nextElementSibling, pv = it.previousElementSibling;
-      if (nx && dy > nx.offsetHeight / 2) { list.insertBefore(nx, it); drag.y0 += nx.offsetHeight; dy -= nx.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
-      else if (pv && dy < -pv.offsetHeight / 2) { list.insertBefore(it, pv); drag.y0 -= pv.offsetHeight; dy += pv.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
-      it.style.transform = 'translateY(' + dy + 'px)';
+    const recount = pg => { const n = pg.querySelectorAll('.fs-it:not(.gone)').length; if (!n) { pg.classList.add('gone'); setTimeout(() => pg.remove(), 180); } else pg.querySelector('.fs-pgh small').textContent = n + (n === 1 ? ' section' : ' sections'); };
+    list.addEventListener('click', e => { const r = e.target.closest('.fs-rm'); if (!r) return; const it = r.closest('.fs-it'), pg = it.closest('.fs-pg'); it.classList.add('gone'); changed = true; setTimeout(() => { it.remove(); recount(pg); }, 180); });
+    // a section moves only among its page's sections; a page (by its header) moves among the pages
+    const sib = (el, dir, cls) => { let n = dir > 0 ? el.nextElementSibling : el.previousElementSibling; while (n && !n.classList.contains(cls)) n = dir > 0 ? n.nextElementSibling : n.previousElementSibling; return n; };
+    list.addEventListener('pointerdown', e => { const gp = e.target.closest('.fs-grip'); if (!gp) return; e.preventDefault();
+      const el = gp.dataset.kind === 'pg' ? gp.closest('.fs-pg') : gp.closest('.fs-it');
+      drag = { el, cls: gp.dataset.kind === 'pg' ? 'fs-pg' : 'fs-it', y0: e.clientY, id: e.pointerId }; el.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} });
+    list.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; const el = drag.el, par = el.parentElement; let dy = e.clientY - drag.y0;
+      const nx = sib(el, 1, drag.cls), pv = sib(el, -1, drag.cls);
+      if (nx && dy > nx.offsetHeight / 2) { par.insertBefore(nx, el); drag.y0 += nx.offsetHeight; dy -= nx.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
+      else if (pv && dy < -pv.offsetHeight / 2) { par.insertBefore(el, pv); drag.y0 -= pv.offsetHeight; dy += pv.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
+      el.style.transform = 'translateY(' + dy + 'px)';
       const lr = list.getBoundingClientRect(); if (e.clientY < lr.top + 30) list.scrollTop -= 8; else if (e.clientY > lr.bottom - 30) list.scrollTop += 8; });
-    const end = () => { if (!drag) return; drag.it.style.transform = ''; drag.it.classList.remove('drag'); drag = null; };
+    const end = () => { if (!drag) return; drag.el.style.transform = ''; drag.el.classList.remove('drag'); drag = null; };
     list.addEventListener('pointerup', end); list.addEventListener('pointercancel', end);
   }
   // every section in the app, grouped by page — tick several, add them all at once (they join the end of the flow)
@@ -1236,7 +1256,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     sh.querySelector('.fs-back').addEventListener('click', back);
     go_.addEventListener('click', () => {
       const ks = picked(); if (!ks.length) return;
-      ks.sort((a, b) => rank(a) - rank(b)).forEach(k => addFav(k, true)); saveFavs(); syncStars(); updateFlowCount();
+      ks.sort((a, b) => rank(a) - rank(b)).forEach(k => addFav(k)); saveFavs(); syncStars(); updateFlowCount();
       toast('★ Added ' + ks.length + (ks.length === 1 ? ' section' : ' sections') + ' to Custom flow');
       if (fromHome && !FLOW) { closeSheet(); startFlow(); }
       else if (FLOW) { closeSheet(); flowRefresh(); }
@@ -1285,8 +1305,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const page = ([fn, label], k) => {
       const B = P.boards[fn]; if (!B || !B.sections || !B.sections.length) return '';
-      if (FLOW && !B.sections.some(x => isFav(fn, x.sid))) return '';
-      const secs = B.sections.slice(1).filter(x => !FLOW || isFav(fn, x.sid)).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
+      const secs = B.sections.slice(1).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
       return '<div class="nm-page' + (fn === cur ? ' on' : '') + '"><div class="nm-ptitle" data-aid="' + B.sections[0].aid + '"><span class="n">' + String(k + 1).padStart(2, '0') + '</span>' + esc(label) + '</div>' + secs + '</div>';
     };
     const hasSecs = fn => { const B = P.boards[fn]; return B && B.sections && B.sections.length > 1; };
