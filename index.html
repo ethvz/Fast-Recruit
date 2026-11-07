@@ -88,6 +88,12 @@
   html.lite .pcont { transition: none; }
   html.safe .board [style*="box-shadow"] { box-shadow: none !important; }
   html.safe .board [style*="filter: blur"], html.safe .board [style*="filter:blur"] { filter: none !important; }
+  /* after repeated crashes: no background photos, no decorative glows, no motion; just the content on black */
+  html.safe .board section[id^="sec-"] > div[data-name^="Background"] { display: none !important; }
+  html.safe .board [style*="radial-gradient(closest-side"], html.safe .board [data-name="Glow"], html.safe .board [data-name="Year mark"] { display: none !important; }
+  html.safe .board *, html.safe .board *::before, html.safe .board *::after { animation: none !important; transition: none !important; }
+  html.safe .board [style*="backdrop-filter"] { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  html.safe .board video:not([controls]) { display: none !important; }
   /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
   html.stack .stk-sc::before, html.stack .stk-sc::after { content: ''; display: block; flex: none; height: var(--SP, 0px); }
   /* Neighbouring sections are dimmed by a plain shade painted inside them (no extra full-screen layer), and keep their
@@ -317,6 +323,21 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   const SAFE = (() => { const v = ssGet('fr_safe'); if (!v) return false; const t = +v; if (t > 1 && Date.now() - t < 600000) return true; ssSet('fr_safe', null); return false; })();
   if (SAFE) document.documentElement.classList.add('lite', 'safe');
+  // "Download for offline": asks the offline helper (sw.js, installed app only) to save every page, picture and video,
+  // then shows progress on the menu button. The helper keeps the download up to date when the app changes.
+  const OFFL = (() => {
+    const st = { done: 0, total: 0, ready: false, busy: false };
+    const sw = () => navigator.serviceWorker && navigator.serviceWorker.controller;
+    const label = () => st.ready ? 'Ready offline ✓' : st.busy ? 'Downloading ' + (st.total ? Math.floor(100 * st.done / st.total) : 0) + '%' : 'Download for offline';
+    const paint = () => document.querySelectorAll('.nm-dlt').forEach(e => { e.textContent = label(); });
+    try {
+      navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', e => { const d = e.data || {}; if (d.t !== 'dlp') return; Object.assign(st, { done: d.done, total: d.total, ready: !!d.ready, busy: !!d.busy }); paint(); });
+      const ask = () => { const c = sw(); if (c) c.postMessage({ t: 'dlq' }); };
+      navigator.serviceWorker && navigator.serviceWorker.ready.then(ask);
+    } catch (e) {}
+    return { can: () => !!sw(), label,
+      start: () => { const c = sw(); if (!c || st.ready || st.busy) return; st.busy = true; paint(); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {} c.postMessage({ t: 'dl' }); } };
+  })();
   ssSet('fr_alive', '1');
   let booted = false;
   function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now() })); } catch (e) {} }
@@ -1372,12 +1393,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
       + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
       + '<div class="nm-cols">' + cols + '</div>'
-      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button><button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button></div></div>';
+      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button><button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button>' + (OFFL.can() ? '<button type="button" class="nm-guide nm-dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span class="nm-dlt">' + OFFL.label() + '</span></button>' : '') + '</div></div>';
     m.addEventListener('click', e => {
       e.stopPropagation();
       const t = e.target.closest('[data-aid], .nm-x, .nm-scrim, .nm-guide'); if (!t) return;
       if (t.classList.contains('nm-flow')) { closeMenu(true); if (FLOW) openEdit(); else startFlow(); return; }
       if (t.classList.contains('nm-social')) { savePos(); location.href = 'social.html'; return; }
+      if (t.classList.contains('nm-dl')) { OFFL.start(); return; }
       if (t.classList.contains('nm-guide')) { closeMenu(true); openOverlay(GUIDE_AID, 'none'); return; }
       if (t.dataset.aid) { const aid = t.dataset.aid; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); return; }
       closeMenu();
