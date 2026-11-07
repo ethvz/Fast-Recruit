@@ -558,7 +558,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     layer._inst = null; layer._ia = null; layer._rv = null; layer._vupdate = null;
   }
   function instantiate(j) {
-    const C = new Function('DCLogic', j.script.split('e.currentTarget.scrollTop').join('window.__vs(e.currentTarget)').split('el.scrollTo({ top: this.sections[i].top').join('el.scrollTo({ top: window.__rs(el, this.sections[i].top)') + '\nreturn Component;')(DCLogic);
+    const C = new Function('DCLogic', j.script.split('e.currentTarget.scrollTop').join('window.__vs(e.currentTarget)').split('el.scrollTo({ top: this.sections[i].top').join('el.scrollTo({ top: window.__rs(el, this.sections[i].top)').split('const nx = this.sections[i + 1];').join('const nx = this.__vnext ? this.__vnext(i) : this.sections[i + 1];').split('if (s >= sec.top) active = i;').join('if (s >= sec.top && sec.top >= this.sections[active].top) active = i;') + '\nreturn Component;')(DCLogic);
     const owner = { __ivs: [], __dead: false };
     const inst = withOwner(owner, () => new C({}));
     inst.__ivs = owner.__ivs; Object.defineProperty(inst, '__dead', { get: () => owner.__dead, set: v => { owner.__dead = v; } });
@@ -909,13 +909,38 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       root.appendChild(mid); if (low.children.length) root.appendChild(low);
     }
   }
+  // header page links: same gap between every title (the design gives each a 150px box, so short titles like FAQs
+  // sat further away than long ones like Opportunity). Keeps the row's overall width; tap areas cover the gaps.
+  function evenHeader(layer) {
+    if (layer.__eh) return;
+    const groups = new Map();
+    layer.querySelectorAll('p.hot[data-name^="("]').forEach(el => { if (el.classList.contains('flowhide') || !el.offsetWidth) return; const par = el.parentElement; if (!groups.has(par)) groups.set(par, []); groups.get(par).push(el); });
+    let done = 0;
+    groups.forEach(list => {
+      const n = list.length; if (n < 3) return;
+      list.sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+      const k = list[0].getBoundingClientRect().width / list[0].offsetWidth; if (!(k > 0)) return;
+      const w = list.map(el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width / k; });
+      const L = list.map(el => parseFloat(el.style.left)), W = list.map(el => parseFloat(el.style.width) || el.offsetWidth);
+      const a = L[0] + W[0] / 2 - w[0] / 2, b = L[n - 1] + W[n - 1] / 2 + w[n - 1] / 2, gap = (b - a - w.reduce((x, y) => x + y, 0)) / (n - 1);
+      if (!(gap > 12)) return;
+      let x = a;
+      list.forEach((el, i) => {
+        const nl = x - gap / 2, d = nl - L[i];
+        if (el.dataset.pc) { const o = getComputedStyle(el).transformOrigin.split(' '); el.style.setProperty('transform-origin', (parseFloat(o[0]) - d) + 'px ' + (o[1] || '0px'), 'important'); }   // phones: keep growing from the same spot
+        el.style.left = nl + 'px'; el.style.width = (w[i] + gap) + 'px'; x += w[i] + gap;
+      });
+      done++;
+    });
+    if (done) layer.__eh = true;
+  }
   function sectionTop(fn, i) { if (FLOW && flowTops[fn]) return flowTops[fn][i] || 0; const s = P.boards[fn].sections[i]; return s ? s.top : 0; }
   function currentAid() {
     if (!current) return null;
     const secs = P.boards[current.board].sections, sc = scrollerOf(current.layer);
     const keep = FLOW && current.layer && current.layer._keep, ft = keep && flowTops[current.board];
     const y = sc ? vScroll(sc) + 1 : 0; let a = ft ? (secs.find(s => keep.has(s.sid)) || secs[0]) : secs[0];
-    secs.forEach((s, k) => { if (ft ? (keep.has(s.sid) && y >= ft[k]) : y >= s.top) a = s; });
+    secs.forEach((s, k) => { if (ft ? (keep.has(s.sid) && y >= ft[k] && ft[k] >= (ft[secs.indexOf(a)] || 0)) : y >= s.top) a = s; });
     return a.aid;
   }
 
@@ -1004,6 +1029,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (sc && H !== 1024) sc.dispatchEvent(new Event('scroll'));   // portrait: sync the board with the mapped position
       current = { board: t.board, layer };
       { const AC = { 'Main.dc.html': '223,255,26', 'Why-Vivint.dc.html': '236,106,56', 'Culture.dc.html': '236,106,56' }; document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
+      try { evenHeader(layer); } catch (e) {}
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
       startScreen(layer);
@@ -1231,7 +1257,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const els = [...sc.querySelectorAll(':scope > section[id^="sec-"]')];
       els.forEach(el => { if (!keep.has(el.id.slice(4))) el.remove(); });
       let t = 0; inst.sections.forEach(x => { x.top = t; if (keep.has(x.id)) t += x.h; else x.h = 0; });
-      flowTops[fn] = inst.sections.map(x => x.top);
+      flowTops[fn] = inst.sections.map(x => x.top); sc.__fpermV = (sc.__fpermV || 0) + 1; if (layer._vupdate) setTimeout(() => layer._vupdate(true), 0);
       // your order on screen (the page's code keeps the original order; vScroll/rScroll translate)
       const byId = {}; inst.sections.forEach(x => { byId[x.id] = x; });
       const kept = els.filter(el => keep.has(el.id.slice(4))), natural = kept.map(el => el.id.slice(4));
@@ -1239,8 +1265,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         const mark = document.createComment('flow'); sc.insertBefore(mark, kept[0]);
         g.ids.forEach(id => { const el = kept.find(e => e.id === 'sec-' + id); if (el) sc.insertBefore(el, mark); });
         mark.remove();
-        let vt = 0; sc.__fperm = g.ids.map(id => { const x = byId[id], q = { vt, nt: x.top, h: x.h }; vt += x.h; return q; });
-        sc.__map = null; layer._fperm = g.ids;
+        // the page's code is told where each section really sits on screen (your order), so its photo fades, entrance
+        // animations and "where am I" all follow what you see. (Translating the scroll back to the original order made a
+        // moved section's photo and content pop in late and blink.)
+        let vt = 0; g.ids.forEach(id => { const x = byId[id]; if (x) { x.top = vt; vt += x.h; } });
+        inst.sections.forEach(x => { if (!keep.has(x.id)) x.top = 1e7; });
+        flowTops[fn] = inst.sections.map(x => x.top);
+        inst.__vnext = i => { const a = inst.sections[i]; if (!a || !a.h) return inst.sections[i + 1]; return inst.sections.find(x => x !== a && x.h && Math.abs(x.top - (a.top + a.h)) < 1); };
+        sc.__map = null; layer._fperm = g.ids; sc.__fpermV = (sc.__fpermV || 0) + 1; if (layer._vupdate) layer._vupdate(true);
         // the page's own side menu works out "where am I" in the page's original order, so with sections reordered its dots
         // and line jumped around while scrolling. Drive them from what's actually on screen instead.
         layer.dataset.fxn = 'f' + Math.random().toString(36).slice(2, 8); layer.__fxk = null;
@@ -1323,7 +1355,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   // reordered custom-flow page: light the side menu by the section on screen (your order), fill the line up to it
   function fixFlowNav(layer) {
-    const sc = scrollerOf(layer), id0 = layer.dataset.fxn; if (!sc || !sc.__fperm || !id0 || !layer.isConnected) return;
+    const sc = scrollerOf(layer), id0 = layer.dataset.fxn; if (!sc || !layer._fperm || !id0 || !layer.isConnected) return;
     const nav = layer.querySelector('.board nav'); if (!nav) return;
     const secs = [...sc.querySelectorAll(':scope > section[id^="sec-"]')], y = sc.scrollTop + 1;
     let act = -1; secs.forEach((el, i) => { if (y >= el.offsetTop) act = i; });
@@ -1812,7 +1844,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       mo.observe(d, { attributes: true, attributeFilter: ['style'] }); (layer._off = layer._off || []).push(() => mo.disconnect());
     });
     const VH = 1024; let tops = null;
-    const measure = () => { let t = 0; tops = secs.map(el => { const h = el.offsetHeight || parseFloat(el.style.height) || VH; const r = [t, t + h]; t += h; return r; }); };
+    // positions follow the sections as they sit on screen: a custom flow can drop sections and put the rest in your own order
+    // (measuring in the page's original order loaded the wrong sections and made reordered ones blink in and out)
+    const measure = () => { let t = 0; const r = new Map();
+      secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1)
+        .forEach(el => { const h = el.offsetHeight || parseFloat(el.style.height) || VH; r.set(el, [t, t + h]); t += h; });
+      tops = secs.map(el => r.get(el) || [-1e9, -1e9]); };
     const park = el => {
       if (el.__vout) return; el.__vout = true;
       el.querySelectorAll('video').forEach(v => { try { v.pause(); } catch (e) {} });
@@ -1846,7 +1883,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     layer._vupdate = (re) => { if (re) tops = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } update(); };
     sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
     // first pass: park everything but the start of the page
-    secs.forEach((el, i) => { if (i > 1) park(el); else load(el); });
+    { const ord = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);
+      secs.forEach(el => { const i = ord.indexOf(el); if (i < 0 || i > 1) park(el); else load(el); }); }
   }
 
   // ---------------- springy section snapping ----------------
@@ -1859,9 +1897,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let Z = [], zH = 0;
     // a snap zone is only where the screen straddles two sections:
     // from "previous section's bottom fills the screen" to "next section's top is at the top"
-    const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length) return; zH = H + (stk ? 0.5 : 0); Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
-      for (let i = 0; i < secs.length - 1; i++) {
-        const t = secs[i].offsetTop - sp, h = secs[i].offsetHeight, nt = secs[i + 1].offsetTop - sp;
+    let zV = -1;
+    const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0)) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
+      const ss = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow)
+      for (let i = 0; i < ss.length - 1; i++) {
+        const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight, nt = ss[i + 1].offsetTop - sp;
         const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
         if (b > a + 2) Z.push([a, b]);
       } };
