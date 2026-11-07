@@ -335,7 +335,9 @@
   .fa-it input:checked + i::after { content: ''; width: 10px; height: 5px; border: solid #000; border-width: 0 0 2.4px 2.4px; rotate: -45deg; translate: 0 -1px; }
   .fa-it span { flex: 1; font-size: 15px; font-weight: 500; }
   .fa-it em { font-style: normal; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-  .fa-it.in { cursor: default; } .fa-it.in span { color: rgba(255,255,255,0.55); }
+  .fa-it.in span { color: rgba(255,255,255,0.7); }
+  .fa-it.in.out span { color: rgba(255,255,255,0.45); text-decoration: line-through; }
+  .fa-it.in.out em { color: #EC6A38; }
   .fj-it { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 10px; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,0.75); font: 500 15px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; text-align: left; cursor: pointer; }
   .fj-it i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55); }
   .fj-it.on { color: #fff; font-weight: 600; background: rgba(255,255,255,0.06); } .fj-it.on i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
@@ -1239,6 +1241,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         mark.remove();
         let vt = 0; sc.__fperm = g.ids.map(id => { const x = byId[id], q = { vt, nt: x.top, h: x.h }; vt += x.h; return q; });
         sc.__map = null; layer._fperm = g.ids;
+        // the page's own side menu works out "where am I" in the page's original order, so with sections reordered its dots
+        // and line jumped around while scrolling. Drive them from what's actually on screen instead.
+        layer.dataset.fxn = 'f' + Math.random().toString(36).slice(2, 8); layer.__fxk = null;
+        let rq = 0; const tick = () => { if (!rq) rq = requestAnimationFrame(() => { rq = 0; fixFlowNav(layer); }); };
+        sc.addEventListener('scroll', tick, { passive: true }); addEventListener('resize', tick); setTimeout(tick, 60); setTimeout(tick, 600);
       }
     }
     // side menu: only the run's sections, evenly spaced; a dropped section's star sits on the next kept one (so the
@@ -1247,7 +1254,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (sc && inst.sections && Array.isArray(inst.starY) && inst.starY.length) {
       const sy = inst.starY.slice(), gap = sy.length > 1 ? sy[1] - sy[0] : 52, nav = inst.sections.slice(1);
       const ordr = g.ids.filter(id => nav.some(x => x.id === id)); const ny = nav.map(x => keep.has(x.id) ? sy[0] + gap * ordr.indexOf(x.id) : null);
-      if (layer._fperm) css += '.layer[data-seg="' + SEG + '"] nav > div:nth-of-type(2){display:none!important}';
+      if (layer._fperm) css += '.layer[data-fxn="' + layer.dataset.fxn + '"] nav > div:nth-of-type(2){display:block!important;height:var(--fxfill,0px)!important;transition:none!important}';
       for (let q = ny.length - 1, nextY = ny.filter(v => v != null).pop() || sy[0]; q >= 0; q--) { if (ny[q] == null) ny[q] = nextY; else nextY = ny[q]; }
       inst.starY = ny;
       nav.forEach(x => { if (!keep.has(x.id)) css += '.layer[data-seg="' + SEG + '"] nav a[href="#sec-' + x.id + '"]{display:none!important}'; });
@@ -1314,6 +1321,32 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const sc = scrollerOf(layer);
     if (sc && !sc.__fnav) { sc.__fnav = true; let r = 0; sc.addEventListener('scroll', () => { if (!r) r = requestAnimationFrame(() => { r = 0; markFlowNav(layer); }); }, { passive: true }); }
   }
+  // reordered custom-flow page: light the side menu by the section on screen (your order), fill the line up to it
+  function fixFlowNav(layer) {
+    const sc = scrollerOf(layer), id0 = layer.dataset.fxn; if (!sc || !sc.__fperm || !id0 || !layer.isConnected) return;
+    const nav = layer.querySelector('.board nav'); if (!nav) return;
+    const secs = [...sc.querySelectorAll(':scope > section[id^="sec-"]')], y = sc.scrollTop + 1;
+    let act = -1; secs.forEach((el, i) => { if (y >= el.offsetTop) act = i; });
+    const items = secs.map(el => ({ el, a: nav.querySelector('a[href="#' + el.id + '"]') })).filter(o => o.a);
+    const ai = act < 0 ? -1 : items.findIndex(o => o.el === secs[act]);
+    const cy = items.map(o => (parseFloat(o.a.style.top) || 0) + 22), line = nav.querySelector(':scope > div'), top0 = line ? parseFloat(line.style.top) || 0 : 0;
+    let fill = 0;
+    if (ai >= 0) { const el = items[ai].el, f = Math.max(0, Math.min(1, (y - el.offsetTop) / Math.max(1, el.offsetHeight))); fill = cy[ai] - top0 + (ai + 1 < cy.length ? (cy[ai + 1] - cy[ai]) * f : 0); }
+    layer.style.setProperty('--fxfill', Math.max(0, fill) + 'px');
+    if (layer.__fxk === ai + ':' + items.length) return; layer.__fxk = ai + ':' + items.length;
+    const fillEl = nav.querySelector(':scope > div:nth-of-type(2)'), C = (fillEl && fillEl.style.background) || '#EC6A38';
+    let r = 236, g = 106, b = 56; const m = C.match(/#([0-9a-f]{6})/i), m2 = C.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (m) { r = parseInt(m[1].slice(0, 2), 16); g = parseInt(m[1].slice(2, 4), 16); b = parseInt(m[1].slice(4), 16); } else if (m2) { r = +m2[1]; g = +m2[2]; b = +m2[3]; }
+    const col = 'rgb(' + r + ',' + g + ',' + b + ')', L = '.layer[data-fxn="' + id0 + '"] nav a[href="#';
+    let css = '';
+    items.forEach((o, i) => { const sel = L + o.el.id + '"]', st = i === ai ? 'on' : i < ai ? 'done' : 'off';
+      css += sel + ' > span:first-child > span{' + (st === 'off' ? 'background:rgba(11,15,14,0.85)!important;border:2px solid rgba(255,255,255,0.5)!important;box-shadow:none!important;transform:none!important'
+        : 'background:' + col + '!important;border:2px solid ' + col + '!important;' + (st === 'on' ? 'box-shadow:0 0 0 6px rgba(' + r + ',' + g + ',' + b + ',0.18),0 0 22px rgba(' + r + ',' + g + ',' + b + ',0.6)!important;transform:scale(1.15)!important' : 'box-shadow:none!important;transform:none!important')) + '}';
+      css += sel + ' > span:nth-child(2){' + (st === 'on' ? 'font-size:20px!important;line-height:24px!important;font-weight:600!important' : 'font-size:16px!important;line-height:20px!important;font-weight:400!important') + '}';
+    });
+    let tag = layer.querySelector('style[data-fx]'); if (!tag) { tag = document.createElement('style'); tag.dataset.fx = '1'; layer.appendChild(tag); }
+    tag.textContent = css;
+  }
   function markFlowNav(layer) {
     if (!layer || !current || current.layer !== layer) return;
     const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
@@ -1363,26 +1396,33 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     FLOWPAGES().forEach(fn => {
       body += '<div class="fa-pg"><span>' + esc2(pageName(fn)) + '</span><button type="button" class="fa-all" data-fn="' + esc2(fn) + '">Select all</button></div>';
       secList(fn).forEach((x, xi) => { if (isTitle(fn, xi)) return; const k = favKey(fn, x.sid), inF = FAVS.indexOf(k) >= 0;
-        body += '<label class="fa-it' + (inF ? ' in' : '') + '"><input type="checkbox" value="' + esc2(k) + '"' + (inF ? ' checked disabled' : '') + '><i></i><span>' + esc2(x.name) + '</span>' + (inF ? '<em>Added</em>' : '') + '</label>'; });
+        body += '<label class="fa-it' + (inF ? ' in' : '') + '"><input type="checkbox" value="' + esc2(k) + '"' + (inF ? ' checked data-in="1"' : '') + '><i></i><span>' + esc2(x.name) + '</span>' + (inF ? '<em>Added</em>' : '') + '</label>'; });
     });
     const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Add sections</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
       + '<div class="fs-list fa-list">' + body + '</div>'
       + '<div class="fs-foot"><button type="button" class="fs-back">' + (fromHome ? 'Cancel' : 'Back') + '</button><button type="button" class="fs-done fa-go" disabled>Add</button></div>');
     const go_ = sh.querySelector('.fa-go');
-    const picked = () => [...sh.querySelectorAll('.fa-list input:checked:not(:disabled)')].map(x => x.value);
-    const upd = () => { const n = picked().length; go_.disabled = !n; go_.textContent = n ? 'Add ' + n : 'Add'; };
+    // tap a section to add it; tap one that's already in your flow to take it out
+    const picked = () => [...sh.querySelectorAll('.fa-list input:checked:not([data-in])')].map(x => x.value);
+    const dropped = () => [...sh.querySelectorAll('.fa-list input[data-in]:not(:checked)')].map(x => x.value);
+    const upd = () => { const n = picked().length, r = dropped().length; go_.disabled = !n && !r;
+      go_.textContent = n && r ? 'Add ' + n + ' · Remove ' + r : r ? 'Remove ' + r : n ? 'Add ' + n : 'Add';
+      sh.querySelectorAll('.fa-list input[data-in]').forEach(x => { const lb = x.closest('.fa-it'), em = lb.querySelector('em'); lb.classList.toggle('out', !x.checked); if (em) em.textContent = x.checked ? 'Added' : 'Removing'; }); };
     sh.querySelector('.fa-list').addEventListener('change', upd);
     sh.querySelectorAll('.fa-all').forEach(b => b.addEventListener('click', () => {
-      const boxes = [...sh.querySelectorAll('.fa-list input:not(:disabled)')].filter(x => x.value.indexOf(b.dataset.fn + '#') === 0), all = boxes.every(x => x.checked);
+      const boxes = [...sh.querySelectorAll('.fa-list input')].filter(x => x.value.indexOf(b.dataset.fn + '#') === 0), all = boxes.every(x => x.checked);
       boxes.forEach(x => { x.checked = !all; }); upd(); }));
     const back = () => { if (fromHome) { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); } else { openEdit(); } };
     sh.querySelector('.fs-scrim').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
     sh.querySelector('.fs-x').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
     sh.querySelector('.fs-back').addEventListener('click', back);
     go_.addEventListener('click', () => {
-      const ks = picked(); if (!ks.length) return;
+      const ks = picked(), rs = dropped(); if (!ks.length && !rs.length) return;
+      FAVS = FAVS.filter(k => rs.indexOf(k) < 0);
       ks.sort((a, b) => rank(a) - rank(b)).forEach(k => addFav(k)); saveFavs(); syncStars(); updateFlowCount();
-      toast('★ Added ' + ks.length + (ks.length === 1 ? ' section' : ' sections') + ' to Custom flow');
+      const sN = n => n + (n === 1 ? ' section' : ' sections');
+      toast(ks.length && rs.length ? '★ Added ' + sN(ks.length) + ', removed ' + rs.length : ks.length ? '★ Added ' + sN(ks.length) + ' to Custom flow' : 'Removed ' + sN(rs.length) + ' from Custom flow');
+      if (!validFavs().length) { closeSheet(); if (FLOW) endFlow(true); return; }
       if (fromHome && !FLOW) { closeSheet(); startFlow(); }
       else if (FLOW) { closeSheet(); flowRefresh(); }
       else openEdit();
