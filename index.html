@@ -95,6 +95,10 @@
   /* phones: colour filters on logos (Awards) make the phone keep an extra copy of each logo; dim them with opacity instead */
   html.lite .board [style*="filter: saturate"], html.lite .board [style*="filter: grayscale"] { filter: none !important; }
   html.pland .board [style*="box-shadow"] { box-shadow: none !important; }
+  /* phones held sideways: section photos scroll with the page instead of staying pinned. A pinned photo makes the iPhone
+     keep every piece of the page above it as its own full-screen picture in memory, which is what crashed Why Vivint */
+  html.pland .board section[id^="sec-"] > div[data-name^="Background"] { position: absolute !important; top: 0 !important; left: 0; }
+  html.lite .board [data-name="Header"], html.lite .board [data-name="Glass arrow pill"] { filter: none !important; }
   html.safe .board [style*="filter: blur"], html.safe .board [style*="filter:blur"] { filter: none !important; }
   /* after repeated crashes: no background photos, no decorative glows, no motion; just the content on black */
   html.safe .board section[id^="sec-"] > div[data-name^="Background"] { display: none !important; }
