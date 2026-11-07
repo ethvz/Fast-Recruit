@@ -188,6 +188,9 @@
     border: 1.5px solid rgb(var(--acr)); background: transparent; box-shadow: none;
     transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
   /* upright phone: same spot as on iPad, just under the header of the section on screen */
+  /* soft edges: section photos melt into black instead of ending on a hard line as you scroll */
+  .board [data-name="Stat stage"] > div, .board [data-name="Gallery stage"] > div { -webkit-mask-image: linear-gradient(180deg, transparent 0px, #000 160px, #000 calc(100% - 160px), transparent 100%); mask-image: linear-gradient(180deg, transparent 0px, #000 160px, #000 calc(100% - 160px), transparent 100%); }
+  html.stack .board section[id^="sec-"] > div[data-name^="Background"] { -webkit-mask-image: linear-gradient(180deg, transparent 0px, #000 140px, #000 calc(100% - 140px), transparent 100%); mask-image: linear-gradient(180deg, transparent 0px, #000 140px, #000 calc(100% - 140px), transparent 100%); }
   html.stack .favw, html.phone:not(.pland) .favw { top: calc(96px + var(--dyh, 0px)); right: 26px; }
   html.pland .favw { scale: var(--CS, 1); top: 140px; right: calc(26px + var(--MXR, 0px)); }
   .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
