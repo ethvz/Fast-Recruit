@@ -1416,10 +1416,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   let menuEl = null;
   // ---- Feedback, crash reports and What's New (menu buttons) ----
-  // Feedback and crash reports are emailed to Ethan through FormSubmit (formsubmit.co). Anything that can't send right away
+  // Feedback and crash reports are emailed to Ethan through Web3Forms (web3forms.com). Anything that can't send right away
   // (no signal, or the address not activated yet) is kept on the phone and sent automatically the next time the app opens.
   const FB = (() => {
-    const TO = 'https://formsubmit.co/ethan.jones@vivint.com', QK = 'fr_mailq';
+    const TO = 'https://api.web3forms.com/submit', KEY = '0779189a-2eb6-4da3-9906-8f4003208d4b', QK = 'fr_mailq';   // Web3Forms key → ethan.jones@vivint.com
     const lsG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const lsS = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
     const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -1443,12 +1443,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const here = () => { const w = where(); return w.page ? w.page + (w.section ? ' › ' + w.section : '') : 'Home'; };
     const queue = () => { try { return JSON.parse(lsG(QK) || '[]'); } catch (e) { return []; } };
     async function post(m) {
-      // a plain form post (FormSubmit's JSON endpoint refuses browser requests): it either reaches FormSubmit or fails with no signal
-      try { const f = new URLSearchParams(); Object.keys(m).forEach(k => f.append(k, m[k] == null ? '' : String(m[k])));
-        await fetch(TO, { method: 'POST', mode: 'no-cors', body: f }); return true; } catch (e) { return false; }
+      const body = { access_key: KEY, from_name: 'Fast Recruit', subject: m._subject };
+      Object.keys(m).forEach(k => { if (k[0] !== '_') body[k] = m[k]; });
+      try { const r = await fetch(TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
+        const j = await r.json().catch(() => ({})); return !!(r.ok && j.success); } catch (e) { return false; }
     }
     async function send(subject, fields) {
-      const m = Object.assign({ _subject: subject, _template: 'table', _captcha: 'false', Sent: new Date().toLocaleString() }, fields);
+      const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       if (await post(m)) return true;
       const q = queue().filter(x => Date.now() - (x._t || 0) < 14 * 864e5); m._t = Date.now(); q.push(m); lsS(QK, JSON.stringify(q.slice(-20))); return false;
     }
