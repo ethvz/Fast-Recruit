@@ -201,7 +201,7 @@
   /* menu: Custom flow sits just left of Recruiting Guide in the top row */
   .nm-quick .nm-guide.nm-flow { margin: 0 0 0 auto; }
   .nm-quick .nm-flow + .nm-guide { margin-left: 0; }
-  .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: #EC6A38; margin-left: -2px; }
+  .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: rgb(var(--acr)); margin-left: -2px; }
   /* feedback, crash report, what's new sheets */
   .fsheet.fc .fs-card { left: 0; right: 0; margin: 0 auto; }
   .fb-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 6px; overscroll-behavior: contain; }
@@ -216,7 +216,7 @@
   .fb-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 2px 0 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); font-size: 12px; line-height: 1.35; }
   .fb-meta dt { color: rgba(255,255,255,0.45); } .fb-meta dd { margin: 0; color: rgba(255,255,255,0.85); }
   .fb-note { font-size: 11.5px; color: rgba(255,255,255,0.4); margin: 0 0 6px; }
-  .fs-foot button.fb-send { background: #EC6A38; border-color: #EC6A38; color: #140803; font-weight: 700; letter-spacing: .14em; }
+  .fs-foot button.fb-send { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; font-weight: 700; letter-spacing: .14em; }
   .fs-foot button[disabled] { opacity: .5; }
   .fsheet.wn .fs-card { width: min(330px, calc(100vw - 32px)); }
   .fsheet.wn .fs-h { padding: 14px 14px 10px; } .fsheet.wn .fs-t { font-size: 17px; } .fsheet.wn .fs-x { width: 30px; height: 30px; }
@@ -337,7 +337,7 @@
   .fa-it em { font-style: normal; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
   .fa-it.in span { color: rgba(255,255,255,0.7); }
   .fa-it.in.out span { color: rgba(255,255,255,0.45); text-decoration: line-through; }
-  .fa-it.in.out em { color: #EC6A38; }
+  .fa-it.in.out em { color: rgb(var(--acr)); }
   .fj-it { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 10px; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,0.75); font: 500 15px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; text-align: left; cursor: pointer; }
   .fj-it i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55); }
   .fj-it.on { color: #fff; font-weight: 600; background: rgba(255,255,255,0.06); } .fj-it.on i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
@@ -1028,7 +1028,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       navFor(layer);
       if (sc && H !== 1024) sc.dispatchEvent(new Event('scroll'));   // portrait: sync the board with the mapped position
       current = { board: t.board, layer };
-      { const AC = { 'Main.dc.html': '223,255,26', 'Why-Vivint.dc.html': '236,106,56', 'Culture.dc.html': '236,106,56' }; document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
+      { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
@@ -1366,7 +1366,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (ai >= 0) { const el = items[ai].el, f = Math.max(0, Math.min(1, (y - el.offsetTop) / Math.max(1, el.offsetHeight))); fill = cy[ai] - top0 + (ai + 1 < cy.length ? (cy[ai + 1] - cy[ai]) * f : 0); }
     layer.style.setProperty('--fxfill', Math.max(0, fill) + 'px');
     if (layer.__fxk === ai + ':' + items.length) return; layer.__fxk = ai + ':' + items.length;
-    const fillEl = nav.querySelector(':scope > div:nth-of-type(2)'), C = (fillEl && fillEl.style.background) || '#EC6A38';
+    const fillEl = nav.querySelector(':scope > div:nth-of-type(2)'), C = (fillEl && fillEl.style.background) || 'rgb(' + (getComputedStyle(document.documentElement).getPropertyValue('--acr').trim() || '5,229,175') + ')';
     let r = 236, g = 106, b = 56; const m = C.match(/#([0-9a-f]{6})/i), m2 = C.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
     if (m) { r = parseInt(m[1].slice(0, 2), 16); g = parseInt(m[1].slice(2, 4), 16); b = parseInt(m[1].slice(4), 16); } else if (m2) { r = +m2[1]; g = +m2[2]; b = +m2[3]; }
     const col = 'rgb(' + r + ',' + g + ',' + b + ')', L = '.layer[data-fxn="' + id0 + '"] nav a[href="#';
@@ -1579,7 +1579,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       ['Nov 7, 2026', [['chat', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['alert', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['spark', 'What\'s New', 'This list. See every big update and when it happened.'], ['plus', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['shield', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
       ['Nov 6, 2026', [['down', 'Download for offline', 'Save every page, photo and video once, then use the app with no signal.'], ['star', 'Custom Flow', 'Star the sections you like and present only those, in your order. It\'s saved for next time.'], ['cam', 'Social Media Content', 'Ready-to-post Instagram stories for every Opportunity tool.'], ['bars', 'Career Comparison', 'Top 20 paying college majors: early pay vs. 10+ years in, plus student debt.'], ['sun', 'Summer Job Comparison', '18 common summer jobs and what they really pay over a summer.'], ['bulb', 'Growth skills open up', 'Tap any skill to see why it matters in your career and everyday life.'], ['layers', 'Smoother look', 'Photos blend softly between sections instead of hard lines. New FR app icon.']]],
       ['Nov 5, 2026', [['trend', '3 Year Plan', 'Map out your earnings and team growth over 3 to 6 years, then save it as an image.'], ['calc', 'Override calculator', 'See monthly and yearly residuals for managers and Area Directors.'], ['doc', 'Share pay scales', 'Send the official 2027 pay scales right from the calculators.'], ['mic', 'Guest speakers', '36 past speakers with photos and years, from Tony Robbins to David Goggins.'], ['flame', 'Burn the Ships', 'New relocation story added to Travel.'], ['list', 'Quick section menu', 'Press and hold a page name in the header to jump to any section.'], ['undo', 'Picks up where you left off', 'If the app reloads, it brings you back to the same spot.']]],
-      ['Nov 4, 2026', [['users', 'Environment', 'New section: you become the average of the people around you.'], ['home', 'Logo goes Home', 'Tap the Vivint logo on any page to go back to the start.'], ['drop', 'Page colors', 'Each page has its own accent color so you always know where you are.'], ['heart', 'In loving memory', 'A tribute to Eli Randall on the home page.']]],
+      ['Nov 4, 2026', [['users', 'Environment', 'New section: you become the average of the people around you.'], ['home', 'Logo goes Home', 'Tap the Vivint logo on any page to go back to the start.'], ['drop', 'Home page color', 'The home page gets its own NOT LIKE US yellow accent.'], ['heart', 'In loving memory', 'A tribute to Eli Randall on the home page.']]],
       ['Nov 3, 2026', [['image', 'New landing page', 'A bold NOT LIKE US opening screen.'], ['grid', 'Sales Tools', 'See Street Genie, Pipeline, Fast Pitch, Pulse and the Vivint app on real devices.'], ['check', 'Onboard Now', 'One tap from any page opens the onboarding tool.'], ['carousel', '3D carousels', 'Swipe through photos and cards in a smooth 3D carousel.'], ['expand', 'Full-screen home screen app', 'Added to the home screen, the app fills the whole screen.']]],
       ['Nov 2, 2026', [['flag', 'Fast Recruit launches', 'Why Vivint, Experience, Lifestyle, Opportunity and FAQs in one app.'], ['book', 'Recruiting Guide', 'The full recruiting playbook, one tap from every page.'], ['menu', 'Full menu', 'Every page and section in one menu.'], ['dollar', 'Package Costs', 'Four packages, $0 upfront.'], ['scale', 'Pay comparisons', 'See how a summer with Vivint stacks up against other jobs and careers.'], ['phone', 'Works on iPhone', 'Layouts made for phones, upright or sideways.']]]
     ];
@@ -2265,18 +2265,18 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   #a2hs .a2-x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; font-size: 20px; line-height: 36px; cursor: pointer; padding: 0; }
   #a2hs .a2-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-right: 30px; }
   #a2hs .a2-top img { width: 56px; height: 56px; border-radius: 14px; flex: none; box-shadow: 0 6px 16px rgba(0,0,0,.5); }
-  #a2hs .a2-k { font-size: 10.5px; font-weight: 700; letter-spacing: .22em; color: #EC6A38; text-transform: uppercase; margin-bottom: 4px; }
+  #a2hs .a2-k { font-size: 10.5px; font-weight: 700; letter-spacing: .22em; color: rgb(var(--acr, 5,229,175)); text-transform: uppercase; margin-bottom: 4px; }
   #a2hs h2 { margin: 0; font-size: 21px; line-height: 1.15; font-weight: 600; letter-spacing: -.01em; }
   #a2hs .a2-perks { display: flex; gap: 6px; margin: 0 0 18px; flex-wrap: wrap; }
-  #a2hs .a2-perks span { font-size: 11px; font-weight: 600; letter-spacing: .06em; padding: 6px 10px; border-radius: 999px; background: rgba(236,106,56,.12); color: #F3936C; }
+  #a2hs .a2-perks span { font-size: 11px; font-weight: 600; letter-spacing: .06em; padding: 6px 10px; border-radius: 999px; background: rgba(var(--acr, 5,229,175),.12); color: rgb(var(--acr, 5,229,175)); }
   #a2hs ol { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 10px; }
   #a2hs li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.05); font-size: 15px; line-height: 1.3; }
   #a2hs li b { font-weight: 700; }
-  #a2hs .a2-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #EC6A38; color: #140803; font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  #a2hs .a2-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: rgb(var(--acr, 5,229,175)); color: #000; font-size: 13px; font-weight: 700; display: grid; place-items: center; }
   #a2hs .a2-ic { display: inline-flex; vertical-align: -5px; width: 22px; height: 22px; align-items: center; justify-content: center; margin: 0 2px; border-radius: 6px; background: rgba(255,255,255,.12); }
   #a2hs .a2-ic svg { width: 14px; height: 14px; }
   #a2hs .a2-tip { margin: -10px 0 18px; font-size: 12px; line-height: 1.4; color: rgba(255,255,255,.5); }
-  #a2hs .a2-go { display: block; width: 100%; height: 46px; border: 0; border-radius: 23px; background: #EC6A38; color: #140803; font: 700 13px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .2em; text-indent: .2em; cursor: pointer; }
+  #a2hs .a2-go { display: block; width: 100%; height: 46px; border: 0; border-radius: 23px; background: rgb(var(--acr, 5,229,175)); color: #000; font: 700 13px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .2em; text-indent: .2em; cursor: pointer; }
   #a2hs .a2-no { display: block; margin: 10px auto 0; padding: 8px 12px; border: 0; background: none; color: rgba(255,255,255,.45); font: 500 12.5px 'Vivint Sans', Helvetica, Arial, sans-serif; cursor: pointer; }
   #a2hs .a2-cnt { position: absolute; left: 22px; bottom: 22px; font-size: 11px; color: rgba(255,255,255,.3); display: none; }
   @media (orientation: landscape) and (max-height: 500px) {   /* phone held sideways: steps side by side so it fits the short screen */
