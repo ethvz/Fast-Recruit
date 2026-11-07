@@ -198,6 +198,32 @@
   .nm-sec.on { color: #fff; font-weight: 600; }
   .nm-sec.on::before { background: rgb(var(--acr)); border-color: rgb(var(--acr)); box-shadow: 0 0 0 4px rgba(var(--acr),0.18); }
   .nm-ptitle:active, .nm-sec:active { opacity: .6; }
+  /* menu: Custom flow sits just left of Recruiting Guide in the top row */
+  .nm-quick .nm-guide.nm-flow { margin: 0 0 0 auto; }
+  .nm-quick .nm-flow + .nm-guide { margin-left: 0; }
+  .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: #EC6A38; margin-left: -2px; }
+  /* feedback, crash report, what's new sheets */
+  .fsheet.fc .fs-card { left: 0; right: 0; margin: 0 auto; }
+  .fb-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 6px; overscroll-behavior: contain; }
+  .fb-lead { margin: 0 0 12px; font-size: 14px; line-height: 1.4; color: rgba(255,255,255,0.7); }
+  .fb-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .fb-chips button { height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #fff; font: 600 13px 'Vivint Sans', Helvetica, Arial, sans-serif; cursor: pointer; }
+  .fb-chips button.on { border-color: rgb(var(--acr)); background: rgba(var(--acr),0.16); }
+  .fb-body textarea, .fb-body input { display: block; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.06); color: #fff; font: 16px/1.35 'Vivint Sans', Helvetica, Arial, sans-serif; outline: none; -webkit-appearance: none; }
+  .fb-body textarea { min-height: 110px; resize: none; }
+  .fb-body textarea:focus, .fb-body input:focus { border-color: rgba(var(--acr),0.7); }
+  .fb-body ::placeholder { color: rgba(255,255,255,0.4); }
+  .fb-meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 2px 0 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); font-size: 12px; line-height: 1.35; }
+  .fb-meta dt { color: rgba(255,255,255,0.45); } .fb-meta dd { margin: 0; color: rgba(255,255,255,0.85); }
+  .fb-note { font-size: 11.5px; color: rgba(255,255,255,0.4); margin: 0 0 6px; }
+  .fs-foot button.fb-send { background: #EC6A38; border-color: #EC6A38; color: #140803; font-weight: 700; letter-spacing: .14em; }
+  .fs-foot button[disabled] { opacity: .5; }
+  .wn-day { margin: 14px 4px 8px; font-size: 11px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .wn-day:first-child { margin-top: 6px; }
+  .wn-it { display: flex; gap: 12px; padding: 10px 12px; margin-bottom: 6px; border-radius: 14px; background: rgba(255,255,255,0.05); }
+  .wn-ic { flex: none; width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 15px; background: rgba(236,106,56,0.14); }
+  .wn-it b { display: block; font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .wn-it span { display: block; font-size: 13px; line-height: 1.35; color: rgba(255,255,255,0.65); }
   .nm-guide { margin-top: 6px; height: 46px; padding: 0 22px; border-radius: 23px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .04em; }
 
   /* ---- favorites: Liquid Glass star on every section ---- */
@@ -329,6 +355,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const ssGet = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
   const ssSet = (k, v) => { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} };
   const crashed = ssGet('fr_alive') === '1';   // the last visit ended without the page closing normally
+  const CRASH = crashed ? (() => { try { return JSON.parse(ssGet('fr_pos') || 'null') || {}; } catch (e) { return {}; } })() : null;   // where it crashed, for the crash report
+  if (crashed) window.__frCrash = true;
   // two crashes within a few minutes: start on the home page next time instead of reopening the page that crashed
   let crashLoop = false;
   if (crashed) {
@@ -355,7 +383,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   })();
   ssSet('fr_alive', '1');
   let booted = false;
-  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now() })); } catch (e) {} }
+  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)' })); } catch (e) {} }
   function hardReload() {
     const now = Date.now(), log = (ssGet('fr_reloads') || '').split(',').map(Number).filter(t => now - t < 60000);
     if (log.length >= 3) return;   // never loop: at most three automatic refreshes a minute
@@ -1387,6 +1415,107 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   let menuEl = null;
+  // ---- Feedback, crash reports and What's New (menu buttons) ----
+  // Feedback and crash reports are emailed to Ethan through FormSubmit (formsubmit.co). Anything that can't send right away
+  // (no signal, or the address not activated yet) is kept on the phone and sent automatically the next time the app opens.
+  const FB = (() => {
+    const TO = 'https://formsubmit.co/ajax/ethan.jones@vivint.com', QK = 'fr_mailq';
+    const lsG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const lsS = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+    const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const IPH = { '375x667': 'iPhone SE / 8', '375x812': 'iPhone X / XS / 11 Pro / 12–13 mini', '390x844': 'iPhone 12 / 13 / 14 / 16e', '393x852': 'iPhone 14 Pro / 15 / 15 Pro / 16', '402x874': 'iPhone 16 Pro / 17 / 17 Pro',
+      '414x896': 'iPhone XR / 11 / 11 Pro Max', '420x912': 'iPhone Air', '428x926': 'iPhone 12–13 Pro Max / 14 Plus', '430x932': 'iPhone 14 Pro Max / 15 Plus / 15 Pro Max / 16 Plus', '440x956': 'iPhone 16 Pro Max / 17 Pro Max' };
+    function device() {
+      const ua = navigator.userAgent || '', s = screen || {}, a = Math.min(s.width || 0, s.height || 0), b = Math.max(s.width || 0, s.height || 0);
+      const ipad = /iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      let d = /iPhone/.test(ua) ? (IPH[a + 'x' + b] || 'iPhone') : ipad ? 'iPad' : /Android/.test(ua) ? ((ua.match(/Android [\d.]+; ([^;)]+)/) || [])[1] || 'Android phone').replace(/ Build.*/, '') : /Mac/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows PC' : 'Computer';
+      const os = (ua.match(/OS (\d+)[_.](\d+)/) || []).slice(1).join('.'), av = (ua.match(/Android ([\d.]+)/) || [])[1];
+      const br = /CriOS|Chrome/.test(ua) ? 'Chrome' : /FxiOS|Firefox/.test(ua) ? 'Firefox' : /EdgiOS|Edg\//.test(ua) ? 'Edge' : /Safari/.test(ua) ? 'Safari' : 'Browser';
+      const app = (matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone ? 'Home Screen app' : br;
+      return d + (os ? ' · iOS ' + os : av ? ' · Android ' + av : '') + ' · ' + app + ' · ' + a + '×' + b + ' @' + (devicePixelRatio || 1) + 'x';
+    }
+    const orient = () => innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)';
+    function where() {
+      try { const fn = current && current.board, a = currentAid(), B = fn && P.boards[fn], sx = B && B.sections && B.sections.find(x => x.aid === a);
+        const pg = pageName(fn) || (B && B.sections && B.sections[0] && B.sections[0].name) || '';
+        return { page: pg, section: sx && sx !== B.sections[0] ? sx.name : '' }; } catch (e) { return { page: '', section: '' }; }
+    }
+    const here = () => { const w = where(); return w.page ? w.page + (w.section ? ' › ' + w.section : '') : 'Home'; };
+    const queue = () => { try { return JSON.parse(lsG(QK) || '[]'); } catch (e) { return []; } };
+    async function post(m) {
+      try { const r = await fetch(TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(m) });
+        const j = await r.json().catch(() => ({})); return r.ok && String(j.success) === 'true'; } catch (e) { return false; }
+    }
+    async function send(subject, fields) {
+      const m = Object.assign({ _subject: subject, _template: 'table', _captcha: 'false', Sent: new Date().toLocaleString() }, fields);
+      if (await post(m)) return true;
+      const q = queue().filter(x => Date.now() - (x._t || 0) < 14 * 864e5); m._t = Date.now(); q.push(m); lsS(QK, JSON.stringify(q.slice(-20))); return false;
+    }
+    async function flush() {
+      const q = queue(); if (!q.length || !navigator.onLine) return; const left = [];
+      for (const m of q) { if (Date.now() - (m._t || 0) > 14 * 864e5) continue; const c = Object.assign({}, m); delete c._t; if (!(await post(c))) left.push(m); }
+      lsS(QK, left.length ? JSON.stringify(left) : null);
+    }
+    addEventListener('online', flush); setTimeout(flush, 6000);
+    const stopKeys = sh => ['keydown', 'keyup', 'keypress', 'touchmove'].forEach(ev => sh.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+    const shut = sh => sh.addEventListener('click', e => { if (e.target.closest('.fs-x') || e.target.classList.contains('fs-scrim') || e.target.closest('.fb-later')) closeSheet(); });
+    const meta = rows => '<dl class="fb-meta">' + rows.map(r => '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl>';
+
+    function feedback() {
+      const at = here(), dev = device(), o = orient();
+      const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Feedback</div><div class="fs-t">Help make Fast Recruit better</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+        + '<div class="fb-body"><p class="fb-lead">Ideas, bugs, wrong info, anything. It goes straight to Ethan.</p>'
+        + '<div class="fb-chips" role="radiogroup" aria-label="Type">' + ['Idea', 'Bug', 'Content fix', 'Other'].map((t, i) => '<button type="button" role="radio" aria-checked="' + (i ? 'false' : 'true') + '" class="' + (i ? '' : 'on') + '">' + t + '</button>').join('') + '</div>'
+        + '<textarea class="fb-msg" placeholder="What\'s on your mind?" aria-label="Your feedback"></textarea>'
+        + '<input class="fb-name" type="text" placeholder="Your name (optional)" aria-label="Your name" autocomplete="name" value="' + esc(lsG('fr_fbname') || '') + '">'
+        + '<p class="fb-note">Sent with it, so Ethan can see what you saw:</p>' + meta([['Page', at], ['Device', dev], ['Orientation', o]]) + '</div>'
+        + '<div class="fs-foot"><button type="button" class="fb-send">SEND</button></div>');
+      sh.classList.add('fc'); stopKeys(sh); shut(sh);
+      const chips = [...sh.querySelectorAll('.fb-chips button')];
+      chips.forEach(c => c.addEventListener('click', () => chips.forEach(x => { x.classList.toggle('on', x === c); x.setAttribute('aria-checked', x === c ? 'true' : 'false'); })));
+      sh.querySelector('.fb-send').addEventListener('click', async e => {
+        const msg = sh.querySelector('.fb-msg').value.trim(), name = sh.querySelector('.fb-name').value.trim(), kind = (chips.find(c => c.classList.contains('on')) || chips[0]).textContent;
+        if (!msg) { sh.querySelector('.fb-msg').focus(); toast('Type your feedback first'); return; }
+        lsS('fr_fbname', name || null); e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
+        const ok = await send('Fast Recruit feedback · ' + kind + (name ? ' · ' + name : ''), { Type: kind, From: name || '(not given)', Feedback: msg, Page: at, Device: dev, Orientation: o });
+        closeSheet(); toast(ok ? 'Thanks! Feedback sent' : 'Saved. It will send automatically');
+      });
+    }
+
+    function crash(info) {
+      const pg = info && info.pg ? info.pg + (info.sec ? ' › ' + info.sec : '') : 'Unknown', o = (info && info.o) || orient(), dev = device();
+      const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Crash report</div><div class="fs-t">The app closed unexpectedly</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+        + '<div class="fb-body"><p class="fb-lead">Send a quick report so it can be fixed. It only takes a tap.</p>' + meta([['Crashed on', pg], ['Device', dev], ['Orientation', o]])
+        + '<textarea class="fb-msg" style="min-height:70px" placeholder="What were you doing? (optional)" aria-label="What were you doing"></textarea></div>'
+        + '<div class="fs-foot"><button type="button" class="fb-later">Not now</button><button type="button" class="fb-send">SEND REPORT</button></div>');
+      sh.classList.add('fc'); stopKeys(sh); shut(sh);
+      sh.querySelector('.fb-send').addEventListener('click', async e => {
+        e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
+        const note = sh.querySelector('.fb-msg').value.trim();
+        const ok = await send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '), Note: note || '(none)' });
+        closeSheet(); toast(ok ? 'Thanks! Report sent' : 'Saved. It will send automatically');
+      });
+    }
+
+    // What's New: the bigger updates only, newest first, in plain words
+    const WN = [
+      ['Nov 7, 2026', [['💬', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['🛟', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['✨', 'What\'s New', 'This list. See every big update and when it happened.'], ['📲', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['📱', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
+      ['Nov 6, 2026', [['⬇️', 'Download for offline', 'Save every page, photo and video once, then use the app with no signal.'], ['⭐', 'Custom Flow', 'Star the sections you like and present only those, in your order. It\'s saved for next time.'], ['📸', 'Social Media Content', 'Ready-to-post Instagram stories for every Opportunity tool.'], ['🎓', 'Career Comparison', 'Top 20 paying college majors: early pay vs. 10+ years in, plus student debt.'], ['☀️', 'Summer Job Comparison', '18 common summer jobs and what they really pay over a summer.'], ['🧠', 'Growth skills open up', 'Tap any skill to see why it matters in your career and everyday life.'], ['🌅', 'Smoother look', 'Photos blend softly between sections instead of hard lines. New FR app icon.']]],
+      ['Nov 5, 2026', [['📈', '3 Year Plan', 'Map out your earnings and team growth over 3 to 6 years, then save it as an image.'], ['🧮', 'Override calculator', 'See monthly and yearly residuals for managers and Area Directors.'], ['📄', 'Share pay scales', 'Send the official 2027 pay scales right from the calculators.'], ['🎤', 'Guest speakers', '36 past speakers with photos and years, from Tony Robbins to David Goggins.'], ['🔥', 'Burn the Ships', 'New relocation story added to Travel.'], ['👆', 'Quick section menu', 'Press and hold a page name in the header to jump to any section.'], ['↩️', 'Picks up where you left off', 'If the app reloads, it brings you back to the same spot.']]],
+      ['Nov 4, 2026', [['👥', 'Environment', 'New section: you become the average of the people around you.'], ['🏠', 'Logo goes Home', 'Tap the Vivint logo on any page to go back to the start.'], ['🎨', 'Page colors', 'Each page has its own accent color so you always know where you are.'], ['🕊️', 'In loving memory', 'A tribute to Eli Randall on the home page.']]],
+      ['Nov 3, 2026', [['🚀', 'New landing page', 'A bold NOT LIKE US opening screen.'], ['🛠️', 'Sales Tools', 'See Street Genie, Pipeline, Fast Pitch, Pulse and the Vivint app on real devices.'], ['✅', 'Onboard Now', 'One tap from any page opens the onboarding tool.'], ['🎠', '3D carousels', 'Swipe through photos and cards in a smooth 3D carousel.'], ['📲', 'Full-screen home screen app', 'Added to the home screen, the app fills the whole screen.']]],
+      ['Nov 2, 2026', [['🎉', 'Fast Recruit launches', 'Why Vivint, Experience, Lifestyle, Opportunity and FAQs in one app.'], ['📘', 'Recruiting Guide', 'The full recruiting playbook, one tap from every page.'], ['🧭', 'Full menu', 'Every page and section in one menu.'], ['💲', 'Package Costs', 'Four packages, $0 upfront.'], ['⚖️', 'Pay comparisons', 'See how a summer with Vivint stacks up against other jobs and careers.'], ['📱', 'Works on iPhone', 'Layouts made for phones, upright or sideways.']]]
+    ];
+    const WNV = WN[0][0];
+    const unseen = () => lsG('fr_wn') !== WNV;
+    function news() {
+      lsS('fr_wn', WNV); document.querySelectorAll('.nm-wn .nm-new').forEach(x => x.remove());
+      const sh = sheet('<div class="fs-h"><div><div class="fs-eye">What\'s New</div><div class="fs-t">Latest updates</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+        + '<div class="fs-list">' + WN.map(([d, items]) => '<div class="wn-day">' + d + '</div>' + items.map(([ic, t, s]) => '<div class="wn-it"><div class="wn-ic">' + ic + '</div><div><b>' + esc(t) + '</b><span>' + esc(s) + '</span></div></div>').join('')).join('') + '</div>');
+      sh.classList.add('fc'); stopKeys(sh); shut(sh);
+    }
+    return { feedback, crash, news, unseen };
+  })();
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl; menuEl = null;
     if (instant) { m.remove(); return; }
@@ -1406,15 +1535,17 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const quick = MENU.map((x, k) => hasSecs(x[0]) ? '' : page(x, k)).join(''), cols = MENU.map((x, k) => hasSecs(x[0]) ? page(x, k) : '').join('');
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
-      + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
+      + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button><button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
       + '<div class="nm-cols">' + cols + '</div>'
-      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button><button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button>' + (OFFL.can() ? '<button type="button" class="nm-guide nm-dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span class="nm-dlt">' + OFFL.label() + '</span></button>' : '') + '</div></div>';
+      + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button>' + (OFFL.can() ? '<button type="button" class="nm-guide nm-dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span class="nm-dlt">' + OFFL.label() + '</span></button>' : '') + '<button type="button" class="nm-guide nm-fb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Send feedback</button><button type="button" class="nm-guide nm-wn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>What\'s New' + (FB.unseen() ? '<span class="nm-new" aria-label="new"></span>' : '') + '</button></div></div>';
     m.addEventListener('click', e => {
       e.stopPropagation();
       const t = e.target.closest('[data-aid], .nm-x, .nm-scrim, .nm-guide'); if (!t) return;
       if (t.classList.contains('nm-flow')) { closeMenu(true); if (FLOW) openEdit(); else startFlow(); return; }
       if (t.classList.contains('nm-social')) { savePos(); location.href = 'social.html'; return; }
       if (t.classList.contains('nm-dl')) { OFFL.start(); return; }
+      if (t.classList.contains('nm-fb')) { closeMenu(true); FB.feedback(); return; }
+      if (t.classList.contains('nm-wn')) { closeMenu(true); FB.news(); return; }
       if (t.classList.contains('nm-guide')) { closeMenu(true); openOverlay(GUIDE_AID, 'none'); return; }
       if (t.dataset.aid) { const aid = t.dataset.aid; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); return; }
       closeMenu();
@@ -2020,6 +2151,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     await go(start, 'none', 0, undefined, back);
     document.getElementById('loading').classList.add('done');
     booted = true;
+    if (CRASH) setTimeout(() => FB.crash(CRASH), 2200);   // the app crashed last time: offer to send a report
   }).catch(() => setTimeout(hardReload, 2000));
 })();
 </script>
@@ -2067,7 +2199,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const android = /Android/i.test(ua);
   let deferred = null;   // Android Chrome's own install prompt, when it offers one
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
-  if (installed || !(iOS || android)) return;   // already on the home screen, or a computer
+  if (installed || !(iOS || android) || window.__frCrash) return;   // already on the home screen, or a computer
   const get = () => { let v = null; try { v = localStorage.getItem(KEY); } catch (e) {} if (v == null) { const m = document.cookie.match(/(?:^|; )fr_a2hs=(\d+)/); v = m && m[1]; } return +v || 0; };
   const put = n => { try { localStorage.setItem(KEY, String(n)); } catch (e) {} try { document.cookie = 'fr_a2hs=' + n + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {} };
   // one count per visit: reloads and crash-restarts in the same visit don't use up a showing
