@@ -62,13 +62,18 @@
   /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
   /* phones held sideways: the screen is much wider than the design, so a photo stretched edge to edge is cropped hard
      (looks zoomed in). Keep each section photo at the design's own frame, centred, and fade its sides into black. */
-  html.phone.fill .pbgw { position: absolute !important; left: var(--X, 0px) !important; top: 0 !important; width: 1466px !important; height: 100% !important; object-fit: cover;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 13%, #000 87%, transparent 100%); }
+  html.phone.fill .pbgw { position: absolute !important; left: var(--X, 0px) !important; top: 0 !important; width: 1466px !important; height: 100% !important; object-fit: cover; }
+  /* the side fade is a black gradient drawn over the photo, not a mask: a mask makes the phone hold a second full-size copy
+     of every section photo, which is what ran Why Vivint (Awards, Products) out of memory sideways */
+  html.phone.fill :has(> .pbgw)::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: linear-gradient(90deg, #000 0px, #000 var(--X, 0px), rgba(0,0,0,0) calc(var(--X, 0px) + 190px), rgba(0,0,0,0) calc(var(--X, 0px) + 1276px), #000 calc(var(--X, 0px) + 1466px), #000 100%); }
   html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
   /* phone held sideways: each section's photo fills the right three quarters of the screen and fades in from black on the left */
   html.pland .board .pbx { left: 25% !important; width: 75% !important; top: 0 !important; height: 100% !important; margin: 0 !important; transform: none !important;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.25) 12%, rgba(0,0,0,.75) 28%, #000 45%); }
+  }
+  /* the photo's left edge melts into black: a gradient drawn on top instead of a mask (a mask doubles the photo's memory) */
+  html.pland .board .pbx::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, #000 0%, rgba(0,0,0,.75) 12%, rgba(0,0,0,.25) 28%, rgba(0,0,0,0) 45%); }
   html.pland .board .pbx img { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
   html.pland .board .pbx-fade { display: none !important; }
   /* header logo = Home button: its tap area sits right over the visible logo (it was 13px too high) with some room around it */
@@ -87,6 +92,9 @@
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
   html.lite .pcont { transition: none; }
   html.safe .board [style*="box-shadow"] { box-shadow: none !important; }
+  /* phones: colour filters on logos (Awards) make the phone keep an extra copy of each logo; dim them with opacity instead */
+  html.lite .board [style*="filter: saturate"], html.lite .board [style*="filter: grayscale"] { filter: none !important; }
+  html.pland .board [style*="box-shadow"] { box-shadow: none !important; }
   html.safe .board [style*="filter: blur"], html.safe .board [style*="filter:blur"] { filter: none !important; }
   /* after repeated crashes: no background photos, no decorative glows, no motion; just the content on black */
   html.safe .board section[id^="sec-"] > div[data-name^="Background"] { display: none !important; }
@@ -194,10 +202,11 @@
     border: 1.5px solid rgb(var(--acr)); background: transparent; box-shadow: none;
     transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
   /* upright phone: same spot as on iPad, just under the header of the section on screen */
-  /* soft edges: section photos melt into black instead of ending on a hard line as you scroll */
-  .board [data-name="Stat stage"] > div, .board [data-name="Gallery stage"] > div { -webkit-mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.35) 90px, #000 280px, #000 calc(100% - 280px), rgba(0,0,0,.35) calc(100% - 90px), transparent 100%); mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.35) 90px, #000 280px, #000 calc(100% - 280px), rgba(0,0,0,.35) calc(100% - 90px), transparent 100%); }
-  .board section[id^="sec-"] > div[data-name^="Background"] { -webkit-mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.35) 90px, #000 240px, #000 calc(100% - 240px), rgba(0,0,0,.35) calc(100% - 90px), transparent 100%); mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.35) 90px, #000 240px, #000 calc(100% - 240px), rgba(0,0,0,.35) calc(100% - 90px), transparent 100%); }
-  html.stack .board section[id^="sec-"] > div[data-name^="Background"] { -webkit-mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.3) 120px, #000 340px, #000 calc(100% - 340px), rgba(0,0,0,.3) calc(100% - 120px), transparent 100%); mask-image: linear-gradient(180deg, transparent 0px, rgba(0,0,0,.3) 120px, #000 340px, #000 calc(100% - 340px), rgba(0,0,0,.3) calc(100% - 120px), transparent 100%); }
+  /* soft edges: section photos melt into black instead of ending on a hard line as you scroll. Drawn as a black gradient
+     on top (not a mask): masks make iPhones keep an extra full-size copy of every photo layer in memory */
+  .board [data-name="Stat stage"] > div::after, .board [data-name="Gallery stage"] > div::after, .board section[id^="sec-"] > div[data-name^="Background"]::after { content: ""; position: absolute; inset: 0; z-index: 60; pointer-events: none; background: linear-gradient(180deg, #000 0px, rgba(0,0,0,.65) 90px, rgba(0,0,0,0) 240px, rgba(0,0,0,0) calc(100% - 240px), rgba(0,0,0,.65) calc(100% - 90px), #000 100%); }
+  .board [data-name="Stat stage"] > div::after, .board [data-name="Gallery stage"] > div::after { background: linear-gradient(180deg, #000 0px, rgba(0,0,0,.65) 90px, rgba(0,0,0,0) 280px, rgba(0,0,0,0) calc(100% - 280px), rgba(0,0,0,.65) calc(100% - 90px), #000 100%); }
+  html.stack .board section[id^="sec-"] > div[data-name^="Background"]::after { background: linear-gradient(180deg, #000 0px, rgba(0,0,0,.65) 120px, rgba(0,0,0,0) 340px, rgba(0,0,0,0) calc(100% - 340px), rgba(0,0,0,.65) calc(100% - 120px), #000 100%); }
   html.stack .favw, html.phone:not(.pland) .favw { top: calc(96px + var(--dyh, 0px)); right: 26px; }
   html.pland .favw { scale: var(--CS, 1); top: 140px; right: calc(26px + var(--MXR, 0px)); }
   .fav svg { width: 16px; height: 16px; display: block; overflow: visible; }
@@ -1595,7 +1604,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const io = isLite() && 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(en => {
       const im = en.target; if (!im.dataset.vsrc || !im.isConnected) return;
       if (en.isIntersecting) show(im); else if (im.getAttribute('src') === im.dataset.vsrc) im.setAttribute('src', BLANK);
-    }), { rootMargin: '100% 100% 100% 100%' }) : null;
+    }), { rootMargin: document.documentElement.classList.contains('pland') ? '60% 60% 60% 60%' : '100% 100% 100% 100%' }) : null;   // sideways phone: a tighter window, fewer pictures in memory
     if (io) (layer._off = layer._off || []).push(() => io.disconnect());
     const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (io) io.observe(im); else show(im); });
     const secs = sc ? [...sc.querySelectorAll('section[id^="sec-"]')] : [];
