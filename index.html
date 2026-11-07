@@ -2024,6 +2024,91 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 })();
 </script>
 <script>(() => { const no = e => e.preventDefault(); ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, no, { passive: false })); document.addEventListener('touchmove', e => { if (e.touches && e.touches.length > 1) e.preventDefault(); }, { passive: false }); })();</script>
+<!-- "Add to Home Screen" coach: shown the first 3 times someone opens the app on a phone or tablet (never once it's installed) -->
+<style>
+  #a2hs { position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    background: rgba(0,0,0,.72); opacity: 0; transition: opacity .3s ease; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+  #a2hs.on { opacity: 1; }
+  #a2hs .a2-card { position: relative; width: 100%; max-width: 380px; max-height: 100%; overflow: auto; box-sizing: border-box; padding: 26px 22px 18px; border-radius: 24px;
+    background: #121212; border: 1px solid rgba(255,255,255,.1); box-shadow: 0 24px 60px rgba(0,0,0,.6); transform: translateY(14px) scale(.97); transition: transform .35s cubic-bezier(.2,.9,.2,1); }
+  #a2hs.on .a2-card { transform: none; }
+  #a2hs .a2-x { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; font-size: 20px; line-height: 36px; cursor: pointer; padding: 0; }
+  #a2hs .a2-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-right: 30px; }
+  #a2hs .a2-top img { width: 56px; height: 56px; border-radius: 14px; flex: none; box-shadow: 0 6px 16px rgba(0,0,0,.5); }
+  #a2hs .a2-k { font-size: 10.5px; font-weight: 700; letter-spacing: .22em; color: #EC6A38; text-transform: uppercase; margin-bottom: 4px; }
+  #a2hs h2 { margin: 0; font-size: 21px; line-height: 1.15; font-weight: 600; letter-spacing: -.01em; }
+  #a2hs .a2-perks { display: flex; gap: 6px; margin: 0 0 18px; flex-wrap: wrap; }
+  #a2hs .a2-perks span { font-size: 11px; font-weight: 600; letter-spacing: .06em; padding: 6px 10px; border-radius: 999px; background: rgba(236,106,56,.12); color: #F3936C; }
+  #a2hs ol { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 10px; }
+  #a2hs li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.05); font-size: 15px; line-height: 1.3; }
+  #a2hs li b { font-weight: 700; }
+  #a2hs .a2-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #EC6A38; color: #140803; font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+  #a2hs .a2-ic { display: inline-flex; vertical-align: -5px; width: 22px; height: 22px; align-items: center; justify-content: center; margin: 0 2px; border-radius: 6px; background: rgba(255,255,255,.12); }
+  #a2hs .a2-ic svg { width: 14px; height: 14px; }
+  #a2hs .a2-tip { margin: -10px 0 18px; font-size: 12px; line-height: 1.4; color: rgba(255,255,255,.5); }
+  #a2hs .a2-go { display: block; width: 100%; height: 46px; border: 0; border-radius: 23px; background: #EC6A38; color: #140803; font: 700 13px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .2em; text-indent: .2em; cursor: pointer; }
+  #a2hs .a2-no { display: block; margin: 10px auto 0; padding: 8px 12px; border: 0; background: none; color: rgba(255,255,255,.45); font: 500 12.5px 'Vivint Sans', Helvetica, Arial, sans-serif; cursor: pointer; }
+  #a2hs .a2-cnt { position: absolute; left: 22px; bottom: 22px; font-size: 11px; color: rgba(255,255,255,.3); display: none; }
+  @media (orientation: landscape) and (max-height: 500px) {   /* phone held sideways: steps side by side so it fits the short screen */
+    #a2hs .a2-card { max-width: 640px; padding: 18px 20px 12px; }
+    #a2hs .a2-top { margin-bottom: 12px; } #a2hs .a2-top img { width: 44px; height: 44px; } #a2hs h2 { font-size: 19px; }
+    #a2hs .a2-perks { margin-bottom: 12px; }
+    #a2hs ol { grid-auto-flow: column; grid-auto-columns: 1fr; margin-bottom: 14px; }
+    #a2hs li { flex-direction: column; align-items: flex-start; font-size: 13.5px; gap: 8px; }
+    #a2hs .a2-tip { margin-top: -6px; margin-bottom: 12px; }
+  }
+</style>
+<script>
+(() => {
+  const SHOWS = 3, KEY = 'fr_a2hs';
+  const nav = navigator, ua = nav.userAgent || '';
+  const installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || nav.standalone === true;
+  const iOS = /iPhone|iPad|iPod/.test(ua) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
+  const android = /Android/i.test(ua);
+  let deferred = null;   // Android Chrome's own install prompt, when it offers one
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
+  if (installed || !(iOS || android)) return;   // already on the home screen, or a computer
+  const get = () => { let v = null; try { v = localStorage.getItem(KEY); } catch (e) {} if (v == null) { const m = document.cookie.match(/(?:^|; )fr_a2hs=(\d+)/); v = m && m[1]; } return +v || 0; };
+  const put = n => { try { localStorage.setItem(KEY, String(n)); } catch (e) {} try { document.cookie = 'fr_a2hs=' + n + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {} };
+  // one count per visit: reloads and crash-restarts in the same visit don't use up a showing
+  let seen = false; try { seen = sessionStorage.getItem('fr_a2hs_s') === '1'; sessionStorage.setItem('fr_a2hs_s', '1'); } catch (e) {}
+  if (seen) return;
+  const n = get(); if (n >= SHOWS) return; put(n + 1);
+
+  const share = '<span class="a2-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M6 11H5v10h14V11h-1"/></svg></span>';
+  const dots = '<span class="a2-ic"><svg viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="5" r="2.2"/><circle cx="12" cy="12" r="2.2"/><circle cx="12" cy="19" r="2.2"/></svg></span>';
+  const plus = '<span class="a2-ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg></span>';
+  const steps = iOS
+    ? ['Tap ' + share + ' <b>Share</b>', 'Tap ' + plus + ' <b>Add to Home Screen</b>', 'Tap <b>Add</b>']
+    : ['Tap ' + dots + ' <b>menu</b>', 'Tap <b>Add to Home screen</b>', 'Tap <b>Install</b>'];
+  const tip = iOS
+    ? 'No Share button? Tap <b>⋯</b> in Safari\'s bottom bar first. Scroll down the share list to find Add to Home Screen.'
+    : 'In Chrome the menu is top right. It may say <b>Install app</b> instead.';
+
+  const show = () => {
+    const el = document.createElement('div'); el.id = 'a2hs'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Add Fast Recruit to your home screen');
+    el.innerHTML = '<div class="a2-card"><button class="a2-x" aria-label="Close">×</button>'
+      + '<div class="a2-top"><img src="apple-touch-icon.png" alt=""><div><div class="a2-k">Get the app</div><h2>Add Fast Recruit to your home screen</h2></div></div>'
+      + '<div class="a2-perks"><span>Full screen</span><span>One tap away</span><span>Works offline</span></div>'
+      + '<ol>' + steps.map((s, i) => '<li><span class="a2-n">' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol>'
+      + '<p class="a2-tip">' + tip + '</p>'
+      + '<button class="a2-go">' + (deferred ? 'INSTALL NOW' : 'GOT IT') + '</button>'
+      + '<button class="a2-no">Don\'t show this again</button></div>';
+    const close = forever => { if (forever) put(SHOWS); el.classList.remove('on'); setTimeout(() => el.remove(), 320); };
+    el.querySelector('.a2-x').onclick = () => close(false);
+    el.querySelector('.a2-no').onclick = () => close(true);
+    el.querySelector('.a2-go').onclick = () => {
+      if (deferred) { const d = deferred; deferred = null; d.prompt(); (d.userChoice || Promise.resolve({})).then(r => close(r && r.outcome === 'accepted')); }
+      else close(false);
+    };
+    el.addEventListener('click', e => { if (e.target === el) close(false); });
+    ['touchstart', 'touchmove', 'wheel', 'pointerdown', 'keydown'].forEach(t => el.addEventListener(t, e => e.stopPropagation(), { passive: true }));
+    document.body.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
+  };
+  const go = () => setTimeout(show, 1800);   // let the landing page appear first
+  if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
+})();
+</script>
 <script>if ('serviceWorker' in navigator) addEventListener('load', () => { const had = !!navigator.serviceWorker.controller; let done = false; navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(r => { r.update(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') r.update(); }); }); navigator.serviceWorker.addEventListener('controllerchange', () => { if (had && !done) { done = true; location.reload(); } }); });</script>
 </body>
 </html>
