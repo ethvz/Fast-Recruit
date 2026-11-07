@@ -1493,7 +1493,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // Feedback and crash reports are emailed to Ethan through Web3Forms (web3forms.com). Anything that can't send right away
   // (no signal, or the address not activated yet) is kept on the phone and sent automatically the next time the app opens.
   const FB = (() => {
-    const TO = 'https://api.web3forms.com/submit', KEY = '0779189a-2eb6-4da3-9906-8f4003208d4b', QK = 'fr_mailq';   // Web3Forms key → ethan.jones@vivint.com
+    const TO = 'https://api.web3forms.com/submit', KEY = 'e61bb919-8fc3-4a8c-9fb6-de53c583d517', QK = 'fr_mailq';   // Web3Forms key → ethangladejones@gmail.com
     const lsG = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
     const lsS = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
     const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
