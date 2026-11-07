@@ -187,7 +187,8 @@
   .fav { position: relative; width: 50px; height: 50px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
     border: 1.5px solid rgb(var(--acr)); background: transparent; box-shadow: none;
     transition: transform .18s ease, box-shadow .25s ease, border-color .25s ease; -webkit-tap-highlight-color: transparent; }
-  html.stack .favw, html.phone:not(.pland) .favw { top: auto; bottom: 10px; right: 8px; transform-origin: 100% 100%; }
+  /* upright phone: same spot as on iPad, just under the header of the section on screen */
+  html.stack .favw, html.phone:not(.pland) .favw { top: calc(96px + var(--dyh, 0px)); right: 26px; }
   html.pland .favw { scale: var(--CS, 1); top: 140px; right: calc(26px + var(--MXR, 0px)); }
   .fav svg { width: 21px; height: 21px; display: block; overflow: visible; }
   .fav.fexitb svg { width: 15px; height: 15px; }
