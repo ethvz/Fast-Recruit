@@ -86,8 +86,6 @@
     background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
   html.lite .pcont { transition: none; }
-  html.safe .board [style*="mask-image"]:not(img):not(:has(img)), html.safe .board [style*="radial-gradient(closest-side"] { display: none !important; }
-  html.safe .board [style*="mask-image"] { -webkit-mask-image: none !important; mask-image: none !important; }
   html.safe .board [style*="box-shadow"] { box-shadow: none !important; }
   html.safe .board [style*="filter: blur"], html.safe .board [style*="filter:blur"] { filter: none !important; }
   /* phone upright: sections stack with room above and below so the current one sits mid-screen; the others are dimmed */
@@ -305,14 +303,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const ssGet = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
   const ssSet = (k, v) => { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} };
   const crashed = ssGet('fr_alive') === '1';   // the last visit ended without the page closing normally
-  if (crashed) ssSet('fr_safe', '1');
   // two crashes within a few minutes: start on the home page next time instead of reopening the page that crashed
   let crashLoop = false;
   if (crashed) {
     const now = Date.now(), log = (ssGet('fr_crashes') || '').split(',').map(Number).filter(t => now - t < 300000);
     log.push(now); ssSet('fr_crashes', log.join(',')); crashLoop = log.length >= 2;
+    if (crashLoop) ssSet('fr_safe', String(now));   // lighter mode only after repeated crashes, and only for 10 minutes
   }
-  const SAFE = ssGet('fr_safe') === '1';
+  const SAFE = (() => { const v = ssGet('fr_safe'); if (!v) return false; const t = +v; if (t > 1 && Date.now() - t < 600000) return true; ssSet('fr_safe', null); return false; })();
   if (SAFE) document.documentElement.classList.add('lite', 'safe');
   ssSet('fr_alive', '1');
   let booted = false;
@@ -320,7 +318,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   function hardReload() {
     const now = Date.now(), log = (ssGet('fr_reloads') || '').split(',').map(Number).filter(t => now - t < 60000);
     if (log.length >= 3) return;   // never loop: at most three automatic refreshes a minute
-    log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', '1'); savePos(); ssSet('fr_alive', null);
+    log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', String(now)); savePos(); ssSet('fr_alive', null);
     location.reload();
   }
   const blank = () => { try { return !current || !current.layer || !current.layer.isConnected; } catch (e) { return true; } };
@@ -543,6 +541,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     flowCompact(layer);   // before the phone layout, so it lays out the trimmed header
     phoneChrome(layer); stackDim(layer);
     addStars(layer); setupFlowBtn(layer); buildFlowNav(layer);
+    // sideways galleries (Swag) scroll on their own: a sideways swipe there moves the photos, not the page
+    layer.querySelectorAll('[data-hscroll]').forEach(h => { if (h._hs) return; h._hs = 1; noDrag(h); h.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) e.stopPropagation(); }, { passive: true }); });
     setupScrollGroups(layer);
     setupVirtual(layer);
     // prefetch destinations
@@ -1004,9 +1004,23 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // The flow plays as "runs": back-to-back sections from the same page scroll as one page (only those sections shown),
   // and moving to a section on another page is a page change — the same feel as the regular flow.
   const FAVK = 'fr_favs';
-  let FAVS = (() => { try { const a = JSON.parse(localStorage.getItem(FAVK) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } })();
+  // your Custom flow is kept in three places (local storage, a database and a year-long cookie) so it's still there the next time
+  // the app opens, even if the phone clears one of them; whichever copy survives is copied back to the others
+  const favParse = v => { try { const a = JSON.parse(v); return Array.isArray(a) && a.every(x => typeof x === 'string') ? a : null; } catch (e) { return null; } };
+  const favCookie = () => { try { const m = document.cookie.match(/(?:^|; )fr_favs=([^;]*)/); return m ? favParse(decodeURIComponent(m[1])) : null; } catch (e) { return null; } };
+  const favIDB = (val) => new Promise(res => { try { const rq = indexedDB.open('fast-recruit', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+      rq.onsuccess = () => { try { const db = rq.result, tx = db.transaction('kv', val == null ? 'readonly' : 'readwrite'), st = tx.objectStore('kv');
+        if (val == null) { const g = st.get(FAVK); g.onsuccess = () => res(favParse(g.result)); g.onerror = () => res(null); } else { st.put(val, FAVK); tx.oncomplete = () => res(true); tx.onerror = () => res(null); } } catch (e) { res(null); } };
+      rq.onerror = () => res(null); } catch (e) { res(null); } });
+  let FAVS = (() => { let a = null; try { a = favParse(localStorage.getItem(FAVK)); } catch (e) {} return a || favCookie() || []; })();
   const favKey = (fn, id) => fn + '#' + id, isFav = (fn, id) => FAVS.indexOf(favKey(fn, id)) >= 0;
-  const saveFavs = () => { try { localStorage.setItem(FAVK, JSON.stringify(FAVS)); } catch (e) {} };
+  const saveFavs = () => { const v = JSON.stringify(FAVS);
+    try { localStorage.setItem(FAVK, v); } catch (e) {}
+    try { document.cookie = 'fr_favs=' + encodeURIComponent(v) + '; max-age=31536000; path=/; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : ''); } catch (e) {}
+    favIDB(v); };
+  // ask the browser to keep this app's storage, then fill in from the database if the faster copies were cleared
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
+  favIDB(null).then(a => { if (!FAVS.length && a && a.length) { FAVS = a; try { syncStars(); updateFlowCount(); } catch (e) {} } if (FAVS.length) saveFavs(); });
   let FLOW = ssGet('fr_flow') === '1', SEG = +(ssGet('fr_seg') || 0) || 0, flowGoSeg = null, flowFresh = false;
   if (FLOW) document.documentElement.classList.add('flow');
   const flowTops = {};
