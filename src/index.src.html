@@ -256,33 +256,6 @@
     padding: 11px 18px; border-radius: 22px; background: rgba(14,18,17,0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; font: 600 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif;
     box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: opacity .2s ease, translate .25s ease; white-space: nowrap; }
   .ftoast.on { opacity: 1; translate: -50% 0; }
-  /* ---- page tab bar: one long Liquid Glass pill at the bottom (like Instagram's), instead of page names in the header ---- */
-  html:not(.flow) .board p.hot[data-name^="("] { visibility: hidden !important; pointer-events: none !important; }
-  .tabbar { position: fixed; left: 50%; bottom: max(16px, calc(env(safe-area-inset-bottom) + 4px)); z-index: 70; display: flex; padding: 5px; border-radius: 999px;
-    translate: -50% 0; transform-origin: 50% 100%; transition: transform .45s cubic-bezier(.2,.9,.25,1.15), opacity .3s ease, translate .45s cubic-bezier(.2,.9,.25,1.15);
-    border: 1px solid rgba(255,255,255,0.26); background: linear-gradient(180deg, rgba(255,255,255,0.2), rgba(255,255,255,0.06)), rgba(10,14,13,0.42);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.06), 0 14px 40px rgba(0,0,0,0.45);
-    -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8);
-    font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-  .tabbar.mini { transform: scale(0.82); }
-  .tabbar.gone { opacity: 0; translate: -50% 140%; pointer-events: none; }
-  html.safe .tabbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(14,18,17,0.94); }
-  .tabbar .tb-cap { position: absolute; top: 5px; bottom: 5px; left: 5px; width: 0; border-radius: 999px; pointer-events: none;
-    background: linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.1)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -1px 0 rgba(255,255,255,0.08); }
-  .tabbar button { position: relative; z-index: 1; width: 92px; height: 54px; padding: 0; border: 0; background: none; color: rgba(255,255,255,0.72); cursor: pointer;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: color .25s ease; -webkit-touch-callout: none; }
-  .tabbar button svg { width: 23px; height: 23px; overflow: visible; transition: transform .35s cubic-bezier(.2,.9,.25,1.3); }
-  .tabbar button svg * { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: fill .25s ease; }
-  .tabbar button span { font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; }
-  .tabbar button.on { color: #fff; }
-  .tabbar button.on svg .fl { fill: currentColor; }
-  .tabbar button.on svg .ink { stroke: #10241f; }
-  .tabbar button:active svg { transform: scale(0.86); }
-  html.pland .tabbar button { width: 74px; height: 44px; gap: 3px; } html.pland .tabbar button svg { width: 19px; height: 19px; } html.pland .tabbar button span { font-size: 9px; }
-  html.pland .tabbar { bottom: max(8px, env(safe-area-inset-bottom)); padding: 4px; } html.pland .tabbar .tb-cap { top: 4px; bottom: 4px; }
-  html.stack .tabbar, html.phone:not(.pland) .tabbar { width: min(calc(100vw - 24px), 440px); box-sizing: border-box; }
-  html.stack .tabbar button, html.phone:not(.pland) .tabbar button { flex: 1; width: auto; height: 52px; }
-  html.stack .tabbar button span, html.phone:not(.pland) .tabbar button span { font-size: 9.5px; letter-spacing: 0.02em; }
   /* ---- custom flow: only the starred sections; the page's own arrows + section rail give way to the flow bar ---- */
   html.flow .layer[data-flow] .flowhide { display: none !important; }
   .fexit { cursor: pointer; pointer-events: auto !important; color: rgb(var(--acr)) !important; }
@@ -1058,7 +1031,6 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       current = { board: t.board, layer };
       { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
-      try { tabSync(t.board); } catch (e) {}
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
       startScreen(layer);
@@ -1605,7 +1577,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
     // What's New: the bigger updates only, newest first, in plain words
     const WN = [
-      ['Nov 7, 2026', [['menu', 'New page bar', 'Pages now live in a glass bar at the bottom. It slides to the page you pick and shrinks while you scroll. Press and hold a page to jump to a section.'], ['layers', 'Liquid Glass buttons', 'The page arrows, Guide, Custom Flow and Save buttons are frosted glass again, on phones too.'], ['chat', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['alert', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['spark', 'What\'s New', 'This list. See every big update and when it happened.'], ['plus', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['shield', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
+      ['Nov 7, 2026', [['layers', 'Liquid Glass buttons', 'The page arrows, Guide, Custom Flow and Save buttons are frosted glass again, on phones too.'], ['chat', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['alert', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['spark', 'What\'s New', 'This list. See every big update and when it happened.'], ['plus', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['shield', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
       ['Nov 6, 2026', [['down', 'Download for offline', 'Save every page, photo and video once, then use the app with no signal.'], ['star', 'Custom Flow', 'Star the sections you like and present only those, in your order. It\'s saved for next time.'], ['cam', 'Social Media Content', 'Ready-to-post Instagram stories for every Opportunity tool.'], ['bars', 'Career Comparison', 'Top 20 paying college majors: early pay vs. 10+ years in, plus student debt.'], ['sun', 'Summer Job Comparison', '18 common summer jobs and what they really pay over a summer.'], ['bulb', 'Growth skills open up', 'Tap any skill to see why it matters in your career and everyday life.'], ['layers', 'Smoother look', 'Photos blend softly between sections instead of hard lines. New FR app icon.']]],
       ['Nov 5, 2026', [['trend', '3 Year Plan', 'Map out your earnings and team growth over 3 to 6 years, then save it as an image.'], ['calc', 'Override calculator', 'See monthly and yearly residuals for managers and Area Directors.'], ['doc', 'Share pay scales', 'Send the official 2027 pay scales right from the calculators.'], ['mic', 'Guest speakers', '36 past speakers with photos and years, from Tony Robbins to David Goggins.'], ['flame', 'Burn the Ships', 'New relocation story added to Travel.'], ['list', 'Quick section menu', 'Press and hold a page name in the header to jump to any section.'], ['undo', 'Picks up where you left off', 'If the app reloads, it brings you back to the same spot.']]],
       ['Nov 4, 2026', [['users', 'Environment', 'New section: you become the average of the people around you.'], ['home', 'Logo goes Home', 'Tap the Vivint logo on any page to go back to the start.'], ['drop', 'Home page color', 'The home page gets its own NOT LIKE US yellow accent.'], ['heart', 'In loving memory', 'A tribute to Eli Randall on the home page.']]],
@@ -1787,14 +1759,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   let qnavInst = null;
   const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; q.classList.remove('on'); setTimeout(() => q.remove(), 220);
     const ins = qnavInst; qnavInst = null; if (ins && ins.hdrKick) ins.hdrKick(); };   // header's idle timer starts again once the menu closes
-  function openQnav(layer, el, fnTab, nameTab) {
-    const list = fnTab ? [] : (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = fnTab ? { board: fnTab } : dest && P.artboards[dest];
+  function openQnav(layer, el) {
+    const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
     if (!ab || !P.boards[ab.board]) return false;
     const secs = P.boards[ab.board].sections || []; if (secs.length < 2) return false;
     closeQnav();
     const cur = current && current.board === ab.board ? currentAid() : null;
     const q = document.createElement('div'); q.className = 'qnav'; q.setAttribute('role', 'menu');
-    const pg = nameTab || (el.textContent || '').trim();
+    const pg = (el.textContent || '').trim();
     q.innerHTML = '<div class="qn-h"></div>'; q.firstChild.textContent = pg;
     secs.forEach((x, i) => { if (i === 0) return; const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'menuitem'); if (x.aid === cur) b.className = 'cur';
       b.innerHTML = '<span class="n"></span><span></span>'; b.firstChild.textContent = String(i).padStart(2, '0'); b.lastChild.textContent = x.name;
@@ -1802,13 +1774,12 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     document.body.appendChild(q);
     const r = el.getBoundingClientRect(), w = q.offsetWidth, vw = innerWidth, vh = innerHeight;
     let left = Math.max(10, Math.min(vw - w - 10, r.left + r.width / 2 - w / 2)), top = r.bottom + 6;
-    if (r.top > vh / 2) { const room = r.top - 16; if (q.offsetHeight > room) q.style.maxHeight = Math.max(160, room) + 'px'; top = Math.max(10, r.top - 10 - q.offsetHeight); }   // from the bottom tab bar: open upward
-    else if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
+    if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
     q.style.left = left + 'px'; q.style.top = top + 'px';
     requestAnimationFrame(() => q.classList.add('on'));
     qnav = q; haptic('strong');
     // keep the header showing while the menu is open (it normally hides after a few idle seconds)
-    const ins = layer && layer._inst; qnavInst = ins || null;
+    const ins = layer._inst; qnavInst = ins || null;
     if (ins) { clearTimeout(ins._hdrT); if (ins.state && ins.state.hdrHide) ins.setState({ hdrHide: false });
       if (ins.hdrKick && !ins.__qnavWrap) { const k = ins.hdrKick; ins.__qnavWrap = true; ins.hdrKick = function () { if (qnav && qnavInst === this) { clearTimeout(this._hdrT); return; } return k.apply(this, arguments); }; } }
     return true;
@@ -1825,68 +1796,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     ['pointerup', 'pointercancel'].forEach(k => layer.addEventListener(k, cancel, true));
     layer.addEventListener('contextmenu', e => { const el = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (el) { e.preventDefault(); if (!qnav && openQnav(layer, el)) { layer._dragged = true; setTimeout(() => { layer._dragged = false; }, 600); } } });
   }
-  document.addEventListener('pointerdown', e => { if (qnav && !qnav.contains(e.target)) { const keep = e.target.closest && e.target.closest('.hot[data-name^="("], .tabbar'); if (!keep) closeQnav(); } }, true);
+  document.addEventListener('pointerdown', e => { if (qnav && !qnav.contains(e.target)) { const keep = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (!keep) closeQnav(); } }, true);
   addEventListener('resize', closeQnav); addEventListener('hashchange', closeQnav);
-  // ---------------- page tab bar (bottom Liquid Glass pill, Instagram-style) ----------------
-  // tap: the glass highlight slides over to the new page and stretches on the way, then the page opens.
-  // scroll down: the bar shrinks out of the way; scroll up or stop: it grows back. Press and hold: that page's sections.
-  const TABS = [['Main.dc.html', 'Home', '<path class="fl" d="M4 11.2 12 4.5l8 6.7V20h-5.2v-5.6H9.2V20H4z"/>'],
-    ['Why-Vivint.dc.html', 'Why Vivint', '<path class="fl" d="M12 3.5l2.6 5.3 5.8.85-4.2 4.1 1 5.8L12 16.8l-5.2 2.75 1-5.8-4.2-4.1 5.8-.85z"/>'],
-    ['Experience.dc.html', 'Experience', '<circle cx="12" cy="12" r="8.5"/><path class="fl" d="M15.6 8.4 13.4 13.4 8.4 15.6 10.6 10.6z"/>'],
-    ['Culture.dc.html', 'Lifestyle', '<circle class="fl" cx="12" cy="12" r="3.8"/><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5l1.5 1.5M17 17l1.5 1.5M5.5 18.5 7 17M17 7l1.5-1.5"/>'],
-    ['Opportunity.dc.html', 'Opportunity', '<path d="M3.5 17.5 9 12l3.6 3.6 7.4-7.6"/><path class="fl" d="M15 7.2h5.3v5.3z"/>'],
-    ['FAQs.dc.html', 'FAQs', '<circle class="fl" cx="12" cy="12" r="8.5"/><path class="ink" d="M9.6 9.6a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.6h.01"/>']];
-  let tabEl = null, tabOn = -1, tabMini = false;
-  function buildTabs() {
-    const el = document.createElement('nav'); el.className = 'tabbar gone'; el.setAttribute('aria-label', 'Pages');
-    el.innerHTML = '<div class="tb-cap"></div>' + TABS.map(([fn, label, ic], i) => '<button type="button" data-i="' + i + '" aria-label="' + label + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + ic + '</svg><span>' + label + '</span></button>').join('');
-    document.body.appendChild(el); tabEl = el;
-    let hold = 0, held = false, sx = 0, sy = 0;
-    el.addEventListener('pointerdown', e => { const b = e.target.closest('button'); if (!b) return; held = false; sx = e.clientX; sy = e.clientY;
-      hold = setTimeout(() => { hold = 0; held = true; openQnav(null, b, TABS[+b.dataset.i][0], TABS[+b.dataset.i][1]); }, 450); });
-    el.addEventListener('pointermove', e => { if (hold && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) { clearTimeout(hold); hold = 0; } });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(k => el.addEventListener(k, () => { clearTimeout(hold); hold = 0; }));
-    el.addEventListener('contextmenu', e => e.preventDefault());
-    el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || held) { held = false; return; }
-      const i = +b.dataset.i, B = P.boards[TABS[i][0]]; if (!B || !B.sections || !B.sections.length) return;
-      haptic('select'); setMini(false);
-      if (current && current.board === TABS[i][0]) { const sc = current.layer && scrollerOf(current.layer); if (sc) sc.scrollTo({ top: 0, behavior: 'smooth' }); return; }   // tap the page you're on: back to its top
-      moveCap(i, true); go(B.sections[0].aid, 'dissolve', 0.3, 'ease-out'); });
-    ['touchstart', 'touchmove', 'wheel'].forEach(k => el.addEventListener(k, e => e.stopPropagation(), { passive: true }));
-    addEventListener('resize', () => moveCap(tabOn, false));
-  }
-  function moveCap(i, anim) {
-    if (!tabEl) return; const cap = tabEl.firstChild, bs = tabEl.querySelectorAll('button');
-    bs.forEach((b, k) => b.classList.toggle('on', k === i));
-    if (i < 0) { cap.style.opacity = '0'; tabOn = i; return; }
-    const b = bs[i], to = { l: b.offsetLeft, w: b.offsetWidth };
-    const prev = tabOn >= 0 && bs[tabOn] ? { l: bs[tabOn].offsetLeft, w: bs[tabOn].offsetWidth } : null;
-    cap.style.opacity = '1'; cap.style.left = to.l + 'px'; cap.style.width = to.w + 'px';
-    if (anim && prev && prev.l !== to.l && cap.animate) {   // liquid slide: stretch across, then settle with a little bounce
-      const a = Math.min(prev.l, to.l), span = Math.abs(to.l - prev.l) + to.w;
-      cap.animate([{ left: prev.l + 'px', width: prev.w + 'px', transform: 'scaleY(1)' },
-        { left: a + 'px', width: span + 'px', transform: 'scaleY(0.86)', offset: 0.42 },
-        { left: (to.l + (to.l > prev.l ? 4 : -4)) + 'px', width: to.w + 'px', transform: 'scaleY(1.04)', offset: 0.78 },
-        { left: to.l + 'px', width: to.w + 'px', transform: 'scaleY(1)' }], { duration: 520, easing: 'cubic-bezier(.3,.7,.25,1)' });
-    }
-    tabOn = i;
-  }
-  function setMini(on) { if (!tabEl || tabMini === on) return; tabMini = on; tabEl.classList.toggle('mini', on); }
-  function tabSync(fn) {
-    if (!tabEl) buildTabs();
-    const i = TABS.findIndex(t => t[0] === fn);
-    tabEl.classList.toggle('gone', FLOW || i <= 0);   // not on Home (it has its own page list) or in a custom flow (the flow bar is there)
-    if (i > 0 && i !== tabOn) moveCap(i, !tabEl.classList.contains('gone') && tabOn > 0);
-    setMini(false);
-  }
-  { const last = new WeakMap(); let idle = 0;
-    document.addEventListener('scroll', e => {
-      const sc = e.target; if (!tabEl || !sc || sc.nodeType !== 1 || !current || !current.layer || !current.layer.contains(sc)) return;
-      const y = sc.scrollTop, p = last.get(sc); last.set(sc, y); if (p == null) return;
-      const d = y - p; if (Math.abs(d) < 2) return;
-      if (y < 40 || d < -6) setMini(false); else if (d > 4) setMini(true);
-      clearTimeout(idle); idle = setTimeout(() => setMini(false), 1600);   // stop scrolling: it grows back
-    }, true); }
   // ---------------- load only the sections near the screen ----------------
   // Long pages are split into sections; sections more than ~1.5 screens away are unloaded
   // (their DOM is parked and their images released) and reloaded just before they scroll in.
