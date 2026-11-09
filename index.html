@@ -47,6 +47,8 @@
   .board .sg { cursor: grab; touch-action: pan-y; }
   /* free-swiping card strips (Incentive Trips, Guests): native horizontal scroll, no page swipe */
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
+  /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
+  .board [data-vscroll], .board [data-name="Income rows"] { pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .board .hsc::-webkit-scrollbar { display: none; }
   /* scroll reveal for copy */
   .board .rv { opacity: 0; transform: translateY(38px); transition: opacity .9s cubic-bezier(.2,.75,.2,1), transform 1.05s cubic-bezier(.2,.75,.2,1); transition-delay: var(--rvd, 0ms); }
@@ -2135,7 +2137,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const t = e.touches[0], target = e.target;
       if (!target || !target.closest || target.closest('input, textarea, select')) return;
       const tap = target.closest(TAPPABLE); if (!tap || !viewport.contains(tap)) return;
-      if (tap.matches('a[target="_blank"]')) return;   // outbound links keep the browser's own activation (a switch inside would swallow it)
+      if (tap.matches('a[target="_blank"]') || tap.closest('[data-vscroll], [data-name="Income rows"]')) return;   // (inner scrolling lists: a switch under the finger would grab the drag)   // outbound links keep the browser's own activation (a switch inside would swallow it)
       const box = host(tap instanceof HTMLElement ? tap : (target instanceof HTMLElement ? target : tap.parentElement)) || host(tap.parentElement);
       if (!box) return;
       clearTimeout(tT); if (tsw) tsw.remove();
