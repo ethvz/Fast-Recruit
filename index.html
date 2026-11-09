@@ -246,6 +246,21 @@
   html.stack .favw, html.phone:not(.pland) .favw { top: calc(96px + var(--dyh, 0px)); right: 26px; }
   html.pland .favw { scale: var(--CS, 1); top: 140px; right: calc(26px + var(--MXR, 0px)); }
   .fav svg { width: 16px; height: 16px; display: block; overflow: visible; }
+  /* fine print: small pill beside the star, opens the rules behind the section */
+  .fav.ffp { width: auto; padding: 0 12px 0 10px; border-radius: 18px; display: flex; align-items: center; gap: 6px; color: #fff; font: 600 11px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+  .fav.ffp svg { width: 14px; height: 14px; }
+  .fsheet.fp .fs-card { width: min(460px, calc(100vw - 32px)); }
+  .fp-body { padding: 4px 16px 16px; }
+  .fp-b { margin: 12px 0 0; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.05); }
+  .fp-h { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgb(var(--acr)); margin-bottom: 8px; }
+  .fp-b ul { margin: 0; padding: 0 0 0 16px; } .fp-b li { font-size: 13px; line-height: 1.45; color: rgba(255,255,255,0.85); margin: 0 0 5px; } .fp-b li:last-child { margin-bottom: 0; }
+  .fp-b table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .fp-b th { text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding: 0 6px 6px 0; }
+  .fp-b td { padding: 6px 6px 6px 0; border-top: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.88); font-variant-numeric: tabular-nums; }
+  .fp-b th:not(:first-child), .fp-b td:not(:first-child) { text-align: right; }
+  .fp-n { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; color: rgba(255,255,255,0.5); }
+  .fp-src { margin: 14px 4px 0; font-size: 11px; line-height: 1.45; color: rgba(255,255,255,0.4); }
+
   .fav.fexitb svg { width: 12px; height: 12px; }
   .fav svg path { fill: none; stroke: #fff; stroke-width: 1.7; transition: fill .25s ease, stroke .25s ease; }
   .fav.on { border: 1.5px solid rgba(var(--acr),0.8); background: rgba(var(--acr),0.2); color: rgb(var(--acr)); box-shadow: none; }
@@ -1210,6 +1225,86 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     t.textContent = msg; requestAnimationFrame(() => t.classList.add('on')); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1900);
   }
   const noDrag = b => ['pointerdown', 'touchstart', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+  // ---- Fine print: the rules behind a section, from the 2026 Sales Rules (v. 11/20/2025) ----
+  // Each entry: list of blocks. A block is [heading, [bullet, …]] or [heading, {h: [...cols], r: [[...], …]}, note?]
+  const FP = {
+    'Why-Vivint.dc.html#package-costs': [
+      ['Install fees', ['Can be waived with no deduction on Pay-in-Full, accounts with $250+ collected upfront, or DTH Promo Pricing packages.', 'Otherwise a $0 install fee costs you $10 PRMR.']],
+      ['Kits', ['$1,799.99 Premium Kit: +$2 PRMR.', 'Kit under $1,799.99: −$5 PRMR (some account types excluded).', 'Service discounted below $24.99 (Premium Kit) or $44.99 (smaller kit): −$2 PRMR per $1 of discount.', 'Hardware or install discount: −PRMR equal to the discount ÷ 15 (a $300 discount = −$20).']],
+      ['Upfront payment adder', { h: ['Collected upfront', 'PRMR adder'], r: [['$200 – $499.99', '+$5'], ['$500 – $999.99', '+$10'], ['$1,000 – $1,999.99', '+$15'], ['$2,000 – $2,999.99', '+$20'], ['$3,000 – $3,999.99', '+$25'], ['$4,000+', '+$30']] }, 'Credit score 600+ only. Not on 3rd Look or DTH Promo Pricing.'],
+      ['Protection plan adders', ['VPP ($7.99): +$5 · VPP Mobile ($27.99): +$10 · VPP Mobile+ ($32.99): +$12, if still paid at the January backend.']],
+      ['Down payments', ['3rd Look: 25% of hardware down (min $250) and −$35 PRMR.', 'DTH Promo Pricing (Pay-in-Four): credit 529–574 pays the greater of 25% or $200 down; below 529 pays in full upfront.']]
+    ],
+    'Why-Vivint.dc.html#sales-tools': [
+      ['Company iPad', ['Optional. Keep it working; if it isn\'t returned in original condition, or is lost or damaged, you may owe $500.']],
+      ['Street Genie', ['Contract buyouts are approved in Street Genie. You cover 100% of any buyout over $1,000.', 'Buyouts over $2,000 that you won\'t cover get the customer\'s contract cancelled.', 'Doorbell Exchange: offer a $200 prepaid Visa for the customer\'s old doorbell; 50% is deducted from you weekly.', 'Car group mileage is tracked in Street Genie.']],
+      ['Marketing rules', ['Sell door to door in your area. No out-of-area lead lists.', 'No mass marketing: text blasts, robocalls or mass emails.', 'Not sure a tool is allowed? Email Legal@vivint.com.']]
+    ],
+    'Experience.dc.html#job-description': [
+      ['2026 season', { h: ['Period', 'Dates'], r: [['Full season', 'Sep 29, 2025 – Sep 27, 2026'], ['Preseason', 'Sep 29, 2025 – Apr 12, 2026'], ['Summer', 'Apr 13 – Aug 30, 2026'], ['Extension', 'Aug 31 – Sep 27, 2026']] }],
+      ['How you\'re paid', ['On funded installs made during the season.', 'You\'re a Rookie if you sold fewer than 10 FP in a prior season.']],
+      ['Conduct', ['Follow the Employee Handbook, Codes of Conduct, Red Flags and Customer Financing policies.', 'Violations can mean lost commission, deductions, suspension or termination.']]
+    ],
+    'Experience.dc.html#travel': [
+      ['Travel money', ['Paid when you finish all mandatory training, pass the tests and have a funded install in your summer market.', 'Paid after your Sales Manager approves, minus training pay already received. Amount depends on your office location.', 'Only for reps who travel to and sell in a summer market.']],
+      ['Training pay', ['Paid for completing mandatory training; amount depends on the training and office location.']],
+      ['Car group drivers', ['Drive three other reps: $0.70 per mile listed as driver money.', 'Mileage policy: $0.67 per mile of required business travel, up to 175 miles a week (CA, IL, MA: manager can approve more).', 'Track miles in Street Genie; paid weekly for the prior Monday–Sunday.', 'Counts: correlation meeting, territory drop-offs and pick-ups, preset appointments. Doesn\'t count: lunch, gym, team activities, errands.']]
+    ],
+    'Experience.dc.html#housing': [
+      ['Who gets housing', ['Summer reps with an account installed in preseason. Not offered for year-round sales.']],
+      ['Weekly cost', { h: ['Room', 'Rent', 'Utilities', 'Cleaning (once)'], r: [['Shared room', '$200', '$35', '$75'], ['Own room', '$375', '$45', '$75'], ['Married/family · 1 bed', '$400', '$50', '$125'], ['Married/family · 2 bed', '$425', '$50', '$125'], ['Married/family · 3 bed', '$450', '$50', '$125']] }],
+      ['When you pay', ['Rent starts on your confirmed start date or the day you arrive, whichever is first, and ends on your confirmed end date or the day you leave, whichever is last.', 'Rent and utilities come out of weekly upfront pay; cleaning and one-time fees come out of backend pay.']]
+    ],
+    'Culture.dc.html#competitions': [
+      ['Office rewards', ['Dinner goals: hit the office\'s weekly goal and each rep gets $20 for dinner (paid to the Area Director).', 'Incentive money: managers get $50 per rep per month in summer to spend on incentives.', 'Summer program offices only.']]
+    ],
+    'Opportunity.dc.html#rookie-scenarios': [
+      ['Rookie rules', ['Rookie = sold fewer than 10 FP in a prior season.', 'Paid $4 per $1 of funded PRMR upfront; the rest comes on the backend.', 'You must complete the summer season to earn the higher rate above $4.', 'Rep Assist: the rookie gets the $4 upfront but the account doesn\'t count toward their level.', '3rd Look accounts are paid upfront to rookies only.']]
+    ],
+    'Opportunity.dc.html#preseason-projections': [
+      ['Preseason', ['Runs Sep 29, 2025 – Apr 12, 2026.', 'A preseason install makes you eligible for summer housing.', 'Preseason and summer accounts are paid on the first backend (by Nov 30) at 70%, based on the September data freeze.']]
+    ],
+    'Opportunity.dc.html#pay-scales': [
+      ['How commission works', ['Commission = PRMR × your rate. Your rate depends on total FP+ funded in the season.', 'FP+ = funded new installs (incl. panel activations) + upgrade PRMR ÷ 85 + 0.5 per NIS-closed lead with consent.', 'PRMR = the customer\'s monthly payment minus exclusions, plus adders, minus reductions.']],
+      ['When you\'re paid', { h: ['Payment', 'When', 'Amount'], r: [['Upfront', 'Weekly, for last week\'s installs', '$4 per $1 PRMR'], ['1st backend', 'By Nov 30 (Sept freeze)', '70%'], ['2nd backend', 'By Feb 28 (Jan freeze, incl. Extension)', '100%']] }, 'Finish the summer season to qualify for the Full Year Bonus; otherwise backend service commission is $4 per $1 PRMR.'],
+      ['Unfunded accounts', ['Cancelled, 30+ days past due, $0 collected after a month, non-payable holds, unpaid Pay-in-Full balances, and 3rd Look without the required down payment.']],
+      ['Charged to you', ['A waived first month (unless PIF 600+ credit or $800+ upfront), any promised credits, gift cards (up to $300), and a $40 NRG discount.']],
+      ['Attrition (per cancel, excl. ROR)', { h: ['Cancel + past due', 'Rep'], r: [['Under 7%', '$0'], ['7%', '−$400'], ['9%', '−$500'], ['11%', '−$600'], ['13%', '−$800']] }, 'Under 17 FP+ or 5 attrition accounts: excluded.'],
+      ['ROR cancels', { h: ['ROR rate', 'Rep'], r: [['Under 9%', '$0'], ['9%', '−$100'], ['11%', '−$150'], ['13%', '−$175'], ['16%', '−$200']] }, 'If your 2025 ROR was over 8.5%: $50 upfront deduction per ROR install from Apr 13, refunded on the backend if you finish under 8.5%.']
+    ],
+    'Opportunity.dc.html#override-calculator': [
+      ['Leadership bonuses', ['Assistant Manager Bonus: team or MGMT group funds 300 FP+ (100+ from rookies).', 'Manager Bonus: 500 FP+ (200+ from rookies).', 'Team and MGMT group structure freezes May 15, 2026.']],
+      ['Override growth', ['Year-over-year growth uses your MGMT group\'s funded FP+ from the prior season, including reps who didn\'t return.']],
+      ['Attrition (per cancel)', { h: ['Cancel + past due', 'Manager', 'Area Director', 'Partnership'], r: [['7%', '−$30', '−$20', '−$15'], ['9%', '−$50', '−$30', '−$17'], ['11%', '−$75', '−$50', '−$20'], ['13%', '−$100', '−$70', '−$50']] }],
+      ['ROR (per cancel)', { h: ['ROR rate', 'Manager', 'Area Director', 'Partnership'], r: [['9%', '−$15', '−$10', '−$15'], ['11%', '−$17', '−$12', '−$17'], ['13%', '−$20', '−$15', '−$20'], ['16%', '−$25', '−$20', '−$25']] }],
+      ['Digital recruits (summer)', { h: ['Level', 'Year 1', 'Year 2', 'Year 3'], r: [['Area Director', '−$20', '−$6', '−$3'], ['Mgmt. Leader', '−$25', '−$10', '−$4'], ['Partnership', '−$20', '−$9', '−$3']] }],
+      ['Compliance', ['Leaders lose all current-season overrides on terminated reps, plus per-violation deductions: Mgmt. Group −$1,500 (Tier 1) / −$750 (Tier 2); Area Director −$1,200 / −$600.']]
+    ],
+    'Opportunity.dc.html#six-streams': [
+      ['Energy (NRG) leads', { h: ['Term', 'Sales Rep'], r: [['12–24 months', '$185'], ['36–60 months', '$220']] }, 'Paid when a lead you pass to NRG starts flowing.'],
+      ['NIS leads', ['Leads closed by NIS with customer consent count 0.5 FP+ for you.', 'NIS leads you close within 45 days of creation: −$10 PRMR.']],
+      ['Upgrades', ['Paid on upgrade PRMR ÷ 85. Add-ons count toward FP+ only if installed 90+ days after the original install.']],
+      ['Retail Installment Contracts', ['If a customer won\'t pay by debit card or ACH, the account is paid residually after the Jan/Feb backend. Its FP+ still counts toward your level.']]
+    ],
+    'Opportunity.dc.html#positions': [
+      ['Tenured pay scale', ['5 seasons with 10+ accounts before this one, plus 100+ FP+ installed this season.', 'You\'re paid at the equivalent of your best past pay level.']],
+      ['Leader bonuses', ['Assistant Manager: 300 FP+ (100+ from rookies). Manager: 500 FP+ (200+ from rookies).']],
+      ['Equity vesting', ['For vesting, an account = FP+ (gross installs minus ROR cancels) in your downline.']]
+    ]
+  };
+  const FPIC = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.5 5v9.2H4z M9 1.8V5.2h3.4 M6.2 8h4 M6.2 10.6h4" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  function openFinePrint(fn, id) {
+    const blocks = FP[fn + '#' + id]; if (!blocks) return;
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const name = (secList(fn).find(s => s.sid === id) || {}).name || '';
+    const body = blocks.map(([h, v, note]) => '<div class="fp-b"><div class="fp-h">' + esc(h) + '</div>'
+      + (Array.isArray(v) ? '<ul>' + v.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>'
+        : '<table><thead><tr>' + v.h.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' + v.r.map(r => '<tr>' + r.map(c => '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>')
+      + (note ? '<p class="fp-n">' + esc(note) + '</p>' : '') + '</div>').join('');
+    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Fine print</div><div class="fs-t">' + esc(name) + '</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+      + '<div class="fs-list fp-body">' + body + '<p class="fp-src">From the 2026 Sales Rules (v. 11/20/2025). Rules can change each season; questions go to 1STOP · 1stop@vivint.com · 888.324.5771.</p></div>');
+    sh.classList.add('fc', 'fp'); sh.addEventListener('click', e => { if (e.target.closest('.fs-x') || e.target.classList.contains('fs-scrim')) closeSheet(); });
+  }
   function addStars(layer) {
     const fn = layer._fn, sc = scrollerOf(layer), flow = !!layer.dataset.flow;
     if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
@@ -1217,6 +1312,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const id = sec.id.slice(4); if (sec.querySelector(':scope > .favw')) return;
       if (!flow && isTitle(fn, secIdx(fn, id))) return;
       const w = document.createElement('div'); w.className = 'favw';
+      if (FP[fn + '#' + id]) {   // this section has fine print
+        const fp = document.createElement('button'); fp.type = 'button'; fp.className = 'fav ffp'; fp.setAttribute('aria-label', 'Fine print: the sales rules for this section'); fp.innerHTML = FPIC + '<span>Fine print</span>';
+        noDrag(fp); fp.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openFinePrint(fn, id); }); w.appendChild(fp);
+      }
       if (flow) {
         const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'fav fedit'; ed.setAttribute('aria-label', 'Edit your Custom flow'); ed.innerHTML = PEN;
         noDrag(ed); ed.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openEdit(); }); w.appendChild(ed);
@@ -1618,6 +1717,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
     // What's New: the bigger updates only, newest first, in plain words
     const WN = [
+      ['Nov 9, 2026', [['doc', 'Fine print', 'Sections about pay, housing, travel and leadership now have a Fine print button with the sales rules behind them.'], ['layers', 'Cleaner buttons', 'Buttons are soft grey; the main action on each screen is tinted in the page color.']]],
       ['Nov 7, 2026', [['layers', 'Liquid Glass buttons', 'The page arrows, Guide, Custom Flow and Save buttons are frosted glass again, on phones too.'], ['chat', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['alert', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['spark', 'What\'s New', 'This list. See every big update and when it happened.'], ['plus', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['shield', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
       ['Nov 6, 2026', [['down', 'Download for offline', 'Save every page, photo and video once, then use the app with no signal.'], ['star', 'Custom Flow', 'Star the sections you like and present only those, in your order. It\'s saved for next time.'], ['cam', 'Social Media Content', 'Ready-to-post Instagram stories for every Opportunity tool.'], ['bars', 'Career Comparison', 'Top 20 paying college majors: early pay vs. 10+ years in, plus student debt.'], ['sun', 'Summer Job Comparison', '18 common summer jobs and what they really pay over a summer.'], ['bulb', 'Growth skills open up', 'Tap any skill to see why it matters in your career and everyday life.'], ['layers', 'Smoother look', 'Photos blend softly between sections instead of hard lines. New FR app icon.']]],
       ['Nov 5, 2026', [['trend', '3 Year Plan', 'Map out your earnings and team growth over 3 to 6 years, then save it as an image.'], ['calc', 'Override calculator', 'See monthly and yearly residuals for managers and Area Directors.'], ['doc', 'Share pay scales', 'Send the official 2027 pay scales right from the calculators.'], ['mic', 'Guest speakers', '36 past speakers with photos and years, from Tony Robbins to David Goggins.'], ['flame', 'Burn the Ships', 'New relocation story added to Travel.'], ['list', 'Quick section menu', 'Press and hold a page name in the header to jump to any section.'], ['undo', 'Picks up where you left off', 'If the app reloads, it brings you back to the same spot.']]],
