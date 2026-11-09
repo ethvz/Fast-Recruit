@@ -427,8 +427,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   })();
   window.FR = FR;
   FR.set('boot', 'loading', 'start');
-  const crashed = ssGet('fr_alive') === '1';   // the last visit ended without the page closing normally
-  const CRASH = crashed ? (() => { try { return JSON.parse(ssGet('fr_pos') || 'null') || {}; } catch (e) { return {}; } })() : null;   // where it crashed, for the crash report
+  // Crash marker: a home-screen iPhone app that crashes restarts with its short-term (session) storage wiped, so phones and
+  // tablets also keep a copy in long-term storage. It is cleared whenever the app leaves the screen (switching apps, locking,
+  // closing), so it is only still there on the next open if the app died while it was on screen, i.e. it crashed.
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} };
+  const TOUCHDEV = /iPhone|iPad|iPod|Android/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const alive = v => { ssSet('fr_alive', v); if (TOUCHDEV) lsSet('fr_alive', v); };
+  const crashed = ssGet('fr_alive') === '1' || (TOUCHDEV && lsGet('fr_alive') === '1');   // the last visit ended without the page closing normally
+  const CRASH = crashed ? (() => { try { return JSON.parse(ssGet('fr_pos') || lsGet('fr_lastpos') || 'null') || {}; } catch (e) { return {}; } })() : null;   // where it crashed, for the crash report
   if (crashed) window.__frCrash = true;
   // two crashes within a few minutes: start on the home page next time instead of reopening the page that crashed
   let crashLoop = false;
@@ -456,19 +463,21 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     return { can: () => !!sw(), label,
       start: () => { const c = sw(); if (!c || st.ready || st.busy) return; st.busy = true; paint(); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {} c.postMessage({ t: 'dl' }); } };
   })();
-  ssSet('fr_alive', '1');
+  alive('1');
   let booted = false;
-  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)', st: FR.snapshot(), tr: FR.trail(8) })); } catch (e) {} }
+  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} const j = JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)', st: FR.snapshot(), tr: FR.trail(8) }); ssSet('fr_pos', j); if (TOUCHDEV) lsSet('fr_lastpos', j); } catch (e) {} }
   function hardReload() {
     const now = Date.now(), log = (ssGet('fr_reloads') || '').split(',').map(Number).filter(t => now - t < 60000);
     if (log.length >= 3) return;   // never loop: at most three automatic refreshes a minute
-    FR.set('boot', 'loading', 'auto-refresh'); log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', String(now)); savePos(); ssSet('fr_alive', null);
+    FR.set('boot', 'loading', 'auto-refresh'); log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', String(now)); savePos(); alive(null);
     location.reload();
   }
   const blank = () => { try { return !current || !current.layer || !current.layer.isConnected; } catch (e) { return true; } };
   const checkBlank = () => setTimeout(() => { if (!booted || blank()) hardReload(); }, 1200);
-  addEventListener('pagehide', () => { savePos(); ssSet('fr_alive', null); });
-  addEventListener('pageshow', () => ssSet('fr_alive', '1'));
+  addEventListener('pagehide', () => { savePos(); alive(null); });
+  addEventListener('pageshow', () => alive('1'));
+  // off screen = not crashing: clear the long-term marker, and set it again when the app comes back
+  document.addEventListener('visibilitychange', () => { if (TOUCHDEV) lsSet('fr_alive', document.visibilityState === 'visible' ? '1' : null); });
   addEventListener('error', e => { if (e && e.target && e.target !== window) return; checkBlank(); });   // script errors only (pictures retry on their own)
   addEventListener('unhandledrejection', checkBlank);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (booted && blank()) hardReload(); } else savePos(); });
@@ -1695,7 +1704,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-09c';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-09d';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -1733,19 +1742,24 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       });
     }
 
+    // Crash report goes out by itself as soon as the app reopens (it used to wait for a SEND tap, and most never got one).
+    // The sheet just says so; an optional note is sent as a short follow-up.
     function crash(info) {
       const pg = info && info.pg ? info.pg + (info.sec ? ' › ' + info.sec : '') : 'Unknown', o = (info && info.o) || orient(), dev = device();
+      const sent = send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: (info && info.st && info.st.device) || [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '),
+        'App state': stateText(info && info.st), 'App version': BUILD, 'Last steps': (info && info.tr) || '(not recorded)', Note: '(none)' });
       const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Crash report</div><div class="fs-t">The app closed unexpectedly</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
-        + '<div class="fb-body"><p class="fb-lead">Send a quick report so it can be fixed. It only takes a tap.</p>' + meta([['Crashed on', pg], ['Device', dev], ['Orientation', o]])
+        + '<div class="fb-body"><p class="fb-lead fb-st">Sending a crash report to Ethan so it can be fixed…</p>' + meta([['Crashed on', pg], ['Device', dev], ['Orientation', o]])
         + '<textarea class="fb-msg" style="min-height:70px" placeholder="What were you doing? (optional)" aria-label="What were you doing"></textarea></div>'
-        + '<div class="fs-foot"><button type="button" class="fb-later">Not now</button><button type="button" class="fb-send">SEND REPORT</button></div>');
+        + '<div class="fs-foot"><button type="button" class="fb-later">Done</button><button type="button" class="fb-send">ADD NOTE</button></div>');
       sh.classList.add('fc'); stopKeys(sh); shut(sh);
+      sent.then(ok => { const st = sh.querySelector('.fb-st'); if (st) st.textContent = ok ? 'A crash report was sent to Ethan so it can be fixed.' : 'Report saved. It will send by itself when there\'s signal.'; });
       sh.querySelector('.fb-send').addEventListener('click', async e => {
-        e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
         const note = sh.querySelector('.fb-msg').value.trim();
-        const ok = await send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: (info && info.st && info.st.device) || [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '),
-          'App state': stateText(info && info.st), 'App version': BUILD, 'Last steps': (info && info.tr) || '(not recorded)', Note: note || '(none)' });
-        closeSheet(); toast(ok ? 'Thanks! Report sent' : 'Saved. It will send automatically');
+        if (!note) { sh.querySelector('.fb-msg').focus(); toast('Type a note first'); return; }
+        e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
+        const ok = await send('Fast Recruit feedback · Crash note', { Type: 'Crash note', Feedback: note, Page: pg, Device: dev, Orientation: o, 'App version': BUILD });
+        closeSheet(); toast(ok ? 'Thanks! Note sent' : 'Saved. It will send automatically');
       });
     }
 
