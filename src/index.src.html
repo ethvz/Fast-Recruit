@@ -2071,8 +2071,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       // wheel / trackpad / momentum settle: snap shortly after the scroll comes to rest
       idleT = setTimeout(() => { if (touching || springing) return; const to = decide(sc.scrollTop, 0); if (to != null) spring(to, 0); }, 110);
     }, { passive: true });
-    sc.addEventListener('touchstart', () => { touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() }; }, { passive: true });
+    const VSC = '[data-vscroll], [data-name="Income rows"]';   // inner lists that scroll on their own: the page doesn't snap around them
+    let inner = false;
+    sc.addEventListener('touchstart', e => { inner = !!(e.target.closest && e.target.closest(VSC)); if (inner) return; touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() }; }, { passive: true });
     const release = () => {
+      if (inner) { inner = false; return; }
       if (!touching) return; touching = false;
       if (performance.now() - last.t > 90) vel = 0; // finger rested before lifting
       const y = sc.scrollTop, proj = y + vel * 180;
@@ -2300,7 +2303,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   // ---------------- swipe between the main pages ----------------
   const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
-  const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], input:not(.hapsw), textarea, select';
+  const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], [data-vscroll], [data-name="Income rows"], input:not(.hapsw), textarea, select';
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
   const neighbour = dir => { if (FLOW && current && current.layer && current.layer.dataset.flow) { const S = segs(), j = SEG + dir; return j < 0 || j >= S.length ? null : S[j].fn; }
     const i = current ? ORDER.indexOf(current.board) : -1; const j = i + dir; return i < 0 || j < 0 || j >= ORDER.length ? null : ORDER[j]; };
