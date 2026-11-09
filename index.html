@@ -247,6 +247,8 @@
   /* ---- favorites: Liquid Glass star on every section ---- */
   .favw { position: absolute; right: 26px; top: 96px; z-index: 30; display: flex; gap: 8px; transform-origin: 100% 0; transition: opacity 0.6s ease, filter 0.6s ease, translate 0.6s ease; }
   /* they fade out with the page arrows when the page sits still, and come back on scroll */
+  .favpin { position: sticky; top: 0px; height: 0px; width: 100%; z-index: 30; pointer-events: none; }
+  .favpin > .favw { pointer-events: auto; }
   .layer.fav-idle .favw { opacity: 0; filter: blur(10px); translate: 0 -12px; pointer-events: none; }
   .fav { position: relative; width: 36px; height: 36px; padding: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
     border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); box-shadow: none; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
@@ -1311,11 +1313,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       + '<div class="fs-list fp-body">' + body + '<p class="fp-src">From the 2026 Sales Rules (v. 11/20/2025). Rules can change each season; questions go to 1STOP · 1stop@vivint.com · 888.324.5771.</p></div>');
     sh.classList.add('fc', 'fp'); sh.addEventListener('click', e => { if (e.target.closest('.fs-x') || e.target.classList.contains('fs-scrim')) closeSheet(); });
   }
+  // the star / sales-rules buttons sit in a zero-height strip that sticks to the top of the screen, so on tall sections they stay put while you scroll
+  const pinFav = (sec, w) => { const h = document.createElement('div'); h.className = 'favpin'; h.appendChild(w); sec.insertBefore(h, sec.firstChild); };
   function addStars(layer) {
     const fn = layer._fn, sc = scrollerOf(layer), flow = !!layer.dataset.flow;
     if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
     (sc ? [...sc.querySelectorAll(':scope > section[id^="sec-"]')] : [...layer.querySelectorAll('section[id^="sec-"]')]).forEach(sec => {
-      const id = sec.id.slice(4); if (sec.querySelector(':scope > .favw')) return;
+      const id = sec.id.slice(4); if (sec.querySelector(':scope > .favpin')) return;
       if (!flow && isTitle(fn, secIdx(fn, id))) return;
       const w = document.createElement('div'); w.className = 'favw';
       if (FP[fn + '#' + id]) {   // this section has fine print
@@ -1328,11 +1332,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         const xb = document.createElement('button'); xb.type = 'button'; xb.className = 'fav fexitb'; xb.setAttribute('aria-label', 'Exit custom flow'); xb.innerHTML = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>';
         noDrag(xb); xb.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exitFlowHere(); }); w.appendChild(xb);
       }
-      if (flow) { sec.appendChild(w); return; }   // in the flow, sections are removed from the edit menu only
+      if (flow) { pinFav(sec, w); return; }   // in the flow, sections are removed from the edit menu only
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
       b.setAttribute('aria-label', 'Star this section for your Custom flow'); b.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); b.innerHTML = STAR;
       noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
-      w.appendChild(b); sec.appendChild(w);
+      w.appendChild(b); pinFav(sec, w);
     });
     try { syncNavStars(); } catch (e) {}
   }
