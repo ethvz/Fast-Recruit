@@ -46,6 +46,8 @@
   .board div[style*="overflow-y: auto"] { scrollbar-width: none; overscroll-behavior: contain; }
   .board .sg { cursor: grab; touch-action: pan-y; }
   /* free-swiping card strips (Incentive Trips, Guests): native horizontal scroll, no page swipe */
+  /* side nav: a section starred for Custom flow shows a star instead of its dot */
+  :root { --navstar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2305E5AF' stroke='%2305E5AF' stroke-width='1.6' stroke-linejoin='round' d='M12%203.3l2.65%205.45%206%20.85-4.35%204.2%201.05%205.95L12%2016.9l-5.35%202.85%201.05-5.95-4.35-4.2%206-.85z'/%3E%3C/svg%3E"); }
   /* page arrows (bottom pills) are brand green */
   .board svg[data-name="Group 6502"] path { fill: #05E5AF; }
   .board [data-name="Glass arrow pill"] { border-color: rgba(5,229,175,0.8) !important; background: rgba(5,229,175,0.2) !important; }
@@ -652,7 +654,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const layer = document.createElement('div');
     layer.className = 'layer'; layer.dataset.board = fn;
     layer.appendChild(host);
-    layer._inst = inst; layer._fn = fn;
+    layer._inst = inst; layer._fn = fn; layer.dataset.fn = fn;
     portraitize(host, inst);
     const map = {};
     (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
@@ -1321,8 +1323,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
       w.appendChild(b); sec.appendChild(w);
     });
+    try { syncNavStars(); } catch (e) {}
   }
-  const syncStars = () => document.querySelectorAll('.fstar').forEach(b => { const on = FAVS.indexOf(b.dataset.k) >= 0; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  // starred sections also swap their side-nav dot for a star
+  const syncNavStars = () => { let st = document.getElementById('navfav-css'); if (!st) { st = document.createElement('style'); st.id = 'navfav-css'; document.head.appendChild(st); }
+    const sel = FAVS.map(k => { const h = k.indexOf('#'); return '.layer[data-fn="' + k.slice(0, h) + '"]:not([data-flow]) nav a[href="#sec-' + k.slice(h + 1) + '"]'; });
+    st.textContent = sel.length ? sel.map(x => x + ' > span:first-child > span').join(',') + '{opacity:0!important}' + sel.map(x => x + ' > span:first-child::after').join(',') + '{content:"";position:absolute;left:3.3px;top:2.8px;width:22px;height:22px;background:var(--navstar) center/contain no-repeat;filter:drop-shadow(0 0 6px rgba(5,229,175,.55));pointer-events:none}' : ''; };
+  const syncStars = () => { document.querySelectorAll('.fstar').forEach(b => { const on = FAVS.indexOf(b.dataset.k) >= 0; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); try { syncNavStars(); } catch (e) {} };
   function toggleFav(fn, id) {
     const k = favKey(fn, id), i = FAVS.indexOf(k), on = i < 0;
     if (on) addFav(k); else FAVS.splice(i, 1);
