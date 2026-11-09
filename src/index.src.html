@@ -360,6 +360,42 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // from then on so it doesn't happen again. A page that errors, hangs while loading or comes back blank refreshes itself.
   const ssGet = k => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
   const ssSet = (k, v) => { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} };
+  // ── app state machines (window.FR) ──
+  // The app's moving parts each live in one named state at a time. Every change goes through FR.set(), which
+  //  • writes it on <html data-fr-<machine>="<state>"> (CSS and tests can read it),
+  //  • keeps the last 40 changes (FR.history()) — crash reports send these, so a crash shows what led up to it,
+  //  • fires a 'fr:state' event, and warns in the console about a state the table below doesn't know.
+  // Map of every machine (and the ones still kept inside their own code): src/STATE.md.
+  // Try it in the console: FR.snapshot(), FR.history(), await FR.whenIdle().
+  const FR = (() => {
+    const DEF = {
+      boot: ['loading', 'ready'],                                   // first page shown → ready
+      safety: ['normal', 'safe'],                                   // safe = crash mode: lighter visuals for 10 minutes after repeat crashes
+      nav: ['idle', 'transitioning', 'queued'],                     // queued = a tap arrived mid-transition; it runs right after
+      ui: ['none', 'overlay', 'menu', 'quickmenu', 'sheet', 'popup'],   // what's on top; only 'none' lets swipes/arrow keys change page
+      flow: ['off', 'on'],                                          // custom flow
+      offline: ['unavailable', 'idle', 'downloading', 'ready']      // "Download for offline"
+    };
+    const S = {}, H = [], live = {}, waits = [];
+    function set(m, s, why) {
+      const p = S[m]; if (p === s) return;
+      if (DEF[m] && DEF[m].indexOf(s) < 0) { try { console.warn('[FR] unknown state', m + ' → ' + s); } catch (e) {} }
+      S[m] = s; H.push([Math.round(performance.now()), m, p || '-', s, why || '']); if (H.length > 40) H.shift();
+      try { document.documentElement.setAttribute('data-fr-' + m, s); } catch (e) {}
+      try { dispatchEvent(new CustomEvent('fr:state', { detail: { machine: m, from: p, to: s, why: why || '' } })); } catch (e) {}
+      if (S.boot === 'ready' && S.nav === 'idle') waits.splice(0).forEach(f => f());
+    }
+    return {
+      set, get: m => S[m], machines: DEF,
+      provide: (k, fn) => { live[k] = fn; },                        // extra read-only facts for snapshots (page, section, zoom…)
+      snapshot() { const o = Object.assign({}, S); Object.keys(live).forEach(k => { try { o[k] = live[k](); } catch (e) {} }); return o; },
+      history: () => H.map(h => ({ t: h[0], machine: h[1], from: h[2], to: h[3], why: h[4] })),
+      trail(n) { return H.slice(-(n || 10)).map(h => h[1] + ':' + h[2] + '→' + h[3] + (h[4] ? ' (' + h[4] + ')' : '')).join('  '); },
+      whenIdle: () => new Promise(r => { if (S.boot === 'ready' && S.nav === 'idle') r(); else waits.push(r); })
+    };
+  })();
+  window.FR = FR;
+  FR.set('boot', 'loading', 'start');
   const crashed = ssGet('fr_alive') === '1';   // the last visit ended without the page closing normally
   const CRASH = crashed ? (() => { try { return JSON.parse(ssGet('fr_pos') || 'null') || {}; } catch (e) { return {}; } })() : null;   // where it crashed, for the crash report
   if (crashed) window.__frCrash = true;
@@ -371,6 +407,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (crashLoop) ssSet('fr_safe', String(now));   // lighter mode only after repeated crashes, and only for 10 minutes
   }
   const SAFE = (() => { const v = ssGet('fr_safe'); if (!v) return false; const t = +v; if (t > 1 && Date.now() - t < 600000) return true; ssSet('fr_safe', null); return false; })();
+  FR.set('safety', SAFE ? 'safe' : 'normal', SAFE ? 'repeat crashes' : '');
   if (SAFE) document.documentElement.classList.add('lite', 'safe');
   // "Download for offline": asks the offline helper (sw.js, installed app only) to save every page, picture and video,
   // then shows progress on the menu button. The helper keeps the download up to date when the app changes.
@@ -378,22 +415,23 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const st = { done: 0, total: 0, ready: false, busy: false };
     const sw = () => navigator.serviceWorker && navigator.serviceWorker.controller;
     const label = () => st.ready ? 'Ready offline ✓' : st.busy ? 'Downloading ' + (st.total ? Math.floor(100 * st.done / st.total) : 0) + '%' : 'Download for offline';
-    const paint = () => document.querySelectorAll('.nm-dlt').forEach(e => { e.textContent = label(); });
+    const paint = () => { document.querySelectorAll('.nm-dlt').forEach(e => { e.textContent = label(); }); FR.set('offline', !sw() ? 'unavailable' : st.ready ? 'ready' : st.busy ? 'downloading' : 'idle'); };
     try {
       navigator.serviceWorker && navigator.serviceWorker.addEventListener('message', e => { const d = e.data || {}; if (d.t !== 'dlp') return; Object.assign(st, { done: d.done, total: d.total, ready: !!d.ready, busy: !!d.busy }); paint(); });
       const ask = () => { const c = sw(); if (c) c.postMessage({ t: 'dlq' }); };
-      navigator.serviceWorker && navigator.serviceWorker.ready.then(ask);
+      navigator.serviceWorker && navigator.serviceWorker.ready.then(() => { paint(); ask(); });
+      FR.set('offline', 'unavailable');
     } catch (e) {}
     return { can: () => !!sw(), label,
       start: () => { const c = sw(); if (!c || st.ready || st.busy) return; st.busy = true; paint(); try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {} c.postMessage({ t: 'dl' }); } };
   })();
   ssSet('fr_alive', '1');
   let booted = false;
-  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)' })); } catch (e) {} }
+  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} ssSet('fr_pos', JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)', st: FR.snapshot(), tr: FR.trail(8) })); } catch (e) {} }
   function hardReload() {
     const now = Date.now(), log = (ssGet('fr_reloads') || '').split(',').map(Number).filter(t => now - t < 60000);
     if (log.length >= 3) return;   // never loop: at most three automatic refreshes a minute
-    log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', String(now)); savePos(); ssSet('fr_alive', null);
+    FR.set('boot', 'loading', 'auto-refresh'); log.push(now); ssSet('fr_reloads', log.join(',')); ssSet('fr_safe', String(now)); savePos(); ssSet('fr_alive', null);
     location.reload();
   }
   const blank = () => { try { return !current || !current.layer || !current.layer.isConnected; } catch (e) { return true; } };
@@ -1000,7 +1038,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const samePage = current && current.board === t.board && !restore && !fresh;
     if (!samePage && (busy || performance.now() < navReady)) {
       if (fSeg != null) { flowGoSeg = fSeg; if (fresh) flowFresh = true; }
-      navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer);
+      navPending = [aid, tr, dur, ease, restore]; clearTimeout(navTimer); FR.set('nav', 'queued', t.board);
       navTimer = setTimeout(runPending, Math.max(60, navReady - performance.now()));
       return;
     }
@@ -1010,7 +1048,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (sc) sc.scrollTo({ top: rScroll(sc, sectionTop(t.board, t.section)), behavior: 'smooth' });
       setHash(aid); if (fSeg != null) SEG = fSeg; return;
     }
-    busy = true;
+    busy = true; FR.set('nav', 'transitioning', t.board);
     if (fSeg != null) { SEG = fSeg; ssSet('fr_seg', String(SEG)); }
     try {
       const layer = await makeLayer(t.board);
@@ -1036,7 +1074,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       startScreen(layer);
       setHash(restore ? (currentAid() || aid) : aid);
       savePos(); drawFlowBar(); markFlowNav(layer);
-    } finally { busy = false; navReady = performance.now() + NAV_GAP; if (navPending) { clearTimeout(navTimer); navTimer = setTimeout(runPending, NAV_GAP); } }
+    } finally { busy = false; navReady = performance.now() + NAV_GAP; if (navPending) { clearTimeout(navTimer); navTimer = setTimeout(runPending, NAV_GAP); FR.set('nav', 'queued', 'next tap'); } else FR.set('nav', 'idle'); uiSync(); }
   }
   function runPending() { const p = navPending; navPending = null; if (p) go(...p); }
   function back() { const s = stack.pop(); if (s) go(s.aid, 'dissolve', 0.3, 'ease-out', s); }
@@ -1077,7 +1115,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   async function openOverlay(aid, tr, dur, ease, pos) {
     const t = P.artboards[aid];
     if (!t || busy) return;
-    busy = true;
+    busy = true; FR.set('nav', 'transitioning', 'overlay ' + t.board);
     try {
       if (overlay) closeOverlay(true);
       const layer = await makeLayer(t.board);
@@ -1088,11 +1126,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       overlay = { board: t.board, layer };
       await animate(layer, null, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       startScreen(layer);
-    } finally { busy = false; }
+    } finally { busy = false; FR.set('nav', 'idle'); uiSync(); }
   }
   function closeOverlay(instant) {
     if (!overlay) return;
-    const l = overlay.layer; overlay = null; stopVideos(l);
+    const l = overlay.layer; overlay = null; stopVideos(l); uiSync();
     if (instant) { destroyLayer(l); return; }
     l.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'both' }).finished.then(() => destroyLayer(l));
   }
@@ -1123,6 +1161,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (e) {}
   favIDB(null).then(a => { if (!FAVS.length && a && a.length) { FAVS = a; try { syncStars(); updateFlowCount(); } catch (e) {} } if (FAVS.length) saveFavs(); });
   let FLOW = ssGet('fr_flow') === '1', SEG = +(ssGet('fr_seg') || 0) || 0, flowGoSeg = null, flowFresh = false;
+  FR.set('flow', FLOW ? 'on' : 'off', FLOW ? 'restored' : '');
   if (FLOW) document.documentElement.classList.add('flow');
   const flowTops = {};
   const STARP = 'M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z';
@@ -1216,11 +1255,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   function startFlow() {
     const S = segs();
     if (!S.length) { openAdd(true); return; }
-    FLOW = true; ssSet('fr_flow', '1'); document.documentElement.classList.add('flow'); try { haptic('select'); } catch (e) {}
+    FLOW = true; ssSet('fr_flow', '1'); document.documentElement.classList.add('flow'); FR.set('flow', 'on', 'start'); try { haptic('select'); } catch (e) {}
     flowGoSeg = 0; go(aidOf(S[0].fn, S[0].ids[0]), 'dissolve', 0.35, 'ease-out');
   }
   function endFlow(goHome) {
-    FLOW = false; ssSet('fr_flow', null); ssSet('fr_seg', null); document.documentElement.classList.remove('flow');
+    FLOW = false; ssSet('fr_flow', null); ssSet('fr_seg', null); document.documentElement.classList.remove('flow'); FR.set('flow', 'off', goHome ? 'exit to Home' : 'exit');
     Object.keys(flowTops).forEach(k => delete flowTops[k]);
     closeSheet(); drawFlowBar();
     if (goHome) { const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (aid) go(aid, 'dissolve', 0.3, 'ease-out'); }
@@ -1386,12 +1425,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     layer.querySelectorAll('.fnav .fn-it').forEach(b => b.classList.toggle('on', +b.dataset.si === SEG && sx && b.dataset.sid === sx.sid));
   }
   // ---- sheets: edit (drag to reorder), add sections, jump list ----
-  function closeSheet() { const s0 = document.querySelector('.fsheet'); if (s0) { s0.classList.remove('on'); setTimeout(() => s0.remove(), 200); } }
+  function closeSheet() { const s0 = document.querySelector('.fsheet:not(.closing)'); if (s0) { s0.classList.add('closing'); s0.classList.remove('on'); setTimeout(() => s0.remove(), 200); } uiSync(); }
   function sheet(html) {
     const old = document.querySelector('.fsheet'); if (old) old.remove();
     const sh = document.createElement('div'); sh.className = 'fsheet'; sh.innerHTML = '<div class="fs-scrim"></div><div class="fs-card" role="dialog">' + html + '</div>';
     ['pointerdown', 'touchstart', 'mousedown', 'click', 'wheel'].forEach(ev => sh.addEventListener(ev, e => e.stopPropagation(), { passive: ev !== 'click' }));
-    document.body.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on'));
+    closeQnav(); if (menuEl) closeMenu(true);   // one thing on top at a time
+    document.body.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on')); uiSync();
     return sh;
   }
   function openEdit() {
@@ -1555,7 +1595,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         const msg = sh.querySelector('.fb-msg').value.trim(), name = sh.querySelector('.fb-name').value.trim(), kind = (chips.find(c => c.classList.contains('on')) || chips[0]).textContent;
         if (!msg) { sh.querySelector('.fb-msg').focus(); toast('Type your feedback first'); return; }
         lsS('fr_fbname', name || null); e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
-        const ok = await send('Fast Recruit feedback · ' + kind + (name ? ' · ' + name : ''), { Type: kind, From: name || '(not given)', Feedback: msg, Page: at, Device: dev, Orientation: o });
+        const ok = await send('Fast Recruit feedback · ' + kind + (name ? ' · ' + name : ''), { Type: kind, From: name || '(not given)', Feedback: msg, Page: at, Device: dev, Orientation: o, 'App state': JSON.stringify(FR.snapshot()) });
         closeSheet(); toast(ok ? 'Thanks! Feedback sent' : 'Saved. It will send automatically');
       });
     }
@@ -1570,7 +1610,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       sh.querySelector('.fb-send').addEventListener('click', async e => {
         e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
         const note = sh.querySelector('.fb-msg').value.trim();
-        const ok = await send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '), Note: note || '(none)' });
+        const ok = await send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: (info && info.st && info.st.device) || [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '),
+          'App state': info && info.st ? JSON.stringify(info.st) : '(not recorded)', 'Last steps': (info && info.tr) || '(not recorded)', Note: note || '(none)' });
         closeSheet(); toast(ok ? 'Thanks! Report sent' : 'Saved. It will send automatically');
       });
     }
@@ -1609,8 +1650,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   })();
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl; menuEl = null;
-    if (instant) { m.remove(); return; }
-    m.classList.add('out'); setTimeout(() => m.remove(), 260);
+    if (instant) { m.remove(); uiSync(); return; }
+    m.classList.add('out'); setTimeout(() => m.remove(), 260); uiSync();
   }
   function openMenu() {
     if (menuEl || !P) return;
@@ -1642,7 +1683,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       closeMenu();
     });
     ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
-    frame.appendChild(m); menuEl = m;
+    closeQnav(); closeSheet(); frame.appendChild(m); menuEl = m; uiSync();
   }
   viewport.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-x="Menu button"]');
@@ -1757,7 +1798,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // ---------------- long-press a header page link: that page's sections ----------------
   let qnav = null;
   let qnavInst = null;
-  const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; q.classList.remove('on'); setTimeout(() => q.remove(), 220);
+  const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; uiSync(); q.classList.remove('on'); setTimeout(() => q.remove(), 220);
     const ins = qnavInst; qnavInst = null; if (ins && ins.hdrKick) ins.hdrKick(); };   // header's idle timer starts again once the menu closes
   function openQnav(layer, el) {
     const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
@@ -1777,7 +1818,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
     q.style.left = left + 'px'; q.style.top = top + 'px';
     requestAnimationFrame(() => q.classList.add('on'));
-    qnav = q; haptic('strong');
+    qnav = q; haptic('strong'); uiSync();
     // keep the header showing while the menu is open (it normally hides after a few idle seconds)
     const ins = layer._inst; qnavInst = ins || null;
     if (ins) { clearTimeout(ins._hdrT); if (ins.state && ins.state.hdrHide) ins.setState({ hdrHide: false });
@@ -2091,6 +2132,25 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     applyZoom(true);
   }
   // double-tap (or double-click) the page: zoom in there; double-tap again (or the pill) to zoom out
+  // ---- what's on top (FR 'ui' machine) ----
+  // popup (add-to-home-screen) > sheet > quick section menu > main menu > video/overlay > none.
+  // Anything but 'none' means page swipes and arrow keys stay put, and Escape closes that top thing first.
+  function uiTop() {
+    if (document.querySelector('#a2hs:not(.closing)')) return 'popup';
+    if (document.querySelector('.fsheet:not(.closing)')) return 'sheet';
+    if (qnav) return 'quickmenu';
+    if (menuEl) return 'menu';
+    if (overlay) return 'overlay';
+    return 'none';
+  }
+  function uiSync() { try { FR.set('ui', uiTop()); } catch (e) {} }
+  FR.ui = uiSync;
+  const uiBlocks = () => { const u = uiTop(); return u !== 'none' && u !== 'overlay'; };
+  FR.provide('page', () => current ? pageName(current.board) || current.board : '');
+  FR.provide('section', () => { const a = currentAid(), ab = a && P && P.artboards[a]; return ab ? (secList(ab.board)[ab.section || 0] || {}).name || '' : ''; });
+  FR.provide('seg', () => FLOW ? SEG : null);
+  FR.provide('zoom', () => Math.round(zoom.z * 100) / 100);
+  FR.provide('device', () => [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '));
   const NOZOOMTAP = '.hsc, button, a, input, select, textarea, label, .hot, [role="button"], [onclick], [data-name="Header"], nav, .pdown, .navmenu, .zoomout';
   let lastTap = null;
   function dblTap(cx, cy, target) {
@@ -2190,7 +2250,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   let sw = null;
   viewport.addEventListener('pointerdown', e => {
     // a tap no longer brings the hidden header back; only scrolling does (see each board's onScroll)
-    if (busy || overlay || !current || pinch || zoomed() || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (busy || overlay || !current || pinch || zoomed() || uiBlocks() || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return;
     if (e.target.closest && e.target.closest(NOSWIPE)) return;
     sw = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, d: 0, id: e.pointerId };
   }, true);
@@ -2215,16 +2275,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // two-finger trackpad swipe
   let wAcc = 0, wT = 0, wCool = 0;
   viewport.addEventListener('wheel', e => {
-    if (busy || overlay || !current || zoomed() || performance.now() < wCool) return;
+    if (busy || overlay || !current || zoomed() || uiBlocks() || performance.now() < wCool) return;
     if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 1.5 || (e.target.closest && e.target.closest(NOSWIPE))) return;
     wAcc -= e.deltaX; const x = shiftLive(wAcc * 0.7);
     clearTimeout(wT);
     if (Math.abs(wAcc) > 170) { wCool = performance.now() + 1100; const a = wAcc; wAcc = 0; current.layer.style.opacity = ''; if (!swipeTo(a < 0 ? 1 : -1, x)) snapBack(); return; }
     wT = setTimeout(() => { wAcc = 0; snapBack(); }, 160);
   }, { passive: true, capture: true });
-  addEventListener('keydown', e => { if (overlay || busy || (e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) return; if (e.key === 'ArrowRight') swipeTo(1); else if (e.key === 'ArrowLeft') swipeTo(-1); });
+  addEventListener('keydown', e => { if (overlay || busy || uiBlocks() || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) return; if (e.key === 'ArrowRight') swipeTo(1); else if (e.key === 'ArrowLeft') swipeTo(-1); });
 
-  addEventListener('keydown', e => { if (e.key === 'Escape') { if (overlay) closeOverlay(); else back(); } });
+  // Escape closes whatever is on top; only with nothing open does it go back a page
+  addEventListener('keydown', e => { if (e.key !== 'Escape') return; const u = uiTop();
+    if (u === 'popup') { const x = document.querySelector('#a2hs:not(.closing) .a2-x'); if (x) x.click(); }
+    else if (u === 'sheet') closeSheet(); else if (u === 'quickmenu') closeQnav(); else if (u === 'menu') closeMenu();
+    else if (u === 'overlay') closeOverlay(); else back(); });
   let fitRaf = 0; addEventListener('resize', () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; fit(); }); });
   addEventListener('orientationchange', () => setTimeout(fit, 250));
   addEventListener('pageshow', () => setTimeout(fit, 50));
@@ -2249,7 +2313,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const back = pos && P.boards[pos.b] && P.artboards[start].board === pos.b && Date.now() - pos.t < 6 * 3600e3 ? { v: pos.v } : null;
     await go(start, 'none', 0, undefined, back);
     document.getElementById('loading').classList.add('done');
-    booted = true;
+    booted = true; FR.set('boot', 'ready', current ? current.board : '');
     if (CRASH) setTimeout(() => FB.crash(CRASH), 2200);   // the app crashed last time: offer to send a report
   }).catch(() => setTimeout(hardReload, 2000));
 })();
@@ -2325,7 +2389,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       + '<p class="a2-tip">' + tip + '</p>'
       + '<button class="a2-go">' + (deferred ? 'INSTALL NOW' : 'GOT IT') + '</button>'
       + '<button class="a2-no">Don\'t show this again</button></div>';
-    const close = forever => { if (forever) put(SHOWS); el.classList.remove('on'); setTimeout(() => el.remove(), 320); };
+    const close = forever => { if (forever) put(SHOWS); el.classList.remove('on'); el.classList.add('closing'); if (window.FR && FR.ui) FR.ui(); setTimeout(() => el.remove(), 320); };
     el.querySelector('.a2-x').onclick = () => close(false);
     el.querySelector('.a2-no').onclick = () => close(true);
     el.querySelector('.a2-go').onclick = () => {
@@ -2334,7 +2398,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     };
     el.addEventListener('click', e => { if (e.target === el) close(false); });
     ['touchstart', 'touchmove', 'wheel', 'pointerdown', 'keydown'].forEach(t => el.addEventListener(t, e => e.stopPropagation(), { passive: true }));
-    document.body.appendChild(el); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
+    document.body.appendChild(el); if (window.FR && FR.ui) FR.ui(); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
   };
   const go = () => setTimeout(show, 1800);   // let the landing page appear first
   if (document.readyState === 'complete') go(); else addEventListener('load', go, { once: true });
