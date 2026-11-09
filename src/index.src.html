@@ -1228,11 +1228,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // Each entry: list of blocks. A block is [heading, [bullet, …]] or [heading, {h: [...cols], r: [[...], …]}, note?]
   const FP = {
     'Why-Vivint.dc.html#package-costs': [
-      ['Install fees', ['Can be waived with no deduction on Pay-in-Full, accounts with $250+ collected upfront, or DTH Promo Pricing packages.', 'Otherwise a $0 install fee costs you $10 PRMR.']],
-      ['Kits', ['$1,799.99 Premium Kit: +$2 PRMR.', 'Kit under $1,799.99: −$5 PRMR (some account types excluded).', 'Service discounted below $24.99 (Premium Kit) or $44.99 (smaller kit): −$2 PRMR per $1 of discount.', 'Hardware or install discount: −PRMR equal to the discount ÷ 15 (a $300 discount = −$20).']],
-      ['Upfront payment adder', { h: ['Collected upfront', 'PRMR adder'], r: [['$200 – $499.99', '+$5'], ['$500 – $999.99', '+$10'], ['$1,000 – $1,999.99', '+$15'], ['$2,000 – $2,999.99', '+$20'], ['$3,000 – $3,999.99', '+$25'], ['$4,000+', '+$30']] }, 'Credit score 600+ only. Not on 3rd Look or DTH Promo Pricing.'],
-      ['Protection plan adders', ['VPP ($7.99): +$5 · VPP Mobile ($27.99): +$10 · VPP Mobile+ ($32.99): +$12, if still paid at the January backend.']],
-      ['Down payments', ['3rd Look: 25% of hardware down (min $250) and −$35 PRMR.', 'DTH Promo Pricing (Pay-in-Four): credit 529–574 pays the greater of 25% or $200 down; below 529 pays in full upfront.']]
+      ['Install fees', { h: ['Install fee', 'Financed', 'Paid upfront'], r: [['$0', '−$10.00', '−$10.00'], ['$199', '+$3.32', '+$4.32'], ['$299', '+$5.48', '+$7.98'], ['$399', '+$7.65', '+$11.65']] }, 'Total PRMR impact. The fee can be waived with no deduction on Pay-in-Full, accounts with $250+ collected upfront, or DTH Promo Pricing packages.']
     ],
     'Why-Vivint.dc.html#sales-tools': [
       ['Company iPad', ['Optional. Keep it working; if it isn\'t returned in original condition, or is lost or damaged, you may owe $500.']],
