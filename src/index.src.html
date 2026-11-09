@@ -1649,6 +1649,9 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       try { const r = await fetch(TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
         const j = await r.json().catch(() => ({})); return !!(r.ok && j.success); } catch (e) { return false; }
     }
+    // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
+    const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
+    const BUILD = '2026-11-09b';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       if (await post(m)) return true;
@@ -1680,7 +1683,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         const msg = sh.querySelector('.fb-msg').value.trim(), name = sh.querySelector('.fb-name').value.trim(), kind = (chips.find(c => c.classList.contains('on')) || chips[0]).textContent;
         if (!msg) { sh.querySelector('.fb-msg').focus(); toast('Type your feedback first'); return; }
         lsS('fr_fbname', name || null); e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
-        const ok = await send('Fast Recruit feedback · ' + kind + (name ? ' · ' + name : ''), { Type: kind, From: name || '(not given)', Feedback: msg, Page: at, Device: dev, Orientation: o, 'App state': JSON.stringify(FR.snapshot()) });
+        const ok = await send('Fast Recruit feedback · ' + kind + (name ? ' · ' + name : ''), { Type: kind, From: name || '(not given)', Feedback: msg, Page: at, Device: dev, Orientation: o, 'App state': stateText(FR.snapshot()), 'App version': BUILD });
         closeSheet(); toast(ok ? 'Thanks! Feedback sent' : 'Saved. It will send automatically');
       });
     }
@@ -1696,7 +1699,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         e.currentTarget.disabled = true; e.currentTarget.textContent = 'SENDING…';
         const note = sh.querySelector('.fb-msg').value.trim();
         const ok = await send('Fast Recruit crash · ' + pg + ' · ' + o.split(' ')[0], { 'Crashed on': pg, Device: dev, Orientation: o, 'Crash time': info && info.t ? new Date(info.t).toLocaleString() : '', Mode: (info && info.st && info.st.device) || [...document.documentElement.classList].filter(c => /^(lite|safe|pland|stack|phone|fill|port)$/.test(c)).join(' '),
-          'App state': info && info.st ? JSON.stringify(info.st) : '(not recorded)', 'Last steps': (info && info.tr) || '(not recorded)', Note: note || '(none)' });
+          'App state': stateText(info && info.st), 'App version': BUILD, 'Last steps': (info && info.tr) || '(not recorded)', Note: note || '(none)' });
         closeSheet(); toast(ok ? 'Thanks! Report sent' : 'Saved. It will send automatically');
       });
     }
