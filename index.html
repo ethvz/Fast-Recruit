@@ -1683,7 +1683,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       try { const db = await dbP; if (!db) return false; const row = { kind: /crash/i.test(m._subject) ? 'crash' : 'feedback', subject: m._subject, emailed: !!emailed, emailError: emailed ? '' : lastErr, at: new Date().toISOString() };
         Object.keys(m).forEach(k => { if (k[0] !== '_') row[k.replace(/[^\w ]/g, '').slice(0, 40) || 'x'] = String(m[k]).slice(0, 4000); });
         const u = await window.claude.use('user'), uid = u && await u.id(); if (!uid) return false;
-        await db.collection('reports/' + uid + '/r').add(row); try { await db.doc('reports/' + uid).set({ last: row.at, kind: row.kind }); } catch (e) {} return true; }   // the marker doc lets the owner list who has reports catch (e) { return false; }
+        await db.collection('reports/' + uid + '/r').add(row); try { await db.doc('reports/' + uid).set({ last: row.at, kind: row.kind }); } catch (e) {} return true; } catch (e) { return false; }   /* the marker doc lets the owner list who has reports */
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
