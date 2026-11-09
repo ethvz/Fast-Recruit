@@ -1287,7 +1287,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       + (Array.isArray(v) ? '<ul>' + v.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>'
         : '<table><thead><tr>' + v.h.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' + v.r.map(r => '<tr>' + r.map(c => '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</tbody></table>')
       + (note ? '<p class="fp-n">' + esc(note) + '</p>' : '') + '</div>').join('');
-    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Fine print</div><div class="fs-t">' + esc(name) + '</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Sales rules</div><div class="fs-t">' + esc(name) + '</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
       + '<div class="fs-list fp-body">' + body + '<p class="fp-src">From the 2026 Sales Rules (v. 11/20/2025). Rules can change each season; questions go to 1STOP · 1stop@vivint.com · 888.324.5771.</p></div>');
     sh.classList.add('fc', 'fp'); sh.addEventListener('click', e => { if (e.target.closest('.fs-x') || e.target.classList.contains('fs-scrim')) closeSheet(); });
   }
@@ -1299,7 +1299,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (!flow && isTitle(fn, secIdx(fn, id))) return;
       const w = document.createElement('div'); w.className = 'favw';
       if (FP[fn + '#' + id]) {   // this section has fine print
-        const fp = document.createElement('button'); fp.type = 'button'; fp.className = 'fav ffp'; fp.setAttribute('aria-label', 'Fine print: the sales rules for this section'); fp.innerHTML = FPIC + '<span>Fine print</span>';
+        const fp = document.createElement('button'); fp.type = 'button'; fp.className = 'fav ffp'; fp.setAttribute('aria-label', 'Sales rules for this section'); fp.innerHTML = FPIC + '<span>Sales rules</span>';
         noDrag(fp); fp.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openFinePrint(fn, id); }); w.appendChild(fp);
       }
       if (flow) {
@@ -1703,7 +1703,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
     // What's New: the bigger updates only, newest first, in plain words
     const WN = [
-      ['Nov 9, 2026', [['doc', 'Fine print', 'Sections about pay, housing, travel and leadership now have a Fine print button with the sales rules behind them.'], ['layers', 'Cleaner buttons', 'Buttons are soft grey; the main action on each screen is tinted in the page color.']]],
+      ['Nov 9, 2026', [['doc', 'Sales rules', 'Sections about pay, housing, travel and leadership now have a Sales rules button with the rules behind them.'], ['layers', 'Cleaner buttons', 'Buttons are soft grey; the main action on each screen is tinted in the page color.']]],
       ['Nov 7, 2026', [['layers', 'Liquid Glass buttons', 'The page arrows, Guide, Custom Flow and Save buttons are frosted glass again, on phones too.'], ['chat', 'Send feedback', 'Share ideas or report a problem from the menu. It goes straight to Ethan.'], ['alert', 'Crash reports', 'If the app closes unexpectedly, it offers to send a quick report so it can be fixed.'], ['spark', 'What\'s New', 'This list. See every big update and when it happened.'], ['plus', 'Add to your home screen', 'New users get simple steps to put the app on their phone like a real app.'], ['shield', 'Steadier on sideways iPhones', 'Fixed the crash on Why Vivint (Awards and Products) when the phone is turned sideways.']]],
       ['Nov 6, 2026', [['down', 'Download for offline', 'Save every page, photo and video once, then use the app with no signal.'], ['star', 'Custom Flow', 'Star the sections you like and present only those, in your order. It\'s saved for next time.'], ['cam', 'Social Media Content', 'Ready-to-post Instagram stories for every Opportunity tool.'], ['bars', 'Career Comparison', 'Top 20 paying college majors: early pay vs. 10+ years in, plus student debt.'], ['sun', 'Summer Job Comparison', '18 common summer jobs and what they really pay over a summer.'], ['bulb', 'Growth skills open up', 'Tap any skill to see why it matters in your career and everyday life.'], ['layers', 'Smoother look', 'Photos blend softly between sections instead of hard lines. New FR app icon.']]],
       ['Nov 5, 2026', [['trend', '3 Year Plan', 'Map out your earnings and team growth over 3 to 6 years, then save it as an image.'], ['calc', 'Override calculator', 'See monthly and yearly residuals for managers and Area Directors.'], ['doc', 'Share pay scales', 'Send the official 2027 pay scales right from the calculators.'], ['mic', 'Guest speakers', '36 past speakers with photos and years, from Tony Robbins to David Goggins.'], ['flame', 'Burn the Ships', 'New relocation story added to Travel.'], ['list', 'Quick section menu', 'Press and hold a page name in the header to jump to any section.'], ['undo', 'Picks up where you left off', 'If the app reloads, it brings you back to the same spot.']]],
