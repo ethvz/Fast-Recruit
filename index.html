@@ -49,6 +49,7 @@
   /* side nav: a section starred for Custom flow shows a star instead of its dot */
   :root { --navstar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2305E5AF' stroke='%2305E5AF' stroke-width='1.6' stroke-linejoin='round' d='M12%203.3l2.65%205.45%206%20.85-4.35%204.2%201.05%205.95L12%2016.9l-5.35%202.85%201.05-5.95-4.35-4.2%206-.85z'/%3E%3C/svg%3E"); }
   :root { --navstar-off: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(11,15,14,0.85)' stroke='rgba(255,255,255,0.55)' stroke-width='1.6' stroke-linejoin='round' d='M12%203.3l2.65%205.45%206%20.85-4.35%204.2%201.05%205.95L12%2016.9l-5.35%202.85%201.05-5.95-4.35-4.2%206-.85z'/%3E%3C/svg%3E"); }
+  html.still .board *, html.still .board *::before, html.still .board *::after { animation-play-state: paused !important; }
   /* page arrows (bottom pills) are brand green */
   .board svg[data-name="Group 6502"] path { fill: #05E5AF; }
   .board [data-name="Glass arrow pill"] { border-color: rgba(5,229,175,0.8) !important; background: rgba(5,229,175,0.2) !important; }
@@ -465,6 +466,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   addEventListener('error', e => { if (e && e.target && e.target !== window) return; checkBlank(); });   // script errors only (pictures retry on their own)
   addEventListener('unhandledrejection', checkBlank);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (booted && blank()) hardReload(); } else savePos(); });
+  // sitting still: pause the slow looping background motion (photo drift, glows). Left running, the blurred glass on top has to be
+  // redrawn every frame for nothing, which is the kind of steady memory pressure that makes Safari kill an idle page. Any touch resumes it.
+  (() => { let t = 0; const R = document.documentElement, wake = () => { if (R.classList.contains('still')) R.classList.remove('still'); clearTimeout(t); t = setTimeout(() => R.classList.add('still'), 12000); };
+    ['pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'].forEach(ev => addEventListener(ev, wake, { passive: true, capture: true })); wake();
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') R.classList.add('still'); else wake(); }); })();
   { let st = 0; document.addEventListener('scroll', () => { if (!st) st = setTimeout(() => { st = 0; savePos(); }, 600); }, { capture: true, passive: true }); }
   setTimeout(() => { if (!booted) hardReload(); }, 30000);   // stuck on the loading screen
   // phones: the header, section menu and arrow buttons are drawn bigger (CS) so they're readable at phone size
@@ -1666,19 +1672,31 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       const body = { access_key: KEY, from_name: 'Fast Recruit', subject: m._subject };
       Object.keys(m).forEach(k => { if (k[0] !== '_') body[k] = m[k]; });
       try { const r = await fetch(TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) });
-        const j = await r.json().catch(() => ({})); return !!(r.ok && j.success); } catch (e) { return false; }
+        const j = await r.json().catch(() => ({})); lastErr = r.ok && j.success ? '' : 'HTTP ' + r.status + ' ' + String(j.message || j.body && j.body.message || '').slice(0, 160); return !!(r.ok && j.success); }
+      catch (e) { lastErr = 'blocked/offline: ' + String(e && e.message || e).slice(0, 160); return false; }
+    }
+    let lastErr = '';
+    // every report is also saved in the app's own database (when this view has one, e.g. opened from claude.ai),
+    // so a report still reaches Ethan if email is blocked. A scheduled task reads these and emails anything not yet emailed.
+    const dbP = (async () => { try { const c = window.claude && window.claude.use && await window.claude.use('db'); return c || null; } catch (e) { return null; } })();
+    async function keep(m, emailed) {
+      try { const db = await dbP; if (!db) return false; const row = { kind: /crash/i.test(m._subject) ? 'crash' : 'feedback', subject: m._subject, emailed: !!emailed, emailError: emailed ? '' : lastErr, at: new Date().toISOString() };
+        Object.keys(m).forEach(k => { if (k[0] !== '_') row[k.replace(/[^\w ]/g, '').slice(0, 40) || 'x'] = String(m[k]).slice(0, 4000); });
+        const u = await window.claude.use('user'), uid = u && await u.id(); if (!uid) return false;
+        await db.collection('reports/' + uid + '/r').add(row); try { await db.doc('reports/' + uid).set({ last: row.at, kind: row.kind }); } catch (e) {} return true; }   // the marker doc lets the owner list who has reports catch (e) { return false; }
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-09b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-09c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
-      if (await post(m)) return true;
+      const ok = await post(m), saved = await keep(m, ok);
+      if (ok || saved) return true;   // emailed now, or safely stored for the scheduled task to email
       const q = queue().filter(x => Date.now() - (x._t || 0) < 14 * 864e5); m._t = Date.now(); q.push(m); lsS(QK, JSON.stringify(q.slice(-20))); return false;
     }
     async function flush() {
-      const q = queue(); if (!q.length || !navigator.onLine) return; const left = [];
-      for (const m of q) { if (Date.now() - (m._t || 0) > 14 * 864e5) continue; const c = Object.assign({}, m); delete c._t; if (!(await post(c))) left.push(m); }
+      const q = queue(); if (!q.length) return; const left = [];
+      for (const m of q) { if (Date.now() - (m._t || 0) > 14 * 864e5) continue; const c = Object.assign({}, m); delete c._t; if (!(await post(c)) && !(await keep(c, false))) left.push(m); }
       lsS(QK, left.length ? JSON.stringify(left) : null);
     }
     addEventListener('online', flush); setTimeout(flush, 6000);
