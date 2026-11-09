@@ -53,6 +53,10 @@
   .board svg[data-name="Group 6502"] path { fill: #05E5AF; }
   .board [data-name="Glass arrow pill"] { border-color: rgba(5,229,175,0.8) !important; background: rgba(5,229,175,0.2) !important; }
   .board [data-name="Glass arrow pill"] + svg + p { color: #05E5AF !important; }
+  /* the home page's theme is yellow: its page pill follows it */
+  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: rgba(223,255,26,0.8) !important; background: rgba(223,255,26,0.16) !important; }
+  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] + svg + p { color: #DFFF1A !important; }
+  .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #DFFF1A; }
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
   /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
   .board [data-vscroll], .board [data-name="Income rows"] { pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
