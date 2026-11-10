@@ -2120,7 +2120,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       // kill native momentum (iOS) before driving the scroll ourselves
       sc.style.overflowY = 'hidden'; sc.style.scrollBehavior = 'auto';
       let x = sc.scrollTop - to, v = (v0 || 0) * 1000, t0 = performance.now();
-      const K = 300, C = 22; // stiffness / damping: quick with a small overshoot
+      // springy settle with a visible bounce past the edge; a really fast flick settles straight in with no bounce
+      const fast = Math.abs(v0 || 0) > 2, K = fast ? 320 : 280, C = fast ? 36 : 16;
       const step = now => {
         const dt = Math.min(0.032, (now - t0) / 1000); t0 = now;
         const a = -K * x - C * v; v += a * dt; x += v * dt;
