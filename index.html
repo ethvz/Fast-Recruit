@@ -91,6 +91,8 @@
   html.pland .board .pbx img { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
   html.pland .board .pbx-fade { display: none !important; }
   /* header logo = Home button: its tap area sits right over the visible logo (it was 13px too high) with some room around it */
+  /* the logo is a button: a finger on it never starts a scroll, long-press callout or image drag, any of which cancels the tap on iPhone/iPad */
+  .board img.hot[data-name="Vivint Logo"] { touch-action: none !important; -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
   .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
   html.pland .board .pmid > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
@@ -699,6 +701,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       im.addEventListener('pointerdown', e => { p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; e.stopPropagation(); }, true);
       im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
       im.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (Date.now() - (im.__fired || 0) > 800) home(); }, true);
+      // touch fallback: if the browser swallows the pointer events (pointercancel), a short touch still counts
+      let t0 = null;
+      im.addEventListener('touchstart', e => { const t = e.touches[0]; t0 = e.touches.length === 1 ? { x: t.clientX, y: t.clientY } : null; }, { passive: true });
+      im.addEventListener('touchend', e => { const q = t0; t0 = null; const t = e.changedTouches[0]; if (!q || !t || Math.hypot(t.clientX - q.x, t.clientY - q.y) > 20) return; if (Date.now() - (im.__fired || 0) < 800) return; im.__fired = Date.now(); e.preventDefault(); home(); });
     });
     setupQnav(layer);
     host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); };
