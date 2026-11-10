@@ -2107,20 +2107,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let zV = -1;
     const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0)) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
       const ss = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow)
-      // resting points: the top of every section, and inside a tall section (Marketing, Products...) every screen-height
-      // step down it plus its last screen, so a long section pages one screen at a time like the short ones
-      const pts = [];
-      for (let i = 0; i < ss.length; i++) {
-        const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight;
-        pts.push(t);
-        if (h > VH * 1.15) { for (let y = t + VH; y < t + h - VH - VH * 0.15; y += VH) pts.push(y); pts.push(t + h - VH); }
-      }
-      const P = [...new Set(pts.map(y => Math.round(Math.min(Math.max(0, y), maxY))))].sort((a, b) => a - b);
-      for (let i = 0; i < P.length - 1; i++) if (P[i + 1] > P[i] + 2) Z.push([P[i], P[i + 1]]);
-    };
+      for (let i = 0; i < ss.length - 1; i++) {
+        const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight, nt = ss[i + 1].offsetTop - sp;
+        const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
+        if (b > a + 2) Z.push([a, b]);
+      } };
     const zoneAt = y => { build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
-    let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false;
-    const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; };
+    let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false; let lastZ = null, relT = 0;
+    const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; sc.style.overflowY = ''; };
     const spring = (to, v0) => {
       stopSpring(); springing = true;
       // kill native momentum (iOS) before driving the scroll ourselves
@@ -2134,7 +2128,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
         if (Math.abs(x) < 0.5 && Math.abs(v) < 8) { sc.scrollTop = to; sc.style.overflowY = ''; sc.style.scrollBehavior = ''; springing = false; anim = 0; return; }
         anim = requestAnimationFrame(step);
       };
-      requestAnimationFrame(() => { sc.style.overflowY = ''; });
+      // (scrolling stays locked until the spring lands, so leftover momentum can't push it past the section edge afterwards)
       anim = requestAnimationFrame(step);
     };
     const decide = (y, v) => {
@@ -2150,6 +2144,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (!springing && dt > 0) { const nv = (y - last.y) / dt; vel = vel * 0.6 + nv * 0.4; if (Math.abs(y - last.y) > 0.5) dir = Math.sign(y - last.y); }
       last = { y, t: now };
       if (springing || touching || layer.__gone) return;
+      // a long section scrolls freely, but momentum that glides into the edge between two sections is caught there:
+      // it snaps to the next section only when it's still moving fast, otherwise it settles back at the edge it came from
+      const zNow = zoneAt(y);
+      if (zNow && zNow !== lastZ && now - relT < 2500) { lastZ = zNow; const to = decide(y, vel); if (to != null) { spring(to, vel); return; } }
+      if (!zNow) lastZ = null;
       clearTimeout(idleT);
       // wheel / trackpad / momentum settle: snap shortly after the scroll comes to rest
       idleT = setTimeout(() => { if (touching || springing) return; const to = decide(sc.scrollTop, 0); if (to != null) spring(to, 0); }, 110);
@@ -2160,6 +2159,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const release = () => {
       if (inner) { inner = false; return; }
       if (!touching) return; touching = false;
+      relT = performance.now(); lastZ = zoneAt(sc.scrollTop);
       if (performance.now() - last.t > 90) vel = 0; // finger rested before lifting
       const y = sc.scrollTop, proj = y + vel * 180;
       // if the fling would carry into a section edge (or we're already straddling one), take over now
