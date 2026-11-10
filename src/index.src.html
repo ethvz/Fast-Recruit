@@ -561,6 +561,13 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // which is what runs it out of memory in landscape — the same motion done as a flat 2D transform needs none of that
   const isLite = () => document.documentElement.classList.contains('lite');
   const flat3d = s => s.indexOf('3d(') < 0 && s.indexOf('will-change') < 0 && s.indexOf('translateZ') < 0 ? s : s.replace(/translate3d\(\s*([^,()]+),\s*([^,()]+),\s*[^,()]+\)/g, 'translate($1, $2)').replace(/\s*translateZ\([^()]*\)/g, '').replace(/will-change:\s*[^;"]+;?/g, '');
+  // History wheel (crash fix 2026-11-10): the wheel is a 3400px square. Turning it with a normal CSS transition makes Safari
+  // give it its own full-size picture while it moves (about 185 MB on an iPad), right as the wheel "peeks" on arrival.
+  // On phones and tablets the turn is animated through a custom property instead, which Safari draws inside the small
+  // timeline box. Same easing, same timing. Skipped where the browser can't animate custom properties (it keeps the old way).
+  const WHEELVAR = (() => { try { if (!/iPhone|iPad|iPod|Android/.test(navigator.userAgent) && !(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return false;
+    CSS.registerProperty({ name: '--tlr', syntax: '<angle>', inherits: false, initialValue: '0deg' }); return true; } catch (e) { return false; } })();
+  const wheelVar = s => s.replace(/transition:\s*transform\b/, 'transition: --tlr').replace(/transform:\s*rotate\(([-\d.]+deg)\)/, '--tlr: $1; transform: rotate(var(--tlr))');
   const HOLE = /\{\{\s*([\w.$]+)\s*\}\}/g;
   const resolve = (sc, expr) => expr.split('.').reduce((o, k) => (o == null ? undefined : o[k]), sc);
   const fill = (tpl, sc) => tpl.replace(HOLE, (m, e) => { const v = resolve(sc, e); return v == null ? '' : String(v); });
@@ -592,7 +599,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const keyOf = list => JSON.stringify(list, (k, v) => (typeof v === 'function' ? undefined : v));
   function apply(binds, sc) {
     for (const b of binds) {
-      if (b.k === 'attr') { let v = fill(b.tpl, sc); if (b.name === 'style' && isLite()) v = flat3d(v); if (b.el.getAttribute(b.name) !== v) b.el.setAttribute(b.name, v); }
+      if (b.k === 'attr') { let v = fill(b.tpl, sc); if (b.name === 'style' && isLite()) v = flat3d(v); if (WHEELVAR && b.name === 'style' && b.el.getAttribute('data-name') === 'Wheel') v = wheelVar(v); if (b.el.getAttribute(b.name) !== v) b.el.setAttribute(b.name, v); }
       else if (b.k === 'text') { const v = fill(b.tpl, sc); if (b.node.data !== v) b.node.data = v; }
       else if (b.k === 'evt') {
         b.el.__sc = sc;
