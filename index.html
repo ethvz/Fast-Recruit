@@ -2107,11 +2107,17 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     let zV = -1;
     const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0)) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
       const ss = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow)
-      for (let i = 0; i < ss.length - 1; i++) {
-        const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight, nt = ss[i + 1].offsetTop - sp;
-        const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
-        if (b > a + 2) Z.push([a, b]);
-      } };
+      // resting points: the top of every section, and inside a tall section (Marketing, Products...) every screen-height
+      // step down it plus its last screen, so a long section pages one screen at a time like the short ones
+      const pts = [];
+      for (let i = 0; i < ss.length; i++) {
+        const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight;
+        pts.push(t);
+        if (h > VH * 1.15) { for (let y = t + VH; y < t + h - VH - VH * 0.15; y += VH) pts.push(y); pts.push(t + h - VH); }
+      }
+      const P = [...new Set(pts.map(y => Math.round(Math.min(Math.max(0, y), maxY))))].sort((a, b) => a - b);
+      for (let i = 0; i < P.length - 1; i++) if (P[i + 1] > P[i] + 2) Z.push([P[i], P[i + 1]]);
+    };
     const zoneAt = y => { build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
     let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false;
     const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; };
