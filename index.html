@@ -670,7 +670,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   // ---------------- boards & navigation ----------------
   async function loadBoard(fn) {
-    if (!cache[fn]) cache[fn] = fetch('boards_' + fn.replace('.dc.html', '') + '.json').then(r => r.json());
+    if (!cache[fn]) cache[fn] = fetch('boards_' + fn.replace('.dc.html', '') + '.json', { cache: 'no-cache' }).then(r => r.json());   // no-cache: always check for a newer page so content updates show without clearing the browser
     return cache[fn];
   }
   async function makeLayer(fn) {
@@ -2453,7 +2453,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (aid && aid !== currentAid()) go(aid, 'dissolve', 0.3, 'ease-out');
   });
 
-  fetch('proto.json').then(r => r.json()).then(async d => {
+  fetch('proto.json', { cache: 'no-cache' }).then(r => r.json()).then(async d => {
     P = d;
     Object.values(P.boards).forEach(b => (b.videos || []).forEach(v => { if (v.trim) trims[v.id] = v.trim; }));
     fit();
