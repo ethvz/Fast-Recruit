@@ -648,7 +648,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     // full-screen pieces whose style is data-driven (overlays) take the live canvas height
     let mk = j.markup.replace(/style="([^"]*\{\{[^"]*)"/g, (m, st) => 'style="' + st.replace('width: 1466px; height: 1024px', 'width: 1466px; height: var(--H, 1024px)') + '"');
     // phones: big photos come from smaller copies (a phone screen never shows them that large; saves a lot of memory)
-    if (PHONE) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
+    // upright iPad (touch tablet held upright): the landscape design is shown at ~70% size, so it needs even fewer pixels per
+    // photo than a phone held sideways. Use the same smaller copies there; full-size photos on several loaded sections at once
+    // were the heaviest part of Why Vivint › Package Costs when it crashed on an upright iPad in the Claude app.
+    if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
     if (isLite()) mk = flat3d(mk);
     const pr = prep(mk), loops = pr.loops;
     // images wait until their section is near the screen (see setupVirtual)
