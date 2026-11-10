@@ -2119,9 +2119,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       stopSpring(); springing = true;
       // kill native momentum (iOS) before driving the scroll ourselves
       sc.style.overflowY = 'hidden'; sc.style.scrollBehavior = 'auto';
-      let x = sc.scrollTop - to, v = (v0 || 0) * 1000, t0 = performance.now();
-      // springy settle with a visible bounce past the edge; a really fast flick settles straight in with no bounce
-      const fast = Math.abs(v0 || 0) > 2, K = fast ? 320 : 280, C = fast ? 36 : 16;
+      let x = sc.scrollTop - to, v = Math.max(-0.8, Math.min(0.8, v0 || 0)) * 1000, t0 = performance.now();   // capped carry-over speed: no big overshoot
+      const K = 300, C = 26; // stiffness / damping: quick, settles with barely any overshoot
       const step = now => {
         const dt = Math.min(0.032, (now - t0) / 1000); t0 = now;
         const a = -K * x - C * v; v += a * dt; x += v * dt;
@@ -2135,9 +2134,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const decide = (y, v) => {
       const z = zoneAt(y); if (!z) return null;
       const [a, b] = z, p = (y - a) / (b - a);
-      if (Math.abs(v) > 0.35) return v > 0 ? b : a;           // a flick always moves on
-      if (dir > 0) return p > 0.18 ? b : a;                     // a small push is enough to go to the next page
-      return p < 0.82 ? a : b;
+      // it takes a real push to change sections: a quick flick, or dragging about a third of the way; anything less springs back
+      if (Math.abs(v) > 0.85) return v > 0 ? b : a;
+      if (dir > 0) return p > 0.33 ? b : a;
+      return p < 0.67 ? a : b;
     };
     sc.addEventListener('scroll', () => {
       const now = performance.now(), y = sc.scrollTop, dt = now - last.t;
