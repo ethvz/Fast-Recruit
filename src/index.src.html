@@ -695,7 +695,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home');
       let p0 = null;
       const home = () => {
-        if (FLOW) { const S = segs(); if (S.length) { if (overlay) closeOverlay(true); haptic('select'); flowGoSeg = 0; go(aidOf(S[0].fn, S[0].ids[0]), 'dissolve', 0.3, 'ease-out'); return; } }
+        // the logo always means the main Home screen: in a custom flow it leaves the flow and goes Home
+        if (FLOW) { if (overlay) closeOverlay(true); haptic('select'); endFlow(true); return; }
         const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (!aid) return; if (overlay) closeOverlay(true); haptic('select'); go(aid, 'dissolve', 0.3, 'ease-out'); };
       im.addEventListener('pointerdown', e => { p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; e.stopPropagation(); }, true);
       im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
