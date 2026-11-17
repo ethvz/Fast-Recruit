@@ -39,6 +39,7 @@ An unknown state logs `[FR] unknown state` in the console. It never throws, so a
 | Header idle hide | shown → hidden after idle → shown on scroll | `hdrHide`, `hdrKick` (in each board) | — |
 | Mail queue | empty → queued → sent (14-day expiry) | `FB`, `fr_mailq` | localStorage `fr_mailq` |
 | Add-to-home-screen popup | shows on visits 1–3, then never (or until dismissed forever) | `fr_a2hs` | localStorage and cookie `fr_a2hs`, sessionStorage `fr_a2hs_s` |
+| Art board (Edit layout) | off → on (adds `ly-on`, `ui` reads as sheet) → select / drag / crop / text | `lyBar`, `lyInsp`, `setOn` | artifact db `layout/*` (live edits), `nav/last`; baked into `<script id="lyBakedData">` by `src/bake.py` |
 | What's New dot | unseen → seen | `fr_wn` | localStorage `fr_wn` |
 
 ## Rules for changes
