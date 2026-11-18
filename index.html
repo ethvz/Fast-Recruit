@@ -58,6 +58,20 @@
   .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: rgba(223,255,26,0.8) !important; background: rgba(223,255,26,0.16) !important; }
   .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] + svg + p { color: #DFFF1A !important; }
   .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #DFFF1A; }
+  /* "next section" button: a pulsing down arrow centred between the page arrows, on every section that has one below it.
+     It replaces the title screen's own arrow so every section has the same one. Solid tint (no live blur) so its pulse stays cheap. */
+  .board a[aria-label^="Scroll to"] > svg[data-name="Footer"] { display: none !important; }
+  .board .secdn { position: absolute; width: 58px; height: 58px; padding: 0; margin: 0; border-radius: 50%; box-sizing: border-box; border: 1.5px solid rgba(5,229,175,0.8); background: rgba(6,44,35,0.72);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; touch-action: manipulation; -webkit-tap-highlight-color: transparent; z-index: 6;
+    transition: opacity .35s ease, transform .35s cubic-bezier(.2,.7,.2,1); }
+  .board .secdn::before { content: ''; position: absolute; inset: -1.5px; border-radius: 50%; border: 1.5px solid rgba(5,229,175,0.7); animation: secdnRing 2.2s ease-out infinite; pointer-events: none; }
+  .board .secdn svg { width: 24px; height: 24px; animation: secdnBob 2.2s ease-in-out infinite; }
+  .board .secdn:active { transform: scale(.9); }
+  .board .secdn.off { opacity: 0; transform: translateY(12px); pointer-events: none; }
+  html.still .board .secdn::before, html.still .board .secdn svg { animation-play-state: running !important; }
+  html.safe .board .secdn::before, html.safe .board .secdn svg { animation: none !important; }
+  @keyframes secdnRing { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(1.55); opacity: 0; } }
+  @keyframes secdnBob { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(4px); } }
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
   /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
   .board [data-vscroll], .board [data-name="Income rows"] { pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
@@ -1728,7 +1742,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-17b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-18a';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -1926,6 +1940,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     startVideos(layer);
     setupReveal(layer);
     setupSnap(layer);
+    setupDownArrow(layer);
     (P.boards[layer._fn].ia || []).filter(x => x.t === 'time').forEach(x => setTimeout(() => {
       if (!layer.isConnected) return;
       if (x.a === 'video-playback') videoAction(layer, x, null); else run(x, layer);
@@ -2126,8 +2141,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       stopSpring(); springing = true;
       // kill native momentum (iOS) before driving the scroll ourselves
       sc.style.overflowY = 'hidden'; sc.style.scrollBehavior = 'auto';
-      let x = sc.scrollTop - to, v = Math.max(-0.8, Math.min(0.8, v0 || 0)) * 1000, t0 = performance.now();   // capped carry-over speed: no big overshoot
-      const K = 300, C = 26; // stiffness / damping: quick, settles with barely any overshoot
+      let x = sc.scrollTop - to, v = Math.max(-1.1, Math.min(1.1, v0 || 0)) * 1000, t0 = performance.now();   // capped carry-over speed: no big overshoot
+      const K = 300, C = 32; // stiffness / damping: quick, settles with no visible bounce
       const step = now => {
         const dt = Math.min(0.032, (now - t0) / 1000); t0 = now;
         const a = -K * x - C * v; v += a * dt; x += v * dt;
@@ -2141,10 +2156,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const decide = (y, v) => {
       const z = zoneAt(y); if (!z) return null;
       const [a, b] = z, p = (y - a) / (b - a);
-      // it takes a real push to change sections: a quick flick, or dragging about a third of the way; anything less springs back
-      if (Math.abs(v) > 0.85) return v > 0 ? b : a;
-      if (dir > 0) return p > 0.33 ? b : a;
-      return p < 0.67 ? a : b;
+      // a quick flick changes sections, or dragging about a quarter of the way; anything less springs back
+      if (Math.abs(v) > 0.4) return v > 0 ? b : a;
+      if (dir > 0) return p > 0.25 ? b : a;
+      return p < 0.75 ? a : b;
     };
     sc.addEventListener('scroll', () => {
       const now = performance.now(), y = sc.scrollTop, dt = now - last.t;
@@ -2181,6 +2196,50 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     sc.addEventListener('touchend', release, { passive: true });
     sc.addEventListener('touchcancel', release, { passive: true });
     sc.addEventListener('wheel', () => { if (springing) stopSpring(); }, { passive: true });
+  }
+
+  // ---------------- next-section arrow ----------------
+  // A pulsing down arrow centred between the page arrows (same height). Tap = glide to the top of the next section.
+  // Hidden on the last section. Works in custom flow too (uses the order sections are on screen).
+  function setupDownArrow(layer) {
+    if (layer.__dn) return;
+    const sc = scrollerOf(layer); if (!sc) return;
+    const secs = [...sc.querySelectorAll('section[id^="sec-"]')]; if (secs.length < 2) return;
+    const pill = layer.querySelector('[data-name="Glass arrow pill"]'); if (!pill || !pill.parentElement) return;
+    const host = pill.parentElement, b = document.createElement('button');
+    b.type = 'button'; b.className = 'secdn off'; b.setAttribute('aria-label', 'Next section');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#05E5AF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9.5l6 6 6-6"/></svg>';
+    host.appendChild(b); layer.__dn = b;
+    // centred between the two page arrows and level with them, the same size as they show on screen (phones enlarge the
+    // page arrows on their own, so this measures them on screen and maps back into the board's coordinates)
+    const pills = [...host.querySelectorAll('[data-name="Glass arrow pill"]')];
+    const place = () => {
+      const r1 = pills[0].getBoundingClientRect(), r2 = pills[pills.length - 1].getBoundingClientRect();
+      if (!r1.width || !b.offsetWidth) return;
+      const br = b.getBoundingClientRect(), k = br.width / b.offsetWidth || 1, ps = r1.height / (pills[0].offsetHeight || 50);
+      const size = Math.round(58 * ps / k), ox = br.left - k * b.offsetLeft, oy = br.top - k * b.offsetTop;
+      const cx = pills.length > 1 ? (r1.left + r2.right) / 2 : (layer.getBoundingClientRect().left + layer.getBoundingClientRect().width / 2), cy = r1.top + r1.height / 2;
+      b.style.width = b.style.height = size + 'px'; b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.42) + 'px';
+      b.style.left = ((cx - ox) / k - size / 2) + 'px'; b.style.top = ((cy - oy) / k - size / 2) + 'px';
+    };
+    const target = () => {
+      const k = (sc.getBoundingClientRect().height / (sc.offsetHeight || 1)) || 1, top0 = sc.getBoundingClientRect().top, y = sc.scrollTop, maxY = sc.scrollHeight - sc.clientHeight;
+      const ss = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, c) => a.compareDocumentPosition(c) & 4 ? -1 : 1);
+      for (const el of ss) { const d = (el.getBoundingClientRect().top - top0) / k; if (d > 4) { const t = Math.min(y + d, maxY); return t > y + 2 ? t : null; } }
+      return null;
+    };
+    let raf = 0;
+    const upd = () => { raf = 0; b.classList.toggle('off', target() == null); };
+    sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
+    addEventListener('resize', () => { place(); upd(); });
+    b.addEventListener('pointerdown', e => e.stopPropagation());
+    b.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      const t = target(); if (t == null) return;
+      (window.__haptic || (() => {}))('select');
+      sc.scrollTo({ top: t, behavior: 'smooth' });
+    });
+    place(); setTimeout(() => { place(); upd(); }, 60); setTimeout(() => { place(); upd(); }, 900);
   }
 
   // ---------------- scroll reveal for headings & copy ----------------
@@ -2649,7 +2708,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   /* ---------- editor UI ---------- */
   const st=document.createElement('style'); st.textContent=`
-#lyBtn{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9000;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(28,28,30,.82);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#fff;font:500 14px/40px 'Vivint Sans',system-ui,sans-serif;display:none;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#lyBtn{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:9000;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(28,28,30,.82);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#fff;font:500 14px/40px 'Vivint Sans',system-ui,sans-serif;display:none;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #lyBtn svg{width:18px;height:18px}
 #lyBtn.show{display:flex}
 .lyBar{position:fixed;left:50%;z-index:9001;display:flex;align-items:center;gap:6px;padding:6px;border-radius:26px;background:rgba(28,28,30,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 36px rgba(0,0,0,.55);transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .3s;font:500 14px 'Vivint Sans',system-ui,sans-serif;color:#fff;white-space:nowrap}
@@ -2792,7 +2851,7 @@ body.ly-crop #lyInsp{opacity:.98}
   .lyBar button{height:38px;min-width:38px;padding:0 12px;flex:none}
   .lyBar .lyseg{flex:none}
   .lyBar .lyseg button{height:34px;padding:0 11px}
-  #lyBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+  #lyBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
   #lyToast{top:calc(env(safe-area-inset-top,0px) + 62px);max-width:88vw;white-space:normal;text-align:center}
   #lyInsp,#lyInsp.left{left:0!important;right:0!important;top:auto;bottom:0;width:auto;height:min(52vh,460px);border-radius:20px 20px 0 0;border-width:1px 0 0;transform:translateY(105%);padding-bottom:env(safe-area-inset-bottom,0px);transition:transform .4s cubic-bezier(.22,1,.36,1),height .35s cubic-bezier(.22,1,.36,1),opacity .25s}
   body.ly-on.ly-has:not(.ly-noinsp) #lyInsp{transform:none}
