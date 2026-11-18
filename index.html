@@ -1739,7 +1739,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-18c';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-18d';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -1938,6 +1938,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     setupReveal(layer);
     setupSnap(layer);
     setupDownArrow(layer);
+    fitSideNav(layer); setTimeout(() => fitSideNav(layer), 700);
     (P.boards[layer._fn].ia || []).filter(x => x.t === 'time').forEach(x => setTimeout(() => {
       if (!layer.isConnected) return;
       if (x.a === 'video-playback') videoAction(layer, x, null); else run(x, layer);
@@ -2258,6 +2259,31 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     addEventListener('click', e => { if (performance.now() - doneT < 700 && layer.contains(e.target) && inStrip(e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); } }, true);
     place(); setTimeout(() => { place(); upd(); }, 60); setTimeout(() => { place(); upd(); }, 900);
   }
+
+  // ---------------- side nav fit (phones sideways) ----------------
+  // Sideways phones enlarge the side nav, so long pages ran past the bottom of the screen. Here the gaps between
+  // the items shrink (text stays the same size) until the last item sits above the page arrows. The track line
+  // and its green fill shrink by the same amount, so they still line up with the dots.
+  function fitSideNav(layer) {
+    const nav = layer && layer.querySelector('nav[aria-label$=" sections"]'); if (!nav) return;
+    let st = layer.__navFit; if (!st) { st = layer.__navFit = document.createElement('style'); document.head.appendChild(st); }
+    if (!document.documentElement.classList.contains('pland') || !layer.isConnected) { st.textContent = ''; return; }
+    if (!/scale\(1\)/.test(nav.style.transform || 'scale(1)')) return;   // collapsed menu: measure when it's open
+    const as = [...nav.querySelectorAll(':scope > a')]; if (as.length < 2) { st.textContent = ''; return; }
+    const pill = layer.querySelector('[data-name="Glass arrow pill"]'); if (!pill) return;
+    st.disabled = true;   // measure the natural layout
+    const tops = as.map(a => parseFloat(a.style.top) || 0), r0 = as[0].getBoundingClientRect(), rN = as[as.length - 1].getBoundingClientRect(), pr = pill.getBoundingClientRect();
+    st.disabled = false;
+    const span = tops[tops.length - 1] - tops[0]; if (!(span > 0) || !r0.height) return;
+    const k = (rN.top - r0.top) / span;                       // screen px per nav px
+    const room = pr.top - 14 - r0.top - rN.height;            // screen space for the gaps
+    const r = Math.max(0.4, Math.min(1, room / (rN.top - r0.top)));
+    if (r > 0.995) { st.textContent = ''; return; }
+    const sel = '.layer[data-fn="' + layer.dataset.fn + '"] nav[aria-label$=" sections"]';
+    st.textContent = tops.map((t, i) => sel + ' > a:nth-of-type(' + (i + 1) + ') { translate: 0 ' + ((t - tops[0]) * (r - 1)).toFixed(1) + 'px; }').join('\n')
+      + '\n' + sel + ' > div:nth-of-type(1), ' + sel + ' > div:nth-of-type(2) { scale: 1 ' + r.toFixed(4) + '; transform-origin: 0 0; }';
+  }
+  addEventListener('resize', () => setTimeout(() => document.querySelectorAll('.layer[data-fn]').forEach(fitSideNav), 250));
 
   // ---------------- scroll reveal for headings & copy ----------------
   function setupReveal(layer) {
