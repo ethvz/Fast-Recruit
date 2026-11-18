@@ -1738,7 +1738,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-18d';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-18e';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2212,7 +2212,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const pills = [...host.querySelectorAll('[data-name="Glass arrow pill"]')];
     // measured on screen (phones enlarge the page arrows on their own), then mapped back into the board's coordinates
     const place = () => {
-      const r1 = pills[0].getBoundingClientRect(), r2 = pills[pills.length - 1].getBoundingClientRect();
+      const rs = pills.map(p => p.getBoundingClientRect()).sort((x, y) => x.left - y.left), r1 = rs[0], r2 = rs[rs.length - 1];
       if (!r1.width || !b.offsetWidth) return;
       const br = b.getBoundingClientRect(), k = br.width / b.offsetWidth || 1, ps = r1.height / (pills[0].offsetHeight || 50);
       const size = Math.round(58 * ps / k), ox = br.left - k * b.offsetLeft, oy = br.top - k * b.offsetTop;
@@ -2222,7 +2222,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
-      const r1 = pills[0].getBoundingClientRect(), r2 = pills[pills.length - 1].getBoundingClientRect(), lr = layer.getBoundingClientRect();
+      // (pages list their two arrows in either order, so sort them left to right)
+      const rs = pills.map(p => p.getBoundingClientRect()).sort((x, y) => x.left - y.left), r1 = rs[0], r2 = rs[rs.length - 1], lr = layer.getBoundingClientRect();
       const left = pills.length > 1 ? r1.right + 10 : lr.left, right = pills.length > 1 ? r2.left - 10 : lr.right;
       return x > left && x < right && y > r1.top - r1.height * 0.6 && y < lr.bottom;
     };
