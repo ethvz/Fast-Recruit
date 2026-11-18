@@ -1728,7 +1728,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-17a';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-17b';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2498,7 +2498,8 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     await go(start, 'none', 0, undefined, back);
     document.getElementById('loading').classList.add('done');
     booted = true; FR.set('boot', 'ready', current ? current.board : '');
-    if (CRASH) setTimeout(() => FB.crash(CRASH), 2200);   // the app crashed last time: offer to send a report
+    // Automatic crash reports are off for now (Ethan, 2026-11-17). Crash recovery (same spot, lighter mode) still runs.
+    // To turn them back on: if (CRASH) setTimeout(() => FB.crash(CRASH), 2200);
   }).catch(() => setTimeout(hardReload, 2000));
 })();
 </script>
@@ -2540,13 +2541,14 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 <script>
 (() => {
   const SHOWS = 3, KEY = 'fr_a2hs';
+  const A2HS_OFF = true;   // Add-to-Home-Screen prompt is off for now (Ethan, 2026-11-17); set to false to bring it back
   const nav = navigator, ua = nav.userAgent || '';
   const installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || nav.standalone === true;
   const iOS = /iPhone|iPad|iPod/.test(ua) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1);
   const android = /Android/i.test(ua);
   let deferred = null;   // Android Chrome's own install prompt, when it offers one
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
-  if (installed || !(iOS || android) || window.__frCrash) return;   // already on the home screen, or a computer
+  if (A2HS_OFF || installed || !(iOS || android) || window.__frCrash) return;   // already on the home screen, or a computer
   const get = () => { let v = null; try { v = localStorage.getItem(KEY); } catch (e) {} if (v == null) { const m = document.cookie.match(/(?:^|; )fr_a2hs=(\d+)/); v = m && m[1]; } return +v || 0; };
   const put = n => { try { localStorage.setItem(KEY, String(n)); } catch (e) {} try { document.cookie = 'fr_a2hs=' + n + '; max-age=31536000; path=/; SameSite=Lax'; } catch (e) {} };
   // one count per visit: reloads and crash-restarts in the same visit don't use up a showing
