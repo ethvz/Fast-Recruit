@@ -1738,7 +1738,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-18e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-18f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2216,7 +2216,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (!r1.width || !b.offsetWidth) return;
       const br = b.getBoundingClientRect(), k = br.width / b.offsetWidth || 1, ps = r1.height / (pills[0].offsetHeight || 50);
       const size = Math.round(58 * ps / k), ox = br.left - k * b.offsetLeft, oy = br.top - k * b.offsetTop;
-      const cx = pills.length > 1 ? (r1.left + r2.right) / 2 : (layer.getBoundingClientRect().left + layer.getBoundingClientRect().width / 2), cy = r1.top + r1.height / 2;
+      // centred on the screen (not between the page arrows, which can sit unevenly around a notch or the browser's edges);
+      // the layer's left edge is added so it stays put while a page slides in or out
+      const vw = (window.visualViewport && visualViewport.width) || innerWidth, lx = layer.getBoundingClientRect().left;
+      const cx = lx + vw / 2, cy = r1.top + r1.height / 2;
       b.style.width = b.style.height = size + 'px'; b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
       b.style.left = ((cx - ox) / k - size / 2) + 'px'; b.style.top = ((cy - oy) / k - size / 2) + 'px';
     };
