@@ -1739,7 +1739,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-18f';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20a';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2152,6 +2152,10 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       anim = requestAnimationFrame(step);
     };
     sc.__springTo = to => { clearTimeout(idleT); lastZ = null; spring(to, 0); };   // the next-section arrow glides with the same spring
+    // the side nav's smooth scrollTo glides on the same spring too: a native smooth scroll right after a tap passed through
+    // snap zones, and the snap read that as a half-finished swipe and sprang back to where it started
+    { const nat = sc.scrollTo.bind(sc);
+      sc.scrollTo = (o, y) => { if (o && typeof o === 'object' && o.behavior === 'smooth' && o.top != null && o.left == null) { touching = false; relT = 0; sc.__springTo(Math.max(0, Math.min(o.top, sc.scrollHeight - sc.clientHeight))); } else nat(o, y); }; }
     const decide = (y, v) => {
       const z = zoneAt(y); if (!z) return null;
       const [a, b] = z, p = (y - a) / (b - a);
