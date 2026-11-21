@@ -1777,7 +1777,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2848,6 +2848,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
 #lyBtn{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:9000;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(28,28,30,.82);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#fff;font:500 14px/40px 'Vivint Sans',system-ui,sans-serif;display:none;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #lyBtn svg{width:18px;height:18px}
 #lyBtn.show{display:flex}
+#lySimBtn{position:fixed;left:50%;bottom:144px;transform:translateX(-50%);z-index:9000;height:40px;padding:0 16px 0 12px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:rgba(28,28,30,.82);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);color:#fff;font:500 14px/40px 'Vivint Sans',system-ui,sans-serif;display:none;align-items:center;gap:8px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#lySimBtn svg{width:18px;height:18px}
+#lySimBtn.show{display:flex}
+body.ly-on #lySimBtn{display:none}
+#lySim{position:fixed;inset:0;z-index:9600;background:#070908;display:none}
+#lySim.open{display:block}
+#lySim iframe{width:100%;height:100%;border:0;display:block}
 .lyBar{position:fixed;left:50%;z-index:9001;display:flex;align-items:center;gap:6px;padding:6px;border-radius:26px;background:rgba(28,28,30,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.14);box-shadow:0 12px 36px rgba(0,0,0,.55);transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .3s;font:500 14px 'Vivint Sans',system-ui,sans-serif;color:#fff;white-space:nowrap}
 #lyBar{top:14px;transform:translate(-50%,-90px)}
 body.ly-on #lyBar{transform:translate(-50%,0)}
@@ -3013,6 +3020,11 @@ body.ly-on [contenteditable=true]{outline:2px solid #05E5AF!important;cursor:tex
   const mk=(tag,id,html)=>{ const e=document.createElement(tag); e.id=id; if(html!=null) e.innerHTML=html; document.body.appendChild(e); return e; };
   const ico='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
   const btn=mk('button','lyBtn',ico+'Edit layout');
+  /* Screen preview (editors only, in the artifact): the app on every iPhone and iPad size at once, for screen-fit fixes */
+  const simBtn=mk('button','lySimBtn','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="12" height="15" rx="2"/><rect x="16.5" y="8" width="5" height="9" rx="1.5"/><path d="M7.5 17.5h2"/></svg>Screens');
+  const simWrap=mk('div','lySim');
+  simBtn.addEventListener('click',()=>{ if(!simWrap.firstChild){ const f=document.createElement('iframe'); f.src='devices.html'; f.title='Screen preview'; simWrap.appendChild(f); } simWrap.classList.add('open'); });
+  addEventListener('message',e=>{ if(e.data&&e.data.frSim==='close'){ simWrap.classList.remove('open'); simWrap.innerHTML=''; } });
   const bar=mk('div','lyBar',`<span class="lyseg"><button data-m="c" class="on">Content</button><button data-m="s">Shapes</button></span><span class="lyt" data-hint></span><span class="lysel"><span class="lysep"></span><button data-a="crop">Crop</button><button data-a="txt">Edit text</button><button data-a="rs">Reset</button></span><span class="lysep"></span><button data-a="fit" class="lyfit" hidden>Fit</button><button data-a="undo" disabled>Undo</button><button data-a="fmt" class="fmt on" title="Format"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-8.5 8.5a3 3 0 01-4.2 0l-1.8-1.8a3 3 0 010-4.2z"/><path d="M5 19c-1 1-2 1.5-3 1.5"/></svg>Format</button><button data-a="discard" class="dis" hidden>Remove edits</button><button data-a="pub" class="pub" hidden>Publish ↑</button><button data-a="done" class="go">Done</button>`); bar.classList.add('lyBar');
   const box=mk('div','lyBox','<b></b><i></i>');
   const toast=mk('div','lyToast');
@@ -3269,7 +3281,7 @@ body.ly-on [contenteditable=true]{outline:2px solid #05E5AF!important;cursor:tex
   /* connect */
   (async()=>{ try{ db=await claude.use('db'); }catch(e){ db=null; } if(!db) return; col=db.collection('layout');
     col.onSnapshot(s=>{ if(s.metadata&&s.metadata.fromCache) return; const seen={}; DBIDS.clear(); s.docs.forEach(d=>{ if(!d.exists) return; seen[d.id]=1; DBIDS.add(d.id); if(drag&&drag.id===d.id) return; const o=Object.assign({},d.data()); delete o.at; L[d.id]=o; }); for(const id in L) if(!seen[id]&&!(drag&&drag.id===id)&&!pend[id]) delete L[id]; write(); pubState(); },()=>{});
-    try{ const u=await claude.use('user'); if(u&&await u.canEdit()){ btn.classList.add('show'); navResume(); try{ mcp=await claude.use('mcp'); }catch(e){ mcp=null; } pubState(); } }catch(e){} })();
+    try{ const u=await claude.use('user'); if(u&&await u.canEdit()&&!new URLSearchParams(location.search).has('sim')){ btn.classList.add('show'); simBtn.classList.add('show'); navResume(); try{ mcp=await claude.use('mcp'); }catch(e){ mcp=null; } pubState(); } }catch(e){} })();
 })();
 </script>
 </body>
