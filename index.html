@@ -1753,7 +1753,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2258,7 +2258,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     const pills = [...host.querySelectorAll('[data-name="Glass arrow pill"]')];
     const place = () => {
       const r = pills.map(p => p.getBoundingClientRect()).find(x => x.width > 0 && x.bottom > 0 && x.top < innerHeight);
-      const size = r ? Math.max(40, Math.min(64, Math.round(r.height * 1.16))) : 52;
+      const size = r ? Math.max(34, Math.min(54, Math.round(r.height * 0.96))) : 44;
       b.style.width = b.style.height = size + 'px'; b.style.marginLeft = (-size / 2) + 'px';
       b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
       if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
