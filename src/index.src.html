@@ -1290,6 +1290,15 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     t.textContent = msg; requestAnimationFrame(() => t.classList.add('on')); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1900);
   }
   const noDrag = b => ['pointerdown', 'touchstart', 'mousedown'].forEach(ev => b.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+  // hold a button ~half a second to run fn instead of its tap (the tap that follows the hold is swallowed)
+  const longPress = (b, fn) => { let t = null, x0 = 0, y0 = 0, fired = false;
+    const stop = () => { clearTimeout(t); t = null; };
+    b.addEventListener('pointerdown', e => { fired = false; x0 = e.clientX; y0 = e.clientY; stop(); t = setTimeout(() => { t = null; fired = true; try { haptic('select'); } catch (er) {} fn(); }, 480); });
+    b.addEventListener('pointermove', e => { if (t && Math.hypot(e.clientX - x0, e.clientY - y0) > 10) stop(); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => b.addEventListener(ev, stop));
+    b.addEventListener('contextmenu', e => e.preventDefault());
+    b.style.webkitTouchCallout = 'none'; b.style.userSelect = 'none';
+    b.addEventListener('click', e => { if (fired) { fired = false; e.preventDefault(); e.stopImmediatePropagation(); } }, true); };
   // ---- Fine print: the rules behind a section, from the 2026 Sales Rules (v. 11/20/2025) ----
   // Each entry: list of blocks. A block is [heading, [bullet, …]] or [heading, {h: [...cols], r: [[...], …]}, note?]
   const FP = {
@@ -1379,7 +1388,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       if (flow) { pinFav(sec, w); return; }   // in the flow, sections are removed from the edit menu only
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
       b.setAttribute('aria-label', 'Star this section for your Custom flow'); b.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); b.innerHTML = STAR;
-      noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });
+      noDrag(b); longPress(b, openEdit); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); });   // hold: edit the Custom flow
       w.appendChild(b); pinFav(sec, w);
     });
     try { syncNavStars(); } catch (e) {}
@@ -1408,7 +1417,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   }
   function setupFlowBtn(layer) {
     layer.querySelectorAll('[data-x="Custom flow"]').forEach(b => {
-      noDrag(b);
+      noDrag(b); longPress(b, openEdit);   // hold: edit the Custom flow instead of starting it
       b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); startFlow(); });
       b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startFlow(); } });
     });
@@ -1739,7 +1748,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20c';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20d';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
