@@ -1120,8 +1120,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const mode = bR.map(r => r.full ? 'full' : r.cols.length === 1 ? 'one' : ok(r.x1 - r.x0) ? 'side' : small(r) ? 'pair' : 'stack');
     const layout = md => { const G = [];
       const grp = (parts, ri, gap, wAs) => { const its = []; let x = 0; const y0 = Math.min(...parts.map(c => c.y0));
-        parts.forEach(c => { c.items.concat(c.fl || []).forEach(i => its.push({ it: i, rx: x + (i.x - c.x0), ry: i.y - y0 })); x += cw(c) + gap; });
-        const w = wAs || x - gap, h = Math.max(...parts.map(c => c.y1)) - y0, solid = parts.flatMap(c => c.items);
+        parts.forEach(c => { c.items.concat(c.fl || []).forEach(i => its.push({ it: i, rx: x + (i.x - c.x0), ry: i.y - c.y0 })); x += cw(c) + gap; });
+        const w = wAs || x - gap, h = Math.max(...parts.map(c => c.y1 - c.y0)), solid = parts.flatMap(c => c.items);
         G.push({ its, row: ri, w, h, y0, y1: y0 + h, pic: !solid.some(i => i.txt) && w * h < 140000, lab: h < 140 && w < 700 && !solid.some(i => i.rot) }); };
       bR.forEach((r, ri) => { const m = md[ri], cols = r.cols;
         if (m === 'full') { G.push({ its: cols.flatMap(c => c.items.map(i => ({ it: i, rx: i.x, ry: i.y - r.y0 }))), row: ri, full: true, w: 1466, h: r.y1 - r.y0, y0: r.y0, y1: r.y1 }); return; }
@@ -1129,7 +1129,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           const solid = cols.flatMap(c => c.items), w = r.x1 - r.x0, h = r.y1 - r.y0;
           G.push({ its, row: ri, w, h, y0: r.y0, y1: r.y1, pic: !solid.some(i => i.txt) && w * h < 140000, lab: h < 140 && w < 700 && !solid.some(i => i.rot) }); return; }
         if (m === 'pair') { const pw = Math.max(...cols.map(cw)) * 2 + 28; for (let k = 0; k < cols.length; k += 2) grp(cols.slice(k, k + 2), ri, 28, pw); return; }
-        cols.forEach(c => grp([c], ri, 0)); });
+        cols.forEach(c => {
+          // a menu-style list that shares its column with a box: the two sit side by side, so the list stays small
+          const lines = c.items.filter(i => i.h < 90), boxes = c.items.filter(i => i.h >= 150);
+          if (PHONE && lines.length >= 4 && boxes.length >= 1 && lines.length + boxes.length === c.items.length) {
+            const mkc = (its, fl) => ({ items: its, fl, x0: Math.min(...its.map(i => i.x)), x1: Math.max(...its.map(i => i.x + i.w)), y0: Math.min(...its.map(i => i.y)), y1: Math.max(...its.map(i => i.y + i.h)) });
+            grp([mkc(lines, c.fl), mkc(boxes)], ri, 28); return; }
+          grp([c], ri, 0); }); });
       const ks = G.filter(g => !g.full && !g.pic && !g.lab).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / KS);
       G.forEach(g => { g.k = g.full ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
       let t = 0; G.forEach((g, n) => { g.gap = n ? (G[n - 1].row === g.row ? 28 : Math.max(16, Math.min(90, g.y0 - G[n - 1].y1))) * Math.min(g.k, 1.6) : 0; t += g.gap + g.h * g.k; });
@@ -2025,7 +2031,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21m';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21n';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
