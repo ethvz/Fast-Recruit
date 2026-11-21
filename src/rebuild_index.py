@@ -1,6 +1,8 @@
 """Rebuild the live app page from src/index.src.html (the editable copy) and bump the offline helper so phones pick it up.
 Run from the repo root:  python3 src/rebuild_index.py"""
-import re, hashlib, os
+import re, hashlib, os, subprocess, sys
+# the menu's section lists follow the pages (sections added, removed, renamed or moved)
+subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), 'sync_sections.py'), 'proto.json'] + (['/home/claude/fr-art/proto.json'] if os.path.exists('/home/claude/fr-art/proto.json') else []), check=True)
 t = open('src/index.src.html', encoding='utf-8').read()
 pat = re.compile(r'(?<![\w/.-])(a|img|vid|boards)/([\w.-]+\.(?:webp|png|jpg|jpeg|otf|mp4|json|bin|svg|gif))')
 t = pat.sub(lambda m: m.group(1) + '_' + m.group(2), t).replace("'boards/' + fn", "'boards_' + fn").replace("el.src = 'vid/' + INAPP", "el.src = 'vid_' + INAPP").replace("DIR = 'social/'", "DIR = 'social_'")

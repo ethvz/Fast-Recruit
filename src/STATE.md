@@ -47,3 +47,5 @@ An unknown state logs `[FR] unknown state` in the console. It never throws, so a
 1. A new app-wide mode goes in `FR.machines` and changes only through `FR.set(machine, state, why)`.
 2. Anything new that opens on top of the page calls `uiSync()` (or `FR.ui()` from outside the main script) when it opens and closes. Give closing elements a `closing` class so they stop counting while they fade out.
 3. Never add a new global boolean for "is X open/running". Read the machine instead: `FR.get('ui') === 'none'`.
+
+- Menu sections: `src/sync_sections.py` (run by `rebuild_index.py`) rebuilds proto.json section lists from each page board's `this.sections`, so the hamburger menu follows added/removed/renamed/reordered sections.
