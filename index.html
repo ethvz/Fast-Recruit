@@ -82,8 +82,9 @@
   .board section[id^="sec-"] { content-visibility: auto; }
   .layer { touch-action: pan-y; }
   /* nothing on the site can be highlighted or copied (typing in boxes still works) */
-  html, body, body * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-  input, textarea, select, [contenteditable="true"], [contenteditable="true"] * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+  html, body, body *, body *::before, body *::after { -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; }
+  img, svg, a, video { -webkit-user-drag: none; user-drag: none; }
+  input, textarea, [contenteditable="true"], [contenteditable="true"] * { -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important; }
   /* portrait: the canvas grows taller (--H); bottom controls ride down with it, fixed-size screens sit centred */
   #frame, .layer, .board { height: var(--H, 1024px) !important; }
   .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(var(--dy, 0px)); }
@@ -1762,7 +1763,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20g';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20h';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2253,6 +2254,11 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const canSel = t => t && t.closest && (t.closest('input, textarea, select, [contenteditable="true"]') || document.body.classList.contains('ly-on'));
   ['copy', 'cut'].forEach(ev => document.addEventListener(ev, e => { if (!canSel(document.activeElement) && !canSel(e.target)) e.preventDefault(); }, true));
   document.addEventListener('selectstart', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
+  // iPhone/iPad: a long press can still start a selection (and its Copy bubble) or a link/picture preview; drop both at once
+  document.addEventListener('contextmenu', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
+  document.addEventListener('dragstart', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
+  document.addEventListener('selectionchange', () => { const sl = getSelection && getSelection(); if (!sl || sl.isCollapsed || !sl.rangeCount) return;
+    const n = sl.anchorNode, el = n && (n.nodeType === 1 ? n : n.parentElement); if (!canSel(el)) sl.removeAllRanges(); });
   const DN = new Set(), dnRefresh = () => requestAnimationFrame(() => DN.forEach(f => f()));
   function setupDownArrow(layer) {
     if (layer.__dn) return;
