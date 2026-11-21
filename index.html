@@ -838,13 +838,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function posP(m, yr) {
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (yr >= x.R) s = x; });
     const c = Math.min(yr - s.R, s.hr);
-    if (s.ps) return s.T + Math.max(0, Math.min(s.h, c * s.h / s.hr));   // reflowed portrait section: proportional
+    if (s.ps) {   // reflowed portrait section: its first screen = the design's first screen, the rest of it = the rest of the design
+      const f = Math.min(s.h, 1024); if (c <= H) return s.T + Math.max(0, c) * f / H;
+      return s.T + Math.min(s.h, f + (s.h > f && s.hr > H ? (c - H) * (s.h - f) / (s.hr - H) : 0)); }
     return s.tall ? s.T + Math.min(s.h, c) : s.T + Math.max(0, Math.min(s.h, c - E / 2));
   }
   function Pinv(m, v) {
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (v > x.T) s = x; });
     const c = v - s.T;
-    if (s.ps) return s.R + Math.min(s.h, c) * s.hr / s.h;
+    if (s.ps) { const f = Math.min(s.h, 1024); if (c <= f) return s.R + Math.max(0, c) * H / f; return s.R + H + (s.h > f ? Math.min(s.h - f, c - f) * (s.hr - H) / (s.h - f) : 0); }
     if (s.tall) return s.R + c;
     return c >= s.h ? s.R + s.hr : s.R + E / 2 + c;
   }
@@ -1340,6 +1342,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function runPending() { const p = navPending; navPending = null; if (p) go(...p); }
   function back() { const s = stack.pop(); if (s) go(s.aid, 'dissolve', 0.3, 'ease-out', s); }
   function setHash(aid) { try { history.replaceState(null, '', '#' + slug(P.artboards[aid].name)); } catch (e) {} }
+  // Screen Preview: the address also follows the section you scroll to, so the other screens can follow along
+  if (SIM) { let lastA = null; setInterval(() => { try { if (!booted || busy) return; const a = currentAid(); if (a && a !== lastA) { lastA = a; const h = '#' + slug(P.artboards[a].name); if (location.hash !== h) setHash(a); } } catch (e) {} }, 400); }
 
   // the page chrome (header, logo + menu, bottom page arrows) stays put while pages slide/swipe; only the content moves
   const chromeOf = layer => { const h = layer && layer.querySelector('[data-name="Header"]'); return h ? h.parentElement : null; };
@@ -1929,7 +1933,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21f';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21h';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2359,7 +2363,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // a snap zone is only where the screen straddles two sections:
     // from "previous section's bottom fills the screen" to "next section's top is at the top"
     let zV = -1;
-    const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0)) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
+    let zS = 0;   // (portrait sections can change height as they load: rebuild when the page length changes)
+    const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0) && zS === sc.scrollHeight) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; zS = sc.scrollHeight; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
       const ss = secs.filter(el => el.isConnected && el.parentNode === sc).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow)
       for (let i = 0; i < ss.length - 1; i++) {
         const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight, nt = ss[i + 1].offsetTop - sp;
