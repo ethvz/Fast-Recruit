@@ -1008,6 +1008,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     layer.className = 'layer'; layer.dataset.board = fn;
     layer.appendChild(host);
     layer._inst = inst; layer._fn = fn; layer.dataset.fn = fn;
+    // while a navigation menu is open (upright section menu, the hamburger page menu, the long-press page menu) the header
+    // and footer stay put: the page's idle timer may not hide them
+    if (inst && typeof inst.setState === 'function') { const ss = inst.setState; inst.setState = function (u, ...rest) {
+      if (u && typeof u === 'object' && u.hdrHide === true && (menuEl || document.querySelector('.qnav') || (pstackOn() && this.state && this.state.navOpen !== false))) { u = Object.assign({}, u); delete u.hdrHide; if (!Object.keys(u).length) return; }
+      return ss.call(this, u, ...rest); }; }
     // upright: a page re-draws itself on scroll at most every 90 ms (plus once when scrolling stops). Every re-draw rebuilds the
     // whole page, and a fast flick fired dozens a second — iPhones ran out of memory and closed the page.
     if (inst && typeof inst.onScroll === 'function' && PSTACK) { const orig = inst.onScroll; let last = 0, tm = 0, tgt = null;
@@ -2388,7 +2393,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22l';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22m';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2491,7 +2496,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       // hidden (idle): a tap anywhere on it only brings it back
       phdr.addEventListener('pointerdown', e => { if (!phdr.classList.contains('idle')) return; e.preventDefault(); e.stopPropagation(); const i = current && current.layer && current.layer._inst; phdr.__woke = Date.now(); if (i) { i.setState({ hdrHide: false }); if (i.hdrKick) i.hdrKick(); } }, true);
       phdr.addEventListener('click', e => { if (Date.now() - (phdr.__woke || 0) < 700) { e.preventDefault(); e.stopPropagation(); } }, true);
-      phdr.querySelector('.ph-sec').addEventListener('click', e => { e.stopPropagation(); const i = current && current.layer && current.layer._inst; if (i && i.setState) withOwner(null, () => i.setState({ navOpen: i.state.navOpen === false })); });
+      phdr.querySelector('.ph-sec').addEventListener('click', e => { e.stopPropagation(); const i = current && current.layer && current.layer._inst; if (i && i.setState) withOwner(null, () => i.setState({ navOpen: i.state.navOpen === false, hdrHide: false })); if (i && i.hdrKick) i.hdrKick(); });
       phdr.querySelector('.ph-menu').addEventListener('click', () => { const b = current && current.layer.querySelector('.board [data-x="Menu button"]'); if (b) b.click(); else openMenu(); });
       phdr.querySelector('.ph-logo').addEventListener('click', () => { const im = current && current.layer.querySelector('.board img[data-name="Vivint Logo"]'); if (im) im.click(); });
     }
