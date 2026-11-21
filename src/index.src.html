@@ -183,6 +183,16 @@
   #phdr .ph-l.cur { color: #05E5AF; }
   #phdr .ph-p { flex: none; height: 30px; padding: 0 14px; margin-left: 4px; border-radius: 15px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font: 700 11px/28px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
   #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
+  /* iPhone portrait: the section star + extra buttons sit top right, level with the section-menu button */
+  html.pph .favw { top: calc(var(--isc, 1) * 64px) !important; right: calc(var(--isc, 1) * 12px) !important; scale: calc(var(--isc, 1) * 0.42); transform-origin: 100% 0; }
+  /* product tiles re-cut shorter in portrait: their pictures shrink to fit */
+  html.pstack .pdtile img { height: auto !important; max-height: 100% !important; }
+  /* portrait: background photos keep only their bottom fade (side and top fades go; a light even dim stays for the text) */
+  html.port:not(.pland) .board section[id^="sec-"] [data-name^="Background"] > :is([data-name="Blend to black"], [data-name="Fade to black"], [data-name="Scrim"], [data-name="Sky shade"], [data-name="Photo fade"]) {
+    background: linear-gradient(180deg, rgba(0,0,0,.3) 0%, rgba(0,0,0,.3) 55%, rgba(0,0,0,.7) 82%, #000 100%) !important; }
+  html.port:not(.pland) #sec-environment [data-name^="Background"] [data-name^="Photo"] { opacity: 1 !important; }
+  html.port:not(.pland) #sec-environment [data-name^="Background"] > :is([data-name="Scrim"], [data-name="Fade to black"], [data-name="Blend to black"]) { background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.65) 82%, #000 100%) !important; }
+  html.port:not(.pland) #sec-sales-tools [data-name="Sales tools iPads"] { opacity: .32 !important; }
   #phdr .ph-scroll { justify-content: flex-end; }
   /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
   html.pph .layer .board [data-name="Glass arrow pill"], html.pph .layer .board .pdown { display: none !important; }
@@ -621,7 +631,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const ncs = pphOn() ? Math.max(1, Math.min(2.2, 0.54 / scale)) : PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
     document.documentElement.style.setProperty('--sat', safeTop + 'px');
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
-    const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
+    const st2 = frame.style; st2.setProperty('--isc', (1 / scale).toFixed(4)); st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
     // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
     // growing/shrinking while you scroll change the height many times a second: then only the sizes above update
     // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
@@ -1050,7 +1060,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; })) { take(c); return; } }
       const cs = getComputedStyle(c), o = (cs.transformOrigin || '0 0').split(' ').map(parseFloat);
       if (!c.dataset.pst) c.dataset.pst = 'p' + (++pstSeq);
-      items.push({ id: c.dataset.pst, x, y, w, h, ox: o[0] || 0, oy: o[1] || 0, full: !rot && w >= 1300, bg: !rot && w >= 1300 && h >= 900, rot, w0, h0, X0, Y0, txt: (c.textContent || '').trim().length > 12, hid: cs.visibility === 'hidden' });
+      items.push({ el: c, id: c.dataset.pst, x, y, w, h, ox: o[0] || 0, oy: o[1] || 0, full: !rot && w >= 1300, bg: !rot && w >= 1300 && h >= 900, rot, w0, h0, X0, Y0, txt: (c.textContent || '').trim().length > 12, hid: cs.visibility === 'hidden' });
     });
     take(wrap); wrap.style.transform = t0;
     // closed sheets / pop-overs don't shape the column; they ride along with the box they sit over
@@ -1068,6 +1078,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const all = R.flatMap(r => r.cols.flatMap(c => c.items));
     floaters.forEach(f => { let best = null, bd = 1e12; R.forEach(r => r.cols.forEach(c => { if (r.full) return; const dx = Math.max(0, c.x0 - f.x, f.x - c.x1), dy = Math.max(0, c.y0 - f.y, f.y - c.y1), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = c; } }));
       if (best) (best.fl = best.fl || []).push(f); });
+    // pictures sized by their own shape measure wrong until they've loaded (an unloaded section holds blank stand-ins):
+    // measure again once they arrive
+    if (!sec.__stkImgW) { const pend = [...sec.querySelectorAll('img')].filter(im => !/height:\s*\d/.test(im.getAttribute('style') || '') && (!im.complete || im.naturalWidth <= 1));
+      if (pend.length) { sec.__stkImgW = 1; let t = 0; const again = () => { clearTimeout(t); t = setTimeout(() => { if (!sec.isConnected || sec.__vout || pend.some(im => !im.complete || im.naturalWidth <= 1)) return;
+          const st = sec.__stk && sec.__stk.style; if (st) st.disabled = true; sec.__stk = null; stackSection(sec); if (st) st.disabled = false; if (sec.__stk) sec.__stk.style = st; fitSection(sec); try { if (current) { const sc = scrollerOf(current.layer); if (sc) sc.dispatchEvent(new Event('scroll')); } } catch (e) {} }, 120); };
+        pend.forEach(im => im.addEventListener('load', again)); } }
     sec.__stk = { rows: R, bgs, h: +sec.dataset.h || 1024, first: !sec.previousElementSibling || !/^sec-/.test(sec.previousElementSibling.id || '') };
     void all;
   }
@@ -1083,11 +1099,21 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // fit and read well; when a one-screen section would leave a lot of empty space, rows are opened up (tiles two per
   // line, big boxes stacked) so the body fills the screen, and it is centred top-to-bottom. One-screen sections stay one
   // screen; long ones grow. Each page's opening title is left as designed, centred.
+  // Tile grids rebuilt for portrait: the tiles are re-cut (wider, shorter or taller) to fill the screen width, rather
+  // than just scaled. cols = tiles per row (span: tiles that take two slots); without cols each row keeps its tiles.
+  const PGRID = {
+    'sec-products': ph => ({ sel: '.pdtile', fit: true }),
+    'sec-awards': ph => ph ? null : { sel: '[data-name="Awards grid"] > a', cols: 2 },
+    'sec-job-description': ph => ({ sel: '[data-name="Card"]', cols: 2 }),
+    'sec-growth': ph => ph ? null : { sel: '[data-name="Skill tile"]', cols: 3, span: { 0: 2 } },
+    'sec-matts-big-3': ph => ph ? { sel: '[data-name="Rule card"]', cols: 1 } : null,
+  };
   function placeStack(sec) {
     const S = sec.__stk; if (!S || S.skip) return null;
     const key = scale.toFixed(4) + ':' + H; if (S.key === key) return S.res;
-    const one = S.h <= 1100, PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
-    const TOP = PHONE ? 84 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 16 / scale : 44;
+    const RC = PGRID[sec.id] && PGRID[sec.id](PHONE);
+    let one = S.h <= 1100 || !!(RC && RC.fit); const PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
+    const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 16 / scale : 44;
     // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
     const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
     const cw = c => c.x1 - c.x0, ok = w => !PHONE || CW / Math.max(1, w) * scale >= READ;
@@ -1110,6 +1136,32 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     let nT = 0; while (nT < rows.length && !rows[nT].full && rows[nT].y0 < 345 && rows[nT].y1 <= boxTop + 6) nT++;
     if (nT === rows.length) nT = 0;
     const tR = rows.slice(0, nT), bR = rows.slice(nT);
+    // tile grid (recipe): its rows come out of the normal flow and are laid out as one block
+    let gridAt = -1, GT = null, GRID = null;
+    if (RC) { const isT = i => !!i.el && i.el.matches(RC.sel);
+      const keep = [], tr = [], ov = [];
+      bR.forEach(r => { const its = r.cols.flatMap(c => c.items), tl = its.filter(isT), rest = its.filter(i => !isT(i));
+        // a panel laid over the tiles (an opened detail view) rides along over the grid
+        const over = rest.every(i => i.w >= (r.x1 - r.x0) * 0.8 && i.h >= 200);
+        if (!r.full && tl.length && over) { if (gridAt < 0) gridAt = keep.length; ov.push(...rest); tr.push({ x0: Math.min(...tl.map(i => i.x)), x1: Math.max(...tl.map(i => i.x + i.w)), y0: Math.min(...tl.map(i => i.y)), y1: Math.max(...tl.map(i => i.y + i.h)), cols: r.cols.map(c => ({ items: c.items.filter(isT), fl: c.fl })).filter(c => c.items.length) }); }
+        else keep.push(r); });
+      if (tr.length) { GT = tr; GT.ov = ov; bR.splice(0, bR.length, ...keep); } }
+    const gridLay = avail => {
+      const gp = 26, src = GT.map(r => r.cols.flatMap(c => c.items).sort((a, b) => a.x - b.x));
+      const origW = Math.max(...GT.map(r => r.x1 - r.x0)), all = src.flat();
+      let packed;
+      if (RC.cols) { packed = []; let row = [], used = 0; all.forEach((it, i) => { const sp = (RC.span && RC.span[i]) || 1; if (used + sp > RC.cols) { packed.push(row); row = []; used = 0; } row.push({ it, sp }); used += sp; }); if (row.length) packed.push(row);
+        packed = packed.map(r => r.map(o => ({ it: o.it, share: o.sp / RC.cols, gaps: o.sp - 1 }))); }
+      else packed = src.map(r => { const tw = r.reduce((a, it) => a + it.w, 0); return r.map(it => ({ it, share: it.w / tw, gaps: 0, n: r.length })); });
+      let k = RC.cols ? (PHONE ? 0.72 / scale : 0.9 / KS) : CW / origW;
+      const rowH = packed.map(r => Math.max(...r.map(o => o.it.h))), sumH = rowH.reduce((a, b) => a + b, 0), gaps = gp * (packed.length - 1);
+      let hs = (avail - gaps) / (sumH * k); const lo = RC.cols ? 0.92 : 0.5, hi = RC.cols ? 1.3 : PHONE ? 1.7 : 1.15;
+      if (hs < lo) { k = k * hs / lo; hs = lo; } hs = Math.min(hs, hi);
+      const out = packed.map((r, ri) => { const n = RC.cols ? RC.cols : r.length, cellW = (CW - gp * (n - 1));
+        return { h: rowH[ri] * hs * k, tiles: r.map(o => ({ it: o.it, w: cellW * o.share + gp * o.gaps })) }; });
+      const fl = GT.flatMap(r => r.cols.flatMap(c => c.fl || [])).concat(GT.ov || []);
+      return { rows: out, k, gp, fl, total: out.reduce((a, r) => a + r.h, 0) + gaps };
+    };
     // title block
     let tH = 0; const left = PADX;
     if (nT) { const b = box(tR), k = Math.min(CW / (b.x1 - b.x0), Math.max(1.3, 0.78 / KS)); tH = (b.y1 - b.y0) * k;
@@ -1135,16 +1187,19 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
             const mkc = (its, fl) => ({ items: its, fl, x0: Math.min(...its.map(i => i.x)), x1: Math.max(...its.map(i => i.x + i.w)), y0: Math.min(...its.map(i => i.y)), y1: Math.max(...its.map(i => i.y + i.h)) });
             grp([mkc(lines, c.fl), mkc(boxes)], ri, 28); return; }
           grp([c], ri, 0); }); });
-      const ks = G.filter(g => !g.full && !g.pic && !g.lab).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / KS);
-      G.forEach(g => { g.k = g.full ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
+      if (GT) { const at = G.findIndex(g => g.row >= gridAt), gg = { grid: true, row: -1, full: false, its: [], w: CW, h: GRID ? GRID.total : 0, y0: GT[0].y0, y1: GT[GT.length - 1].y1 };
+        if (at < 0) G.push(gg); else G.splice(at, 0, gg); }
+      const ks = G.filter(g => !g.full && !g.pic && !g.lab && !g.grid).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / KS);
+      G.forEach(g => { g.k = g.full || g.grid ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
       let t = 0; G.forEach((g, n) => { g.gap = n ? (G[n - 1].row === g.row ? 28 : Math.max(16, Math.min(90, g.y0 - G[n - 1].y1))) * Math.min(g.k, 1.6) : 0; t += g.gap + g.h * g.k; });
       return { G, total: t }; };
     const availB = HL - TOP - tH - (nT ? GAP : 0) - BOT, availR = H - TOP - tH - (nT ? GAP : 0) - BOT, hasRot = bR.some(r => r.cols.some(c => c.items.some(i => i.rot)));
     let L = layout(mode);
+    if (GT) { GRID = gridLay(Math.max(400, availR - L.total)); L = layout(mode); }
     // how much of the free space an arrangement uses (too tall = it has to shrink, which narrows it)
     // (phones: boxes keep the full width; a section may run a little past one screen instead of shrinking)
     const cover = t => t.total <= availB ? t.total / availB : PHONE && !hasRot ? (t.total <= availB * 1.7 ? 0.95 : 0) : availB / t.total;
-    if (one) for (let pass = 0; pass < 8 && cover(L) < 0.74; pass++) {   // open rows up while that fills the screen better
+    if (one && !GT) for (let pass = 0; pass < 8 && cover(L) < 0.74; pass++) {   // open rows up while that fills the screen better
       let best = null;
       const sig = n => mode[n] + ':' + bR[n].cols.length + ':' + small(bR[n]);
       mode.forEach((m, n) => { const nx = m === 'side' ? (small(bR[n]) ? 'pair' : 'stack') : m === 'pair' ? 'stack' : null; if (!nx) return;
@@ -1157,7 +1212,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const minTop = TOP + tH + (nT ? GAP : 0);
     let y = one && !grow ? Math.max(minTop, Math.min((H - total) / 2, H - BOT - total)) : minTop;
     L.G.forEach(g => { const k = g.k * (g.full ? 1 : fitB); y += g.gap * fitB;
-      const X = g.full ? 0 : g.lab || g.pic ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;
+      if (g.grid) {   // re-cut tiles: own width and height, text kept at a readable scale
+        const G2 = GRID, kk = G2.k, X0 = (1466 - CW * fitB) / 2; let yy = y;
+        G2.rows.forEach(r => { let xx = X0; r.tiles.forEach(o => { const it = o.it;
+          rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (xx - it.x).toFixed(1) + 'px ' + (yy - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (o.w * fitB / kk).toFixed(1) + 'px !important;height:' + (r.h * fitB / kk).toFixed(1) + 'px !important;max-width:none !important;}\n';
+          xx += (o.w + G2.gp) * fitB; }); yy += (r.h + G2.gp) * fitB; });
+        G2.fl.forEach(it => { rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (X0 - it.x).toFixed(1) + 'px ' + (y - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (CW * fitB / kk).toFixed(1) + 'px !important;height:' + (g.h * fitB / kk).toFixed(1) + 'px !important;}\n'; });
+        y += g.h * fitB; return; }
+      const X = g.full ? 0 : g.lab || g.pic || !PHONE ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;   // (iPads: body lines up with the title)
       g.its.forEach(o => put(o.it, g.full ? o.it.x : X + o.rx * k, y + o.ry * k, k)); y += g.h * k; });
     return fin(hr);
   }
@@ -2030,7 +2092,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21n';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21p';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
