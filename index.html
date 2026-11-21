@@ -184,11 +184,24 @@
   #phdr .ph-l.cur { color: #05E5AF; }
   #phdr .ph-p { flex: none; height: 30px; padding: 0 14px; margin-left: 4px; border-radius: 15px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font: 700 11px/28px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
   #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
+  #phdr .ph-scroll { justify-content: flex-end; }
+  /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
+  html.pph .layer .board [data-name="Glass arrow pill"], html.pph .layer .board .pdown { display: none !important; }
+  #pfoot { position: fixed; left: 50%; bottom: calc(var(--sab, 0px) + 12px); z-index: 70; display: none; align-items: center; gap: 0; padding: 5px; border-radius: 28px; max-width: calc(100vw - 20px); box-sizing: border-box;
+    transform: translateX(-50%); transform-origin: 50% 100%; border: 1px solid rgba(255,255,255,.22);
+    background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)), rgba(18,22,20,.42); -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(255,255,255,.08), 0 14px 40px rgba(0,0,0,.5);
+    transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s ease, filter .38s ease; }
+  html.pph #pfoot.on { display: flex; }
+  #pfoot.sm { transform: translateX(-50%) scale(.78); opacity: .82; }
+  #pfoot.idle { opacity: 0; transform: translateX(-50%) translateY(14px) scale(.9); filter: blur(8px); pointer-events: none; }
+  #pfoot button { flex: none; height: 40px; padding: 0 2.2vw; border: 0; border-radius: 20px; background: none; color: rgba(255,255,255,.82); font: 700 2.3vw/40px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background .3s ease, color .3s ease; }
+  #pfoot button.cur { color: #04120d; background: linear-gradient(180deg, #2af0c0, #05cfa0); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 4px 14px rgba(5,229,175,.35); }
   /* portrait: the History wheel stands upright (a vertical timeline you swipe up and down); its text stays level */
-  html.pstack .board .tlw { touch-action: none !important; }
-  html.pstack .board [data-name="Swipe hint"] { display: none !important; }
-  html.pstack .board .tlw [data-name="Year"], html.pstack .board .tlw [data-name="Logo"] > div { rotate: -90deg; }
-  html.pstack .board .tlw p[data-name$="description"] { rotate: -90deg; left: 638px !important; top: 326px !important; width: 440px !important; font-size: 20px !important; line-height: 26px !important; }
+  html.pph .board .tlw { touch-action: none !important; }
+  html.pph .board [data-name="Swipe hint"] { display: none !important; }
+  html.pph .board .tlw [data-name="Year"], html.pph .board .tlw [data-name="Logo"] > div { rotate: -90deg; }
+  html.pph .board .tlw p[data-name$="description"] { rotate: -90deg; left: 638px !important; top: 326px !important; width: 440px !important; font-size: 20px !important; line-height: 26px !important; }
   #phdr .ph-sec { position: absolute; left: 12px; top: calc(var(--sat, 0px) + 64px); width: 38px; height: 38px; border-radius: 19px; border: 1px solid rgba(5,229,175,.55); background: rgba(0,0,0,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; transition: background .25s ease; }
   #phdr.navopen .ph-sec { background: rgba(5,229,175,.25); }
   /* portrait v2 section menu: hidden until its button is pressed; open, it sits on a dark panel */
@@ -845,14 +858,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (yr >= x.R) s = x; });
     const c = Math.min(yr - s.R, s.hr);
     if (s.ps) {   // reflowed portrait section: its first screen = the design's first screen, the rest of it = the rest of the design
-      const f = Math.min(s.h, 1024); if (c <= H) return s.T + Math.max(0, c) * f / H;
-      return s.T + Math.min(s.h, f + (s.h > f && s.hr > H ? (c - H) * (s.h - f) / (s.hr - H) : 0)); }
+      // ...and never behind what is really on screen, so everything in view counts as scrolled to (its animations have run)
+      const f = Math.min(s.h, 1024), a = c <= H ? Math.max(0, c) * f / H : f + (s.h > f && s.hr > H ? (c - H) * (s.h - f) / (s.hr - H) : 0);
+      return s.T + Math.min(s.h, Math.max(a, Math.max(0, c) * s.h / s.hr)); }
     return s.tall ? s.T + Math.min(s.h, c) : s.T + Math.max(0, Math.min(s.h, c - E / 2));
   }
   function Pinv(m, v) {
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (v > x.T) s = x; });
     const c = v - s.T;
-    if (s.ps) { const f = Math.min(s.h, 1024); if (c <= f) return s.R + Math.max(0, c) * H / f; return s.R + H + (s.h > f ? Math.min(s.h - f, c - f) * (s.hr - H) / (s.h - f) : 0); }
+    if (s.ps) { const f = Math.min(s.h, 1024), c1 = c <= f ? Math.max(0, c) * H / f : H + (s.h > f ? Math.min(s.h - f, c - f) * (s.hr - H) / (s.h - f) : 0); return s.R + Math.min(c1, Math.max(0, Math.min(s.h, c)) * s.hr / s.h); }
     if (s.tall) return s.R + c;
     return c >= s.h ? s.R + s.hr : s.R + E / 2 + c;
   }
@@ -1031,7 +1045,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (c.offsetParent === wrap && c.offsetWidth != null) { x = c.offsetLeft; y = c.offsetTop; w = c.offsetWidth; h = c.offsetHeight; }
       else { x = (b.left - r0.left) / k0; y = (b.top - r0.top) / k0; w = b.width / k0; h = b.height / k0; }
       if (w < 2 || h < 2) return;
-      const rot = c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = w0; x += (w0 - w) / 2; y += 30; }   // History wheel: stands upright in portrait
+      const rot = PHONE && c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = 1100; x += (w0 - w) / 2; y += 30; }   // (laid out a little shorter than it is: its ends fade out anyway)   // History wheel: stands upright in portrait
       { const g = getComputedStyle(c);   // a plain holder of several boxes (a grid of cards): its boxes are laid out one by one
         if (!rot && h >= 240 && c.children.length >= 2 && c.children.length <= 16 && g.visibility !== 'hidden' && g.overflowX === 'visible' && g.backgroundImage === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(g.backgroundColor) && parseFloat(g.borderTopWidth) === 0
           && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; })) { take(c); return; } }
@@ -1073,9 +1087,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function placeStack(sec) {
     const S = sec.__stk; if (!S || S.skip) return null;
     const key = scale.toFixed(4) + ':' + H; if (S.key === key) return S.res;
-    const PADX = PHONE ? 56 : 84, CW = 1466 - 2 * PADX, READ = 0.4;
-    const TOP = PHONE ? 84 / scale : 150, BOT = PHONE ? 74 / scale : 130, GAP = PHONE ? 16 / scale : 44;
-    const one = S.h <= 1100, cw = c => c.x1 - c.x0, ok = w => CW / Math.max(1, w) * scale >= READ;
+    const one = S.h <= 1100, PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
+    const TOP = PHONE ? 84 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 16 / scale : 44;
+    // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
+    const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
+    const cw = c => c.x1 - c.x0, ok = w => !PHONE || CW / Math.max(1, w) * scale >= READ;
     let rules = ''; const put = (it, nx, ny, k) => {
       if (it.rot) { const cx = nx + it.w * k / 2 - (it.X0 + it.w0 / 2), cy = ny + it.h * k / 2 - (it.Y0 + it.h0 / 2);
         rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:50% 50% !important;translate:' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px !important;rotate:90deg !important;scale:' + k.toFixed(4) + ' !important;}\n'; return; }
@@ -1087,7 +1103,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const rows = S.rows, box = (rs) => ({ x0: Math.min(...rs.map(r => r.x0)), x1: Math.max(...rs.map(r => r.x1)), y0: Math.min(...rs.map(r => r.y0)), y1: Math.max(...rs.map(r => r.y1)) });
     const each = (rs, f) => rs.forEach(r => r.cols.forEach(c => c.items.concat(c.fl || []).forEach(f)));
     if (S.first) {   // opening title: one block, centred on the screen
-      const b = box(rows), k = Math.min(CW / (b.x1 - b.x0), (H - TOP - BOT) / (b.y1 - b.y0), Math.max(1.5, 0.8 / scale));
+      const b = box(rows), k = Math.min(CW / (b.x1 - b.x0), (H - TOP - BOT) / (b.y1 - b.y0), Math.max(1.5, 0.8 / KS));
       const X = (1466 - (b.x1 - b.x0) * k) / 2, Y = (H - (b.y1 - b.y0) * k) / 2;
       each(rows, it => put(it, X + (it.x - b.x0) * k, Y + (it.y - b.y0) * k, k)); return fin(H);
     }
@@ -1097,7 +1113,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const tR = rows.slice(0, nT), bR = rows.slice(nT);
     // title block
     let tH = 0; const left = PADX;
-    if (nT) { const b = box(tR), k = Math.min(CW / (b.x1 - b.x0), Math.max(1.3, 0.78 / scale)); tH = (b.y1 - b.y0) * k;
+    if (nT) { const b = box(tR), k = Math.min(CW / (b.x1 - b.x0), Math.max(1.3, 0.78 / KS)); tH = (b.y1 - b.y0) * k;
       each(tR, it => put(it, left + (it.x - b.x0) * k, TOP + (it.y - b.y0) * k, k)); }
     // body arrangements
     const small = r => r.cols.length >= 3 && Math.max(...r.cols.map(cw)) <= 460;
@@ -1114,14 +1130,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           G.push({ its, row: ri, w, h, y0: r.y0, y1: r.y1, pic: !solid.some(i => i.txt) && w * h < 140000, lab: h < 140 && w < 700 && !solid.some(i => i.rot) }); return; }
         if (m === 'pair') { const pw = Math.max(...cols.map(cw)) * 2 + 28; for (let k = 0; k < cols.length; k += 2) grp(cols.slice(k, k + 2), ri, 28, pw); return; }
         cols.forEach(c => grp([c], ri, 0)); });
-      const ks = G.filter(g => !g.full && !g.pic && !g.lab).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / scale);
+      const ks = G.filter(g => !g.full && !g.pic && !g.lab).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / KS);
       G.forEach(g => { g.k = g.full ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
       let t = 0; G.forEach((g, n) => { g.gap = n ? (G[n - 1].row === g.row ? 28 : Math.max(16, Math.min(90, g.y0 - G[n - 1].y1))) * Math.min(g.k, 1.6) : 0; t += g.gap + g.h * g.k; });
       return { G, total: t }; };
-    const availB = H - TOP - tH - (nT ? GAP : 0) - BOT;
+    const availB = HL - TOP - tH - (nT ? GAP : 0) - BOT, availR = H - TOP - tH - (nT ? GAP : 0) - BOT, hasRot = bR.some(r => r.cols.some(c => c.items.some(i => i.rot)));
     let L = layout(mode);
     // how much of the free space an arrangement uses (too tall = it has to shrink, which narrows it)
-    const cover = t => t.total <= availB ? t.total / availB : availB / t.total;
+    // (phones: boxes keep the full width; a section may run a little past one screen instead of shrinking)
+    const cover = t => t.total <= availB ? t.total / availB : PHONE && !hasRot ? (t.total <= availB * 1.7 ? 0.95 : 0) : availB / t.total;
     if (one) for (let pass = 0; pass < 8 && cover(L) < 0.74; pass++) {   // open rows up while that fills the screen better
       let best = null;
       const sig = n => mode[n] + ':' + bR[n].cols.length + ':' + small(bR[n]);
@@ -1129,10 +1146,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const md = mode.map((x, q) => sig(q) === sig(n) ? nx : x), t = layout(md); if (cover(t) >= 0.6 && (!best || cover(t) > cover(best.t))) best = { md, t }; });
       if (!best || cover(best.t) <= cover(L) + 0.06) break; mode.splice(0, mode.length, ...best.md); L = best.t;
     }
-    const fitB = one && L.total > availB ? availB / L.total : 1, total = L.total * fitB;
-    const hr = Math.round(one ? H : Math.max(H, TOP + tH + (nT ? GAP : 0) + total + BOT));
+    let fitB = one && L.total > availR ? availR / L.total : 1; const grow = PHONE && !hasRot && fitB < 0.94; if (grow) fitB = 1;
+    const total = L.total * fitB;
+    const hr = Math.round(one && !grow ? H : Math.max(H, TOP + tH + (nT ? GAP : 0) + total + BOT));
     const minTop = TOP + tH + (nT ? GAP : 0);
-    let y = one ? Math.max(minTop, Math.min((H - total) / 2, H - BOT - total)) : minTop;
+    let y = one && !grow ? Math.max(minTop, Math.min((H - total) / 2, H - BOT - total)) : minTop;
     L.G.forEach(g => { const k = g.k * (g.full ? 1 : fitB); y += g.gap * fitB;
       const X = g.full ? 0 : g.lab || g.pic ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;
       g.its.forEach(o => put(o.it, g.full ? o.it.x : X + o.rx * k, y + o.ry * k, k)); y += g.h * k; });
@@ -2007,7 +2025,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21l';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21m';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2100,7 +2118,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     return { feedback, crash, news, unseen };
   })();
   // ---- portrait v2 header (screen-sized, outside the scaled page): menu + logo fixed, page links + Guide/Onboard scroll ----
-  let phdr = null;
+  let phdr = null, pfoot = null;
   function phdrSync() {
     const L = current && current.layer, on = pphOn() && L && L.isConnected && !!L.querySelector('.board [data-name="Header"]');
     if (!phdr) {
@@ -2114,12 +2132,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       phdr.querySelector('.ph-menu').addEventListener('click', () => { const b = current && current.layer.querySelector('.board [data-x="Menu button"]'); if (b) b.click(); else openMenu(); });
       phdr.querySelector('.ph-logo').addEventListener('click', () => { const im = current && current.layer.querySelector('.board img[data-name="Vivint Logo"]'); if (im) im.click(); });
     }
-    phdr.classList.toggle('on', !!on); if (!on) return;
+    if (!pfoot) { pfoot = document.createElement('div'); pfoot.id = 'pfoot'; pfoot.setAttribute('role', 'navigation'); document.body.appendChild(pfoot); }
+    phdr.classList.toggle('on', !!on); pfoot.classList.toggle('on', !!on); if (!on) return;
+    document.documentElement.style.setProperty('--sab', (SIM ? SIM.b : 0) + 'px');
     phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
     phdr.classList.toggle('idle', L.classList.contains('fav-idle')); phdr.classList.toggle('navopen', L.classList.contains('pnav-open')); phdr.querySelector('.ph-sec').hidden = !L.querySelector('.board nav');
     const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'); if (im.getAttribute('src') !== logo.getAttribute('src')) im.src = logo.src; }
+    pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
     if (phdr.__for === L) return; phdr.__for = L;
-    const row = phdr.querySelector('.ph-scroll'); row.innerHTML = '';
+    const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
+    { const sc = scrollerOf(L); if (sc && !sc.__pf) { sc.__pf = 1; let t = 0; sc.addEventListener('scroll', () => { pfoot.classList.add('sm'); clearTimeout(t); t = setTimeout(() => pfoot.classList.remove('sm'), 260); }, { passive: true }); } }
     const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Lifestyle', 'Culture.dc.html'], ['Opportunity', 'Opportunity.dc.html'], ['FAQs', 'FAQs.dc.html']];
     PAGES.forEach(([t, fn]) => {
       const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
@@ -2133,8 +2155,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const list = hot ? (L._ia[hot.id] || []).filter(x => x.t === 'tap') : []; if (list.length) run(list[0], L, hot); else if (top) go(top, 'dissolve', 0.3, 'ease-out'); });
       row.appendChild(b); });
     [['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; b.textContent = t; b.addEventListener('click', () => o.click()); row.appendChild(b); });
-    requestAnimationFrame(() => { const c = row.querySelector('.cur'); if (c) row.scrollLeft = Math.max(0, c.offsetLeft - row.offsetLeft - 18); });
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; b.textContent = t; b.addEventListener('click', () => o.click()); hrow.appendChild(b); });
   }
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl; menuEl = null;
@@ -2310,6 +2331,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     document.body.appendChild(q);
     const r = (anchor || el).getBoundingClientRect(), w = q.offsetWidth, vw = innerWidth, vh = innerHeight;
     let left = Math.max(10, Math.min(vw - w - 10, r.left + r.width / 2 - w / 2)), top = r.bottom + 6;
+    if (anchor && r.top > vh / 2) top = Math.max(10, r.top - 8 - q.offsetHeight);   // from the footer: opens upward
     if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
     q.style.left = left + 'px'; q.style.top = top + 'px';
     requestAnimationFrame(() => q.classList.add('on'));
@@ -2575,7 +2597,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.style.width = b.style.height = size + 'px'; b.style.marginLeft = (-size / 2) + 'px';
       b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
       if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
-      else { b.style.top = 'auto'; b.style.bottom = 'calc(env(safe-area-inset-bottom) + 22px)'; }
+      else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(var(--sab, 0px) + 70px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
