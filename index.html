@@ -340,6 +340,7 @@
   html.pph #sec-wealth-multiplier .pcont button[style*="top: 290px"] { left: 380px !important; right: auto !important; width: 200px !important; top: 392px !important; scale: 1.5; transform-origin: 0 0; }
   html.pph #sec-wealth-multiplier :is([data-name="Retirement table"], [data-name="Retirement calculator"]) { top: 462px !important; }
   /* iPhone upright, US salaries: the chart on top, the age list underneath it */
+  html.pph #sec-us-annual-salaries [data-name="Income chart"] > div[style*="width: 1px; height: 532px"] { display: none !important; }   /* (the chart/list divider from the side-by-side layout) */
   html.pph #sec-us-annual-salaries [data-name="Income list"] { left: 18px !important; top: 560px !important; width: calc(100% - 36px) !important; height: auto !important; bottom: 16px; }
   /* iPhone upright, FAQs: the questions at phone size, full width, spread over the screen between header and footer */
   html.pph #sec-faqs { min-height: calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * var(--isc, 1)) !important; display: flex; flex-direction: column; }
@@ -2336,7 +2337,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22d';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22e';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
