@@ -169,7 +169,7 @@
   #frame, .layer, .board { width: var(--FW, 1466px) !important; }
   .board .fx-full { width: var(--FW, 1466px) !important; }
   /* ---- portrait v2 header: logo + menu stay put, the page links scroll sideways ---- */
-  html.pph .layer .board :is([data-name="Header"], [data-name="Header bar"], [data-x="Menu button"], img[data-name^="Vivint Logo"], img[data-name^="Logo (header"], button[aria-label$="section menu"], [aria-label="Open the recruiting guide"], [aria-label="Open the onboarding tool"]) { display: none !important; }
+  html.pph .layer:not([data-fn="Main.dc.html"]) .board :is([data-name="Header"], [data-name="Header bar"], [data-x="Menu button"], img[data-name^="Vivint Logo"], img[data-name^="Logo (header"], button[aria-label$="section menu"], [aria-label="Open the recruiting guide"], [aria-label="Open the onboarding tool"]) { display: none !important; }
   #phdr { position: fixed; left: 0; right: 0; top: 0; z-index: 70; display: none; box-sizing: border-box; align-items: center; height: calc(var(--sat, 0px) + 58px); padding: var(--sat, 0px) 0 0;
     background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.75) 60%, rgba(0,0,0,0) 100%);
     transition: opacity .45s ease, transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
@@ -177,6 +177,7 @@
   #phdr.idle { opacity: 0; transform: translateY(-14px); filter: blur(10px); }
   #phdr .ph-fix { flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 6px; height: 100%; }
   #phdr .ph-menu { width: 44px; height: 44px; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #phdr .ph-logo:not([src]) { visibility: hidden; }
   #phdr .ph-logo { height: 21px; width: auto; display: block; filter: brightness(0) invert(1); cursor: pointer; padding: 10px 6px; box-sizing: content-box; }
   #phdr .ph-scroll { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch;
     padding: 0 14px 0 6px; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%); touch-action: pan-x; }
@@ -184,8 +185,13 @@
   #phdr .ph-l { flex: none; height: 36px; padding: 0 11px; border: 0; background: none; color: rgba(255,255,255,.86); font: 600 12.5px/36px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; cursor: pointer; border-radius: 18px; }
   #phdr .ph-l.cur { color: #05E5AF; }
   #phdr .ph-p { flex: none; height: 30px; padding: 0 14px; margin-left: 4px; border-radius: 15px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font: 700 11px/28px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+  @media (max-width: 389px) { #phdr .ph-p { padding: 0 10px; letter-spacing: .1em; } #phdr .ph-fix { padding: 0 4px 0 2px; } }
   #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
   /* iPhone portrait: the section star + extra buttons sit top right, level with the section-menu button */
+  /* iPhone upright Home: its own header (menu, Guide, Onboard) at phone size */
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open menu"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 0 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 300px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 188px 0; }
   html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
   /* product tiles re-cut shorter in portrait: their pictures shrink to fit */
   html.pstack .pdtile img { height: auto !important; max-height: 100% !important; }
@@ -199,6 +205,9 @@
   html.pph .board [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
   html.pph .board [data-pf="m"] { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; }
   html.pph .board section[id^="sec-"] [data-name^="Background"] > :is([data-name="Blend to black"], [data-name="Fade to black"], [data-name="Scrim"], [data-name="Sky shade"], [data-name="Photo fade"]) { background: linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.22) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
+  html.pph .board :has(> .pbgw)::after { display: none !important; }   /* (no side fades on iPhones upright) */
+  /* iPhone upright: a photo that covered only part of the design (Hourly comparison's right half) spans the whole width */
+  html.pph .board section:not(#sec-nrg) [data-name^="Background"] > :is([data-name="Photo"], [data-name="Photo fade"], [data-name$=" photo"]) { left: 0 !important; width: 100% !important; }
   /* Products (upright): no tagline under each name; the product photos take the room */
   html.port:not(.pland) .pdtile > div[style*="top: 24px"] > div + div { display: none !important; }
   html.port:not(.pland) .pdtile > div[style*="top: 110px"] { top: 70px !important; bottom: 18px !important; }
@@ -207,15 +216,39 @@
   html.port:not(.pland) .pdtile img { max-width: 94% !important; }
   /* iPhone upright, Package costs: each package is two lines, name and price over the equipment */
   html.pph #sec-package-costs [data-name="Package rows"] > div { flex-wrap: wrap !important; align-content: center !important; row-gap: 14px; padding: 16px 24px !important; }
-  html.pph #sec-package-costs [data-name="Package rows"] > div > div:first-child { order: 3; width: 100% !important; display: flex; justify-content: center; }
+  html.pph #sec-package-costs [data-name="Package rows"] > div > div:first-child { order: 3; width: 100% !important; display: flex; justify-content: flex-start; padding-left: 4px; box-sizing: border-box; }
   html.pph #sec-package-costs [data-name="Package rows"] > div > div:first-child img { width: auto !important; max-width: 100% !important; height: auto !important; max-height: 112px; }
   html.pph #sec-package-costs [data-name="Package rows"] > div > div:nth-child(2) { padding-left: 4px !important; }
+  /* wide landscape, Sales tools: the iPads aren't cut off by the page frame or the section's bottom edge */
+  html.fill:not(.port) #sec-sales-tools [data-name="Sales tools iPads"] { overflow: visible !important; }
+  html.fill:not(.port) #sec-sales-tools [data-name="iPad surface"] { scale: .78; translate: 30px -10px; }
+  /* iPhone upright, Sales tools: the copy is set a little wider so it fills the screen at a larger size */
+  html.pph #sec-sales-tools [data-name="Kit copy"] { width: 480px !important; }
+  html.pph #sec-sales-tools [data-name="Section heading"] { width: 700px !important; }
+  /* iPhone upright, US salaries: the chart on top, the age list underneath it */
+  html.pph #sec-us-annual-salaries [data-name="Income list"] { left: 18px !important; top: 560px !important; width: calc(100% - 36px) !important; height: auto !important; bottom: 16px; }
+  /* iPhone upright, FAQs: the questions at phone size, full width, spread over the screen between header and footer */
+  html.pph #sec-faqs { min-height: calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * var(--isc, 1)) !important; display: flex; flex-direction: column; }
+  html.pph #sec-faqs > div[style*="width: 1000px"] { zoom: 0.42; zoom: calc(0.42 * var(--isc, 1)); width: calc((1466px - 32px * var(--isc, 1)) / (0.42 * var(--isc, 1))) !important; margin: 0 auto !important;
+    padding: 236px 0 270px; box-sizing: border-box; flex: none; height: calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) / 0.42); min-height: max-content; display: flex; flex-direction: column; }
+  @media (max-height: 760px) { html.pph #sec-faqs > div[style*="width: 1000px"] { padding-top: 220px; } }
+  html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 64px"] { flex: 1; display: flex; flex-direction: column; margin-top: 36px !important; }
+  html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 64px"] > div { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; }
+  html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 14px"] { flex-wrap: wrap; row-gap: 12px; }
+  html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 64px"] > div > button { padding: 8px 0 !important; }
+  html.pph #sec-faqs > .favpin { flex: none; }
+  /* iPhone upright, Hourly comparison: the rate rows share out the tile's height */
+  html.pph #sec-hourly-comparison [data-name="Glass card"] > div { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+  html.pph #sec-hourly-comparison [data-name="Glass card"] > div > div[style*="margin-top: 22px"] { flex: 1; display: flex; flex-direction: column; }
+  html.pph #sec-hourly-comparison [data-name="Glass card"] > div > div[style*="margin-top: 22px"] > div { flex: 1 1 0; height: auto !important; min-height: 64px; }
+  /* iPhone upright, Career comparison: the rows share out the tile's height */
+  html.pph #sec-career-comparison [data-name="Career chart"] > div > div[style*="height: 20.5px"] { flex: 1 1 0; height: auto !important; min-height: 16px; }
   /* section buttons (Sales rules, star, Custom flow edit/exit) larger upright; on iPhones the size of the sections button */
   html.pstack:not(.pph) .favw { scale: 1.5; }
   html.pph .favw { scale: calc(var(--isc, 1) * 38 / 36) !important; top: calc(var(--isc, 1) * 64px) !important; }
   #phdr .ph-scroll { justify-content: flex-end; }
   /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
-  html.pph .layer .board [data-name="Glass arrow pill"], html.pph .layer .board .pdown { display: none !important; }
+  html.pph .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"], html.pph .layer:not([data-fn="Main.dc.html"]) .board .pdown { display: none !important; }
   #pfoot { position: fixed; left: 50%; bottom: calc(var(--sab, 0px) + 12px); z-index: 70; display: none; align-items: center; gap: 0; padding: 5px; border-radius: 28px; max-width: calc(100vw - 20px); box-sizing: border-box;
     transform: translateX(-50%); transform-origin: 50% 100%; border: 1px solid rgba(255,255,255,.22);
     background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)), rgba(18,22,20,.42); -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8);
@@ -236,7 +269,10 @@
   /* portrait v2 section menu: hidden until its button is pressed; open, it sits on a dark panel */
   html.pph .layer:not(.pnav-open) .board nav { opacity: 0 !important; visibility: hidden; transition: opacity .3s ease, visibility 0s linear .3s; }
   html.pph .layer.pnav-open .board nav { opacity: 1; visibility: visible; transform: none !important; }
-  html.pph .layer.pnav-open .board nav::before { content: ''; position: absolute; left: -30px; top: -30px; width: 330px; bottom: -40px; border-radius: 0 24px 24px 0; background: rgba(8,10,9,.9); box-shadow: 0 20px 60px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  html.pstack .layer.pnav-open .board nav::before { content: ''; position: absolute; left: -22px; top: -26px; right: -34px; bottom: -32px; border-radius: 28px; border: 1px solid rgba(255,255,255,.12); background: rgba(8,10,9,.9); box-shadow: 0 20px 60px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  html.pph .layer.pnav-open .board nav { translate: calc(var(--isc, 1) * 16px) calc(var(--isc, 1) * 50px); }
+  html.pph .layer.pnav-open .board nav::before { left: -14px; }   /* (opens below its button) */
+  html.pstack:not(.pph) .layer.pnav-open .board nav { z-index: 40; }
 
   .board .fx-c { margin-left: var(--X, 0px) !important; }
   .board .fx-r { margin-left: var(--X2, 0px) !important; }
@@ -1072,6 +1108,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       // layout box without any running animation transform
       let x, y, w, h;
       if (c.offsetParent === wrap && c.offsetWidth != null) { x = c.offsetLeft; y = c.offsetTop; w = c.offsetWidth; h = c.offsetHeight; }
+      if (c.offsetParent === wrap && c.scrollWidth > w + 4 && getComputedStyle(c).overflowX === 'visible' && (c.textContent || '').trim()) w = c.scrollWidth;   // (headline text wider than its box)
       else { x = (b.left - r0.left) / k0; y = (b.top - r0.top) / k0; w = b.width / k0; h = b.height / k0; }
       if (w < 2 || h < 2) return;
       const rot = PHONE && c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = 1100; x += (w0 - w) / 2; y += 30; }   // (laid out a little shorter than it is: its ends fade out anyway)   // History wheel: stands upright in portrait
@@ -1127,15 +1164,31 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // than just scaled. cols = tiles per row (span: tiles that take two slots); without cols each row keeps its tiles.
   const PGRID = {
     'sec-products': ph => ({ sel: '.pdtile', fit: true }),
-    'sec-awards': ph => ph ? null : { sel: '[data-name="Awards grid"] > a', cols: 2 },
+    'sec-awards': ph => ({ sel: '[data-name="Awards grid"] > a', cols: 2, fit: ph }),
     'sec-job-description': ph => ({ sel: '[data-name="Card"]', cols: 2 }),
     'sec-growth': ph => ph ? null : { sel: '[data-name="Skill tile"]', cols: 3, span: { 0: 2 } },
     'sec-matts-big-3': ph => ph ? { sel: '[data-name="Rule card"]', cols: 1 } : null,
     'sec-nrg': ph => ph ? { sel: '[data-name="NRG stock card"], [data-name="NRG fact"]', cols: 1 } : null,
     'sec-housing': ph => ph ? { sel: '[data-name="Housing card"]', cols: 2, fit: true } : null,
     // (phones: each package is two lines inside its tile, name and price over the equipment; the tiles fill the free height)
-    'sec-package-costs': ph => ph ? { sel: '[data-name="Package rows"] > div', cols: 1, k: 0.42, hi: 3 } : null,
+    'sec-package-costs': ph => ph ? { sel: '[data-name="Package rows"] > div', cols: 1, k: 0.42, lo: 1.75, hi: 3 } : null,
   };
+  // iPhone upright "fill the screen": the tile(s) take all the height left under the title (kw = width the content is laid
+  // out at; vs = rows inside the tile spread out over the extra height; rev = tiles in reverse order)
+  const FILL = { lo: 1, hi: 8 };
+  Object.assign(PGRID, {
+    'sec-us-annual-salaries': ph => ph ? { ...FILL, sel: '[data-name="Income chart"]', kw: 620 } : null,
+    'sec-career-comparison': ph => ph ? { ...FILL, sel: '[data-name="Career chart"]', kw: 680 } : null,
+    'sec-summer-jobs': ph => ph ? { ...FILL, sel: '[data-name="Summer chart"]', vs: true } : null,
+    'sec-hourly-comparison': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', vs: true } : null,
+    'sec-rookie-scenarios': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
+    'sec-preseason-projections': ph => ph ? { ...FILL, sel: '[data-name="Glass card"], [data-name="Blitz card"], [data-name="Home market card"]', cols: 2, span: { 0: 2 }, k: 0.56 } : null,
+    'sec-averages': ph => ph ? { ...FILL, sel: '[data-name="Average cards"] > *' } : null,
+    'sec-six-streams': ph => ph ? { ...FILL, sel: '[data-name="Stream detail"], [style*="width: 420px; height: 94px"]', cols: 1, k: 0.62, vs: true, small: { sel: '[style*="width: 420px; height: 94px"]', f: 0.62 } } : null,
+    'sec-pay-scales': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
+    'sec-override-calculator': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
+    'sec-wealth-multiplier': ph => ph ? { ...FILL, sel: '[data-name="Retirement table"], [data-name="Retirement calculator"]', cols: 1, k: 0.6, rev: true } : null,
+  });
   // phones: these stay one screen (the body is fitted, not allowed to run on)
   const PFIT = { 'sec-sales-tools': 1, 'sec-travel': 1 };
   function placeStack(sec) {
@@ -1155,6 +1208,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const fin = hr => { (S.bgs || []).forEach(it => { rules += 'html.pstack [data-pst="' + it.id + '"]{height:' + hr + 'px !important;}\n'; });
       if (!S.style) { S.style = document.createElement('style'); document.head.appendChild(S.style); }
       S.style.textContent = rules; S.key = key; S.res = { hr, ty: 0 }; return S.res; };
+    // rows inside a re-cut tile spread over its new height (headers along the top stay put; lines drawn top-to-bottom
+    // stretch by themselves); text keeps its size, plain shapes (bars) get a little thicker
+    const vStretch = (it, Hn) => { const h0 = it.h, A = 56, B = 30, f = (Hn - A - B) / Math.max(1, h0 - A - B); if (f <= 1.02) return;
+      [...it.el.children].forEach(c => { const st = c.style; if (!st || st.position !== 'absolute' || st.bottom || !/px$/.test(st.top)) return;
+        const t = parseFloat(st.top), h = parseFloat(st.height) || c.offsetHeight || 0; if (t < A) return;
+        const txt = (c.textContent || '').trim().length > 0, h2 = txt ? h : h * Math.min(f, 1.8), cy = A + (t + h / 2 - A) * f;
+        if (!c.dataset.vs) c.dataset.vs = 'v' + (++pstSeq);
+        rules += 'html.pstack [data-vs="' + c.dataset.vs + '"]{top:' + (cy - h2 / 2).toFixed(1) + 'px !important;' + (h2 !== h && st.height ? 'height:' + h2.toFixed(1) + 'px !important;' : '') + '}\n'; }); };
     const rows = S.rows, box = (rs) => ({ x0: Math.min(...rs.map(r => r.x0)), x1: Math.max(...rs.map(r => r.x1)), y0: Math.min(...rs.map(r => r.y0)), y1: Math.max(...rs.map(r => r.y1)) });
     const each = (rs, f) => rs.forEach(r => r.cols.forEach(c => c.items.concat(c.fl || []).forEach(f)));
     if (S.first) {   // opening title: one block, centred on the screen
@@ -1178,13 +1239,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (tr.length) { GT = tr; GT.ov = ov; bR.splice(0, bR.length, ...keep); } }
     const gridLay = avail => {
       const gp = 26, src = GT.map(r => r.cols.flatMap(c => c.items).sort((a, b) => a.x - b.x));
-      const origW = Math.max(...GT.map(r => r.x1 - r.x0)), all = src.flat();
+      const origW = Math.max(...GT.map(r => r.x1 - r.x0)), all = src.flat(); if (RC.rev) all.reverse();
       let packed;
       if (RC.cols) { packed = []; let row = [], used = 0; all.forEach((it, i) => { const sp = (RC.span && RC.span[i]) || 1; if (used + sp > RC.cols) { packed.push(row); row = []; used = 0; } row.push({ it, sp }); used += sp; }); if (row.length) packed.push(row);
         packed = packed.map(r => r.map(o => ({ it: o.it, share: o.sp / RC.cols, gaps: o.sp - 1 }))); }
       else packed = src.map(r => { const tw = r.reduce((a, it) => a + it.w, 0); return r.map(it => ({ it, share: it.w / tw, gaps: 0, n: r.length })); });
-      let k = RC.cols ? (PHONE ? (RC.k || 0.72) / scale : 0.9 / KS) : CW / origW;
-      const rowH = packed.map(r => Math.max(...r.map(o => o.it.h))), sumH = rowH.reduce((a, b) => a + b, 0), gaps = gp * (packed.length - 1);
+      let k = RC.cols ? (PHONE ? (RC.k || 0.72) / scale : 0.9 / KS) : CW / (RC.kw || origW);
+      const rowH = packed.map(r => Math.max(...r.map(o => o.it.h * (RC.small && o.it.el && o.it.el.matches(RC.small.sel) ? RC.small.f : 1)))), sumH = rowH.reduce((a, b) => a + b, 0), gaps = gp * (packed.length - 1);
       let hs = (avail - gaps) / (sumH * k); const lo = RC.lo || (RC.cols ? 0.92 : 0.5), hi = RC.hi || (RC.cols ? 1.3 : PHONE ? 1.7 : 1.15);
       if (hs < lo) { k = k * hs / lo; hs = lo; } hs = Math.min(hs, hi);
       const out = packed.map((r, ri) => { const n = RC.cols ? RC.cols : r.length, cellW = (CW - gp * (n - 1));
@@ -1249,10 +1310,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const G2 = GRID, kk = G2.k, X0 = (1466 - CW * fitB) / 2; let yy = y;
         G2.rows.forEach(r => { let xx = X0; r.tiles.forEach(o => { const it = o.it;
           rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (xx - it.x).toFixed(1) + 'px ' + (yy - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (o.w * fitB / kk).toFixed(1) + 'px !important;height:' + (r.h * fitB / kk).toFixed(1) + 'px !important;max-width:none !important;}\n';
+          if (RC.vs && it.el) vStretch(it, r.h * fitB / kk);
           xx += (o.w + G2.gp) * fitB; }); yy += (r.h + G2.gp) * fitB; });
         G2.fl.forEach(it => { rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (X0 - it.x).toFixed(1) + 'px ' + (y - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (CW * fitB / kk).toFixed(1) + 'px !important;height:' + (g.h * fitB / kk).toFixed(1) + 'px !important;}\n'; });
         y += g.h * fitB; return; }
-      const X = g.full ? 0 : g.lab || g.pic || !PHONE ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;   // (iPads: body lines up with the title)
+      const X = g.full ? 0 : !PHONE ? PADX : g.lab || g.pic ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;   // (iPads: body lines up with the title)
       g.its.forEach(o => put(o.it, g.full ? o.it.x : X + o.rx * k, y + o.ry * k, k)); y += g.h * k; });
     if (S.cf) {   // card carousel: the card you land on fills the screen width, centred in the space under the title
       const c = S.cf, top = minTop, bot = hr - BOT, s = Math.min((1466 - PADX) / c.w, (bot - top - 30) / c.h) / 1.09, Yc = (top + bot) / 2, sel = 'html.pstack #' + sec.id + ' ';
@@ -2132,7 +2194,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21q';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21r';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2244,7 +2306,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     document.documentElement.style.setProperty('--sab', (SIM ? SIM.b : 0) + 'px');
     phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px'); document.documentElement.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
     phdr.classList.toggle('idle', L.classList.contains('fav-idle')); phdr.classList.toggle('navopen', L.classList.contains('pnav-open')); phdr.querySelector('.ph-sec').hidden = !L.querySelector('.board nav');
-    const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'); if (im.getAttribute('src') !== logo.getAttribute('src')) im.src = logo.src; }
+    const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'), src = logo.getAttribute('src') || logo.dataset.vsrc;   // (an unloaded page keeps its picture's address in data-vsrc)
+      if (src && im.getAttribute('src') !== src) im.setAttribute('src', src); }
     pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
     if (phdr.__for === L) return; phdr.__for = L;
     const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
