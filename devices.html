@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fast Recruit · Screen Preview</title>
+<meta name="robots" content="noindex">
+<style>
+  @font-face { font-family: 'Vivint Sans'; src: url('fonts/VivintSans-Regular.woff2') format('woff2'); font-weight: 400; }
+  :root { --bg: #070908; --panel: rgba(255,255,255,0.06); --line: rgba(255,255,255,0.12); --txt: #f2f5f4; --dim: rgba(255,255,255,0.55); --g: #05E5AF; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--txt); font: 14px/1.35 'Vivint Sans', -apple-system, Helvetica, Arial, sans-serif; }
+  header { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 18px;
+    background: rgba(7,9,8,0.82); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border-bottom: 1px solid var(--line); }
+  h1 { margin: 0 8px 0 0; font-size: 15px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  h1 span { color: var(--g); }
+  .grp { display: flex; align-items: center; gap: 6px; }
+  .lab { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  select, button, .seg { font: inherit; color: var(--txt); }
+  select { height: 34px; padding: 0 30px 0 12px; border-radius: 17px; border: 1px solid var(--line); background: var(--panel) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 4.5l3.5 3.5 3.5-3.5" stroke="white" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>') no-repeat right 11px center; appearance: none; -webkit-appearance: none; max-width: 260px; }
+  select option, select optgroup { background: #111; }
+  .seg { display: flex; padding: 3px; border-radius: 17px; border: 1px solid var(--line); background: var(--panel); }
+  .seg button { height: 26px; padding: 0 12px; border: 0; border-radius: 13px; background: none; color: var(--dim); cursor: pointer; font-size: 13px; }
+  .seg button.on { background: var(--g); color: #04120d; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { height: 30px; padding: 0 12px; border-radius: 15px; border: 1px solid var(--line); background: none; color: var(--dim); cursor: pointer; font-size: 12.5px; }
+  .chip.on { border-color: rgba(5,229,175,.55); color: var(--txt); background: rgba(5,229,175,.12); }
+  .btn { height: 34px; padding: 0 16px; border-radius: 17px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
+  .btn:hover, .chip:hover { border-color: rgba(255,255,255,.35); }
+  input[type=range] { accent-color: var(--g); width: 120px; }
+  #zv { width: 38px; text-align: right; color: var(--dim); font-variant-numeric: tabular-nums; }
+  label.ck { display: flex; align-items: center; gap: 6px; color: var(--dim); cursor: pointer; }
+  label.ck input { accent-color: var(--g); }
+  main { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 34px 30px; padding: 26px 22px 60px; }
+  .row-break { flex-basis: 100%; height: 0; }
+  .card { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; white-space: nowrap; align-self: stretch; }
+  .card { min-width: 0; }
+  .meta b { font-weight: 600; }
+  .meta i { font-style: normal; color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .meta a { margin-left: auto; color: var(--dim); font-size: 12px; text-decoration: none; }
+  .meta a:hover { color: var(--g); }
+  .bezel { position: relative; padding: 10px; background: #1b1d1c; box-shadow: 0 0 0 1px #2c2f2e, 0 24px 60px rgba(0,0,0,.55); }
+  .screen { position: relative; overflow: hidden; background: #000; }
+  .screen iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #000; }
+  .island { position: absolute; background: #000; border-radius: 999px; pointer-events: none; z-index: 2; box-shadow: 0 0 0 1px rgba(255,255,255,.06); }
+  .homebar { position: absolute; height: 5px; border-radius: 3px; background: rgba(255,255,255,.75); pointer-events: none; z-index: 2; }
+  .safe { position: absolute; pointer-events: none; z-index: 1; background: repeating-linear-gradient(45deg, rgba(255,80,80,.16) 0 6px, transparent 6px 12px); }
+  body:not(.showsafe) .safe { display: none; }
+  .note { padding: 0 22px 30px; color: var(--dim); font-size: 12.5px; max-width: 980px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Screen <span>Preview</span></h1>
+  <div class="grp"><span class="lab">Go to</span><select id="go"><option value="">Home</option></select></div>
+  <div class="seg" id="ori"><button data-v="both" class="on">Both</button><button data-v="p">Portrait</button><button data-v="l">Landscape</button></div>
+  <div class="chips" id="devs"></div>
+  <div class="grp"><span class="lab">Zoom</span><input type="range" id="zoom" min="15" max="100" step="1"><span id="zv"></span></div>
+  <label class="ck"><input type="checkbox" id="follow" checked> Follow along</label>
+  <label class="ck"><input type="checkbox" id="safe"> Show safe areas</label>
+  <button class="btn" id="fit">Fit screen</button>
+  <button class="btn" id="reload">Reload all</button>
+</header>
+<main id="wall"></main>
+<p class="note">Each screen runs the live app at that device's exact size, with its notch and home-bar margins, so layout and scaling match the real device.
+  Tap and scroll inside any screen. With <b>Follow along</b> on, moving to a page or section in one screen moves the others there too.
+  Sizes are for the app saved to the Home Screen (full screen). iPhone-only behaviour such as the long-press Copy menu still needs a real device or Xcode's Simulator.</p>
+<script>
+(() => {
+  // Apple's screen sizes in points (what the app sees), and the notch / home-indicator margins each one reports
+  // safe = [top, right, bottom, left] for portrait (p) and landscape (l)
+  const DEVICES = [
+    { id: 'se',     name: 'iPhone SE',         kind: 'phone',  w: 375,  h: 667,  r: 0,  island: false, p: [20, 0, 0, 0],  l: [0, 0, 0, 0] },
+    { id: 'ip16',   name: 'iPhone 16',         kind: 'phone',  w: 393,  h: 852,  r: 55, island: true,  p: [59, 0, 34, 0], l: [0, 59, 21, 59] },
+    { id: 'ipmax',  name: 'iPhone 16 Pro Max', kind: 'phone',  w: 440,  h: 956,  r: 62, island: true,  p: [62, 0, 34, 0], l: [0, 62, 21, 62] },
+    { id: 'mini',   name: 'iPad mini',         kind: 'tablet', w: 744,  h: 1133, r: 22, island: false, p: [24, 0, 20, 0], l: [24, 0, 20, 0] },
+    { id: 'air',    name: 'iPad Air 11″',      kind: 'tablet', w: 820,  h: 1180, r: 18, island: false, p: [24, 0, 20, 0], l: [24, 0, 20, 0] },
+    { id: 'pro13',  name: 'iPad Pro 13″',      kind: 'tablet', w: 1032, h: 1376, r: 18, island: false, p: [24, 0, 20, 0], l: [24, 0, 20, 0] },
+  ];
+  const ls = { get: (k, d) => { try { const v = JSON.parse(localStorage.getItem('fr_sim_' + k)); return v == null ? d : v; } catch (e) { return d; } },
+               set: (k, v) => { try { localStorage.setItem('fr_sim_' + k, JSON.stringify(v)); } catch (e) {} } };
+  const S = { ori: ls.get('ori', 'both'), on: ls.get('on', DEVICES.map(d => d.id)), zoom: ls.get('zoom', 34), hash: ls.get('hash', ''), follow: ls.get('follow', true), safe: ls.get('safe', false) };
+  const $ = id => document.getElementById(id), wall = $('wall');
+  let frames = [];
+
+  // device chips
+  DEVICES.forEach(d => { const b = document.createElement('button'); b.className = 'chip'; b.textContent = d.name; b.dataset.id = d.id;
+    b.onclick = () => { S.on = S.on.includes(d.id) ? S.on.filter(x => x !== d.id) : [...S.on, d.id]; ls.set('on', S.on); sync(); build(); }; $('devs').appendChild(b); });
+  $('ori').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; S.ori = v; ls.set('ori', v); sync(); build(); };
+  $('zoom').oninput = e => { S.zoom = +e.target.value; ls.set('zoom', S.zoom); sync(); size(); };
+  $('follow').onchange = e => { S.follow = e.target.checked; ls.set('follow', S.follow); };
+  $('safe').onchange = e => { S.safe = e.target.checked; ls.set('safe', S.safe); sync(); };
+  // Fit screen: the largest zoom at which every screen fits in the window without scrolling
+  function fitZoom() {
+    let best = 15;
+    for (let z = 100; z >= 15; z--) { wall.style.visibility = 'hidden'; S.zoom = z; size(); if (wall.scrollHeight + wall.getBoundingClientRect().top + scrollY <= innerHeight - 30 || z === 15) { best = z; break; } }
+    wall.style.visibility = ''; S.zoom = best; ls.set('zoom', best); sync(); size();
+  }
+  $('fit').onclick = fitZoom;
+  $('reload').onclick = () => frames.forEach(f => { f.last = S.hash; f.el.src = src(f.d, f.o); });
+  $('go').onchange = e => goAll(e.target.value);
+  function sync() {
+    [...$('ori').children].forEach(b => b.classList.toggle('on', b.dataset.v === S.ori));
+    [...$('devs').children].forEach(b => b.classList.toggle('on', S.on.includes(b.dataset.id)));
+    $('zoom').value = S.zoom; $('zv').textContent = S.zoom + '%'; $('follow').checked = S.follow; $('safe').checked = S.safe;
+    document.body.classList.toggle('showsafe', S.safe);
+  }
+
+  const src = (d, o) => 'index.html?sim=' + d.kind + '&safe=' + d[o].join(',') + (S.hash ? '#' + S.hash : '');
+
+  function build() {
+    wall.innerHTML = ''; frames = [];
+    const oris = S.ori === 'both' ? ['p', 'l'] : [S.ori];
+    oris.forEach((o, oi) => {
+      if (oi) { const br = document.createElement('div'); br.className = 'row-break'; wall.appendChild(br); }
+      DEVICES.filter(d => S.on.includes(d.id)).forEach(d => {
+        const W = o === 'p' ? d.w : d.h, H = o === 'p' ? d.h : d.w;
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = '<div class="meta"><b>' + d.name + '</b><i>' + W + ' × ' + H + ' · ' + (o === 'p' ? 'Portrait' : 'Landscape') + '</i><a target="_blank" rel="noopener">Open ↗</a></div>';
+        const bezel = document.createElement('div'); bezel.className = 'bezel';
+        const scr = document.createElement('div'); scr.className = 'screen';
+        const ifr = document.createElement('iframe'); ifr.title = d.name + ' ' + (o === 'p' ? 'portrait' : 'landscape'); ifr.loading = 'lazy';
+        ifr.width = W; ifr.height = H; ifr.style.width = W + 'px'; ifr.style.height = H + 'px';
+        scr.appendChild(ifr);
+        // safe-area stripes (what the app keeps clear of), dynamic island and home bar
+        const [t, r, b, l] = d[o];
+        [['top', t], ['right', r], ['bottom', b], ['left', l]].forEach(([side, v]) => { if (!v) return; const s = document.createElement('div'); s.className = 'safe'; s.dataset.side = side; s.dataset.v = v; scr.appendChild(s); });
+        if (d.island) { const i = document.createElement('div'); i.className = 'island'; scr.appendChild(i); }
+        if (d.kind === 'phone' && b || d.kind === 'tablet') { const hb = document.createElement('div'); hb.className = 'homebar'; scr.appendChild(hb); }
+        bezel.appendChild(scr); card.appendChild(bezel); wall.appendChild(card);
+        const f = { d, o, W, H, el: ifr, scr, bezel, card, last: S.hash };
+        ifr.src = src(d, o); card.querySelector('a').href = src(d, o);
+        frames.push(f);
+      });
+    });
+    size(); watch();
+  }
+
+  function size() {
+    const z = S.zoom / 100;
+    frames.forEach(f => {
+      const { d, o, W, H, el, scr, bezel } = f;
+      f.card.style.width = Math.max(120, W * z + 20) + 'px'; scr.style.width = W * z + 'px'; scr.style.height = H * z + 'px'; el.style.transform = 'scale(' + z + ')';
+      const rad = d.r * z; scr.style.borderRadius = rad + 'px'; bezel.style.borderRadius = (rad + 10) + 'px';
+      scr.querySelectorAll('.safe').forEach(s => { const v = +s.dataset.v * z, side = s.dataset.side;
+        Object.assign(s.style, { left: side === 'right' ? 'auto' : 0, right: side === 'left' ? 'auto' : 0, top: side === 'bottom' ? 'auto' : 0, bottom: side === 'top' ? 'auto' : 0,
+          width: side === 'left' || side === 'right' ? v + 'px' : 'auto', height: side === 'top' || side === 'bottom' ? v + 'px' : 'auto' }); });
+      const isl = scr.querySelector('.island');
+      if (isl) { const a = 126 * z, b = 37 * z;
+        if (o === 'p') Object.assign(isl.style, { width: a + 'px', height: b + 'px', left: (W * z - a) / 2 + 'px', top: 11 * z + 'px' });
+        else Object.assign(isl.style, { width: b + 'px', height: a + 'px', left: 11 * z + 'px', top: (H * z - a) / 2 + 'px' }); }
+      const hb = scr.querySelector('.homebar');
+      if (hb) { const w = (d.kind === 'tablet' ? 300 : 134) * z * (o === 'l' && d.kind === 'phone' ? 1.6 : 1);
+        Object.assign(hb.style, { width: w + 'px', height: Math.max(2, 5 * z) + 'px', left: (W * z - w) / 2 + 'px', bottom: 8 * z + 'px' }); }
+    });
+  }
+
+  // Follow along: when one screen moves to another page or section, the rest follow
+  let watchT = 0;
+  function watch() {
+    clearInterval(watchT);
+    watchT = setInterval(() => {
+      if (!S.follow) return;
+      for (const f of frames) {
+        let h = null; try { h = f.el.contentWindow.location.hash.slice(1); } catch (e) {}
+        if (h == null || h === f.last) continue;
+        f.last = h; if (h !== S.hash) { goAll(h, f); return; }
+      }
+    }, 500);
+  }
+  function goAll(h, from) {
+    S.hash = h; ls.set('hash', h);
+    if ([...$('go').options].some(o => o.value === h)) $('go').value = h;
+    frames.forEach(f => { if (f === from) return; f.last = h;
+      try { if (f.el.contentWindow.location.hash.slice(1) !== h) f.el.contentWindow.location.hash = h; } catch (e) { f.el.src = src(f.d, f.o); } });
+  }
+
+  // "Go to" list: every page and section, in the app's own order
+  const slug = n => n.toLowerCase().replace(/’/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  fetch('proto.json', { cache: 'no-cache' }).then(r => r.json()).then(P => {
+    const sel = $('go'), A = P.artboards;
+    const PAGES = [['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
+    PAGES.forEach(([fn, label]) => {
+      const B = P.boards[fn]; if (!B) return;
+      const og = document.createElement('optgroup'); og.label = label;
+      const top = Object.keys(A).find(k => A[k].board === fn && A[k].section == null);
+      const secs = B.sections || [];
+      const first = top || (secs[0] && secs[0].aid);
+      if (first) { const o = document.createElement('option'); o.value = slug(A[first].name); o.textContent = label + ' (top)'; og.appendChild(o); }
+      secs.forEach(x => { if (!A[x.aid] || x.aid === first) return; const o = document.createElement('option'); o.value = slug(A[x.aid].name); o.textContent = A[x.aid].name; og.appendChild(o); });
+      sel.appendChild(og);
+    });
+    if ([...sel.options].some(o => o.value === S.hash)) sel.value = S.hash;
+  }).catch(() => {});
+
+  sync(); build(); if (ls.get('zoom', null) == null) fitZoom();
+})();
+</script>
+</body>
+</html>
