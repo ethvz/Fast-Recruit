@@ -401,6 +401,20 @@
   html.pph .board .tlw p[data-name$="description"] { rotate: -90deg; left: 638px !important; top: 326px !important; width: 440px !important; font-size: 20px !important; line-height: 26px !important; }
   #phdr .ph-sec { position: absolute; left: 12px; top: calc(var(--sat, 0px) + 64px); width: 38px; height: 38px; border-radius: 19px; border: 1px solid rgba(5,229,175,.55); background: rgba(0,0,0,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; transition: background .25s ease; }
   #phdr.navopen .ph-sec { background: rgba(5,229,175,.25); }
+  /* iPhone upright, section menu closed: its progress line lies sideways next to the button (a dot per section, filled up to
+     where you are); opening swings it down 90° around the button into the full menu with its names */
+  #phdr .ph-prog { position: absolute; left: 60px; top: calc(var(--sat, 0px) + 64px + 19px); height: 0; width: var(--pw, 150px); pointer-events: none; transform-origin: -29px 0; transition: rotate .32s cubic-bezier(.3,.7,.2,1), opacity .25s ease; }
+  #phdr .ph-prog i { position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; background: rgba(255,255,255,.22); }
+  #phdr .ph-prog i.f { background: #05E5AF; box-shadow: 0 0 8px rgba(5,229,175,.6); }
+  #phdr .ph-prog b { position: absolute; top: -3.5px; width: 7px; height: 7px; margin-left: -3.5px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); background: #000; }
+  #phdr .ph-prog b.f { background: #05E5AF; border-color: #05E5AF; }
+  #phdr .ph-prog b.c { width: 10px; height: 10px; top: -5px; margin-left: -5px; box-shadow: 0 0 10px rgba(5,229,175,.8); }
+  #phdr.idle .ph-prog { opacity: 0; }
+  #phdr.navopen .ph-prog { rotate: 90deg; opacity: 0; transition: rotate .3s cubic-bezier(.3,.7,.2,1), opacity .12s ease .2s; }
+  html.pph .layer.pnav-open .board nav { animation: pnavSwing .42s cubic-bezier(.25,.8,.25,1) both; }
+  html.pph .layer.pnav-open .board nav a > span:last-child { animation: pnavText .3s ease .26s both; }
+  @keyframes pnavSwing { from { rotate: -90deg; opacity: .4; } to { rotate: 0deg; opacity: 1; } }
+  @keyframes pnavText { from { opacity: 0; translate: -8px 0; } to { opacity: 1; translate: 0 0; } }
   /* portrait v2 section menu: hidden until its button is pressed; open, it sits on a dark panel */
   html.pph .layer:not(.pnav-open) .board nav { opacity: 0 !important; visibility: hidden; transition: opacity .3s ease, visibility 0s linear .3s; }
   html.pph .layer.pnav-open .board nav { opacity: 1; visibility: visible; transform: none !important; }
@@ -2365,7 +2379,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22h';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22i';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2463,7 +2477,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const L = current && current.layer, on = pphOn() && L && L.isConnected && !!L.querySelector('.board [data-name="Header"]');
     if (!phdr) {
       phdr = document.createElement('div'); phdr.id = 'phdr';
-      phdr.innerHTML = '<div class="ph-fix"><button class="ph-menu" type="button" aria-label="Open menu"><svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M1 1h20M1 8h20M1 15h20"/></svg></button><img class="ph-logo" alt="Vivint home"></div><div class="ph-scroll"></div><button class="ph-sec" type="button" aria-label="Sections on this page"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#05E5AF" stroke-width="1.8" stroke-linecap="round"><circle cx="3" cy="3.5" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="8" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="12.5" r="1.2" fill="#05E5AF" stroke="none"/><path d="M7 3.5h7M7 8h7M7 12.5h7"/></svg></button>';
+      phdr.innerHTML = '<div class="ph-fix"><button class="ph-menu" type="button" aria-label="Open menu"><svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M1 1h20M1 8h20M1 15h20"/></svg></button><img class="ph-logo" alt="Vivint home"></div><div class="ph-scroll"></div><div class="ph-prog" aria-hidden="true"></div><button class="ph-sec" type="button" aria-label="Sections on this page"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#05E5AF" stroke-width="1.8" stroke-linecap="round"><circle cx="3" cy="3.5" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="8" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="12.5" r="1.2" fill="#05E5AF" stroke="none"/><path d="M7 3.5h7M7 8h7M7 12.5h7"/></svg></button>';
       document.body.appendChild(phdr);
       // hidden (idle): a tap anywhere on it only brings it back
       phdr.addEventListener('pointerdown', e => { if (!phdr.classList.contains('idle')) return; e.preventDefault(); e.stopPropagation(); const i = current && current.layer && current.layer._inst; phdr.__woke = Date.now(); if (i) { i.setState({ hdrHide: false }); if (i.hdrKick) i.hdrKick(); } }, true);
@@ -2480,6 +2494,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'), src = logo.getAttribute('src') || logo.dataset.vsrc;   // (an unloaded page keeps its picture's address in data-vsrc)
       if (src && im.getAttribute('src') !== src) im.setAttribute('src', src); }
     pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
+    // sideways progress line beside the section button: read the page's own menu (its dots say which sections are behind you)
+    { const pg = phdr.querySelector('.ph-prog'), nav = L.querySelector('.board nav'), as = nav ? [...nav.querySelectorAll('a')] : [];
+      const st = as.map(a => { const d = a.querySelector('span > span'), lab = a.querySelector(':scope > span:last-child'), ds = d ? d.getAttribute('style') || '' : '';
+        return { f: /background: #05E5AF/i.test(ds), c: !!lab && /font-weight: (6|7|8)00/.test(lab.getAttribute('style') || '') }; });
+      const key = st.map(x => (x.f ? 1 : 0) + (x.c ? 2 : 0)).join('');
+      pg.hidden = !as.length;
+      if (as.length) { const fl = [...L.querySelectorAll('.favw button, .favw a')].filter(e => { const q = e.closest('section'), r = q && q.getBoundingClientRect(); return r && r.top <= 140 && r.bottom > 140; }).map(e => e.getBoundingClientRect()).filter(r => r.width > 0 && r.top < 160).map(r => r.left), w = Math.max(80, Math.min(280, (fl.length ? Math.min(...fl) : innerWidth - 60) - 60 - 16));
+        const kk = key + '|' + Math.round(w); if (pg.__k !== kk) { pg.__k = kk; pg.style.setProperty('--pw', w + 'px'); const n = st.length, step = n > 1 ? w / (n - 1) : 0; let last = -1; st.forEach((x, i) => { if (x.f) last = i; });
+        pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f" style="width:' + Math.max(0, last * step) + 'px"></i>' + st.map((x, i) => '<b class="' + (x.f ? 'f' : '') + (i === last ? ' c' : '') + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join(''); } } }
     if (phdr.__for === L) return; phdr.__for = L;
     const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
     { const sc = scrollerOf(L); if (sc && !sc.__pf) { sc.__pf = 1; let t = 0; sc.addEventListener('scroll', () => { pfoot.classList.add('sm'); clearTimeout(t); t = setTimeout(() => pfoot.classList.remove('sm'), 260); }, { passive: true }); } }
