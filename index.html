@@ -293,6 +293,18 @@
   /* Pay levels / override tables: columns spread evenly across the tile (FP+ a little narrower) */
   :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span[style*="width:"], :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span[style*="flex: 1"] { flex: 1 1 0 !important; width: auto !important; min-width: 0; }
   :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span:first-child { flex: 0.7 1 0 !important; }
+  /* iPhone upright, pay level tables (commission: rep and leader; override): larger type, taller rows, and the rows scroll
+     inside the tile (about eight at a time) */
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"][style*="height: 27px"] { height: 44px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"][style*="height: 27px"] > span { font-size: 21px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"][style*="height: 27px"] > span > span { font-size: inherit !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"][style*="height: 30px"] { height: 40px !important; }
+  html.pph #sec-override-calculator div[style*="padding: 0 14px"][style*="height: 40px"] { height: 54px !important; }
+  html.pph #sec-override-calculator div[style*="padding: 0 14px"][style*="height: 40px"] > span { font-size: 21px !important; }
+  html.pph #sec-override-calculator div[style*="padding: 0 14px"][style*="height: 40px"] > span > span { font-size: inherit !important; padding: 3px 6px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"][style*="height: 30px"] > span > div { font-size: 13px !important; letter-spacing: .1em !important; line-height: 16px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"]:has(> [style*="color: #05E5AF"]) > div:first-child { font-size: 16px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) div[style="margin-top: 6px"] { max-height: 360px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   /* iPhones upright: no forced layers or live background blurs inside sections (each costs graphics memory; Marketing alone
      had 22 forced layers and 14 blurred pills, and iPhones closed the page) */
   html.pph .board section[id^="sec-"] * { will-change: auto !important; }
@@ -2337,7 +2349,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
