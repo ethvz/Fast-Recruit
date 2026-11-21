@@ -408,13 +408,11 @@
   /* iPhone upright, section menu closed: its progress line lies sideways next to the button (a dot per section, filled up to
      where you are); opening swings it down 90° around the button into the full menu with its names */
   #phdr .ph-prog { position: absolute; left: var(--pl, 64px); top: calc(var(--sat, 0px) + 64px + 19px); height: 0; width: var(--pw, 150px); pointer-events: none; transform-origin: calc(31px - var(--pl, 64px)) 0; transition: rotate .32s cubic-bezier(.3,.7,.2,1), opacity .25s ease; }
-  #phdr .ph-prog i { position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; background: rgba(255,255,255,.22); }
+  #phdr .ph-prog i { transition: width .35s cubic-bezier(.3,.7,.2,1); position: absolute; left: 0; top: -1px; height: 2px; border-radius: 1px; background: rgba(255,255,255,.22); }
   #phdr .ph-prog i.f { background: #05E5AF; box-shadow: 0 0 8px rgba(5,229,175,.6); }
-  #phdr .ph-prog b { pointer-events: auto; cursor: pointer; position: absolute; top: -3.5px; width: 7px; height: 7px; margin-left: -3.5px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); background: #000; }
+  #phdr .ph-prog b { transition: left .35s cubic-bezier(.3,.7,.2,1); pointer-events: auto; cursor: pointer; position: absolute; top: -3.5px; width: 7px; height: 7px; margin-left: -3.5px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.45); background: #000; }
   #phdr .ph-prog b::after { content: ''; position: absolute; left: -9px; top: -14px; right: -9px; bottom: -14px; }
   #phdr .ph-prog b.f { background: #05E5AF; border-color: #05E5AF; }
-  html.pph .favw .ffp > span { display: none; }   /* (iPhones upright: Sales rules is a round icon button, so the progress line can sit centred) */
-  html.pph .favw .ffp { padding: 0 !important; width: 36px; justify-content: center; }
   #phdr .ph-prog b.c { width: 10px; height: 10px; top: -5px; margin-left: -5px; box-shadow: 0 0 10px rgba(5,229,175,.8); }
   #phdr.idle .ph-prog { opacity: 0; }
   #phdr.navopen .ph-prog { rotate: 90deg; opacity: 0; transition: rotate .3s cubic-bezier(.3,.7,.2,1), opacity .12s ease .2s; }
@@ -2392,7 +2390,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22o';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22p';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2513,10 +2511,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (as.length) {
         const st = as.map(a => { const d = a.querySelector('span > span'), ds = d ? d.getAttribute('style') || '' : ''; return { f: /background: #05E5AF/i.test(ds), y: parseFloat(a.style.top) + 22 }; });
         const fl = [...L.querySelectorAll('.favw button, .favw a')].filter(e => { const q = e.closest('section'), r = q && q.getBoundingClientRect(); return r && r.top <= 140 && r.bottom > 140; }).map(e => e.getBoundingClientRect()).filter(r => r.width > 0 && r.top < 160).map(r => r.left);
-        const W = innerWidth, inset = Math.max(64, W - (fl.length ? Math.min(...fl) : W - 50) + 14), w = Math.max(60, W - 2 * inset), n = st.length, step = n > 1 ? w / (n - 1) : 0;
+        const W = innerWidth, inset = 64, w = Math.max(60, (fl.length ? Math.min(...fl) : W - 50) - 14 - inset), n = st.length, step = n > 1 ? w / (n - 1) : 0;
         const key = st.map(x => x.f ? 1 : 0).join('') + '|' + Math.round(w);
         if (pg.__k !== key) { pg.__k = key; pg.style.setProperty('--pw', w + 'px'); pg.style.setProperty('--pl', inset + 'px');
-          pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
+          const bs = pg.querySelectorAll('b');
+          if (bs.length === n) { pg.querySelector('i:not(.f)').style.width = w + 'px'; bs.forEach((b, i) => { b.style.left = (i * step).toFixed(1) + 'px'; }); }   // (same page shape: the line slides to its new length)
+          else pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
           if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const a = current && current.layer.querySelectorAll('.board nav a')[+b.dataset.i]; if (a) a.click(); }); } }
         // green fill: where the page's own (vertical) fill ends, mapped between the dots on either side
         const fillEl = [...nav.querySelectorAll(':scope > div')].find(d => /box-shadow/.test(d.getAttribute('style') || '')), fy = fillEl ? parseFloat(fillEl.style.top) + parseFloat(fillEl.style.height) : 0;
