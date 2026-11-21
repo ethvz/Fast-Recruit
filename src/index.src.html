@@ -697,8 +697,17 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
 
   // ---------------- boards & navigation ----------------
   async function loadBoard(fn) {
-    if (!cache[fn]) cache[fn] = fetch('boards/' + fn.replace('.dc.html', '') + '.json', { cache: 'no-cache' }).then(r => r.json());   // no-cache: always check for a newer page so content updates show without clearing the browser
+    if (!cache[fn]) cache[fn] = fetch('boards/' + fn.replace('.dc.html', '') + '.json', { cache: 'no-cache' }).then(r => r.json()).then(d => { try { syncSecs(fn, d); } catch (e) {} return d; });   // no-cache: always check for a newer page so content updates show without clearing the browser
     return cache[fn];
+  }
+  // menus (hamburger, header long-press, custom flow) list a page's sections in the page's own order and names. The build keeps
+  // proto.json in step (src/sync_sections.py); this repeats it whenever a page loads, in case an older proto.json was served.
+  function syncSecs(fn, d) {
+    const B = P && P.boards[fn], m = d && d.script && /this\.sections = (\[.*?\]);/.exec(d.script); if (!B || !B.sections || !m) return;
+    const S = JSON.parse(m[1]), by = {}; B.sections.forEach(x => { by[x.sid] = x; });
+    const next = S.map(x => by[x.id] ? Object.assign({}, by[x.id], { name: x.label, top: x.top, h: x.h }) : null).filter(Boolean);
+    if (!next.length || JSON.stringify(next) === JSON.stringify(B.sections)) return;
+    B.sections = next; next.forEach((x, i) => { const a = P.artboards[x.aid]; if (a) { a.section = i; a.name = x.name; } });
   }
   async function makeLayer(fn) {
     const j = await loadBoard(fn);
@@ -1752,7 +1761,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20f';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20g';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
