@@ -289,6 +289,9 @@
   html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div { padding: 18px 32px !important; min-height: 0; }
   html.pph #sec-growth [data-name="Skill detail"] > div > div:nth-child(3) { font-size: 34px !important; line-height: 44px !important; }
   html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] { top: 250px; }
+  /* Pay levels / override tables: columns spread evenly across the tile (FP+ a little narrower) */
+  :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span[style*="width:"], :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span[style*="flex: 1"] { flex: 1 1 0 !important; width: auto !important; min-width: 0; }
+  :is(#sec-pay-scales, #sec-override-calculator) div[style*="padding: 0 14px"] > span:first-child { flex: 0.7 1 0 !important; }
   /* iPhones upright: no forced layers or live background blurs inside sections (each costs graphics memory; Marketing alone
      had 22 forced layers and 14 blurred pills, and iPhones closed the page) */
   html.pph .board section[id^="sec-"] * { will-change: auto !important; }
@@ -957,6 +960,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     layer.className = 'layer'; layer.dataset.board = fn;
     layer.appendChild(host);
     layer._inst = inst; layer._fn = fn; layer.dataset.fn = fn;
+    // upright: a page re-draws itself on scroll at most every 90 ms (plus once when scrolling stops). Every re-draw rebuilds the
+    // whole page, and a fast flick fired dozens a second — iPhones ran out of memory and closed the page.
+    if (inst && typeof inst.onScroll === 'function' && PSTACK) { const orig = inst.onScroll; let last = 0, tm = 0, tgt = null;
+      const fire = () => { tm = 0; last = Date.now(); if (tgt) orig.call(inst, { currentTarget: tgt, target: tgt }); };
+      inst.onScroll = function (e) { tgt = e.currentTarget || e.target; if (!pstackOn()) return orig.call(inst, e);
+        const now = Date.now(); clearTimeout(tm); if (now - last >= 90) fire(); else tm = setTimeout(fire, 90 - (now - last)); }; }
     portraitize(host, inst);
     const map = {};
     (P.boards[fn].ia || []).forEach(x => { (map[x.el] = map[x.el] || []).push(x); });
@@ -2322,7 +2331,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22a';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2687,7 +2696,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const show = im => { if (im.getAttribute('src') !== im.dataset.vsrc) { im.decoding = 'async'; im.setAttribute('src', im.dataset.vsrc); } };
     const io = isLite() && 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(en => {
       const im = en.target; if (!im.dataset.vsrc || !im.isConnected) return;
-      if (en.isIntersecting) show(im); else if (im.getAttribute('src') === im.dataset.vsrc) im.setAttribute('src', BLANK);
+      clearTimeout(im.__offT);
+      if (en.isIntersecting) show(im);   // (a picture is let go only after it has stayed out of range for 1.5 s, so a fast flick doesn't drop and re-decode it over and over)
+      else if (im.getAttribute('src') === im.dataset.vsrc) im.__offT = setTimeout(() => { if (im.getAttribute('src') === im.dataset.vsrc) im.setAttribute('src', BLANK); }, 1500);
     }), { rootMargin: document.documentElement.classList.contains('pland') ? '60% 60% 60% 60%' : '100% 100% 100% 100%' }) : null;   // sideways phone: a tighter window, fewer pictures in memory
     if (io) (layer._off = layer._off || []).push(() => io.disconnect());
     const restoreImgs = root => root.querySelectorAll('img[data-vsrc]').forEach(im => { if (io) io.observe(im); else show(im); });
