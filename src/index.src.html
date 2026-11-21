@@ -188,9 +188,11 @@
   #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
   /* iPhone portrait: the section star + extra buttons sit top right, level with the section-menu button */
   /* iPhone upright Home: its own header (menu, Guide, Onboard) at phone size */
-  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open menu"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 0 0; }
-  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 300px 0; }
-  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 0.85); transform-origin: 188px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open menu"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 0 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 300px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 188px 0; }
+  /* iPhone upright Home: the photo fades to black at the top and bottom, so it meets the black status-bar and home-bar strips without a hard edge */
+  html.pph .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"]::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.55) 4%, rgba(0,0,0,0) 13%, rgba(0,0,0,0) 80%, rgba(0,0,0,.6) 93%, #000 100%); }
   html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
   /* product tiles re-cut shorter in portrait: their pictures shrink to fit */
   html.pstack .pdtile img { height: auto !important; max-height: 100% !important; }
@@ -510,6 +512,62 @@
   .nm-quick .nm-guide.nm-flow { margin: 0 0 0 auto; }
   .nm-quick .nm-flow + .nm-guide { margin-left: 0; }
   .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: rgb(var(--acr)); margin-left: -2px; }
+  /* iPhone portrait: the all-pages menu and the recruiting guide are drawn at screen size outside the scaled frame
+     (the full-size copies were huge layers and crashed iOS); both are drawers about 3/4 of the screen wide */
+  html.pph .navmenu.pm, .pguide { position: fixed; left: 0; top: 0; right: 0; bottom: 0; width: auto; height: auto; z-index: 100000; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; }
+  html.pph .navmenu.pm .nm-scrim, .pguide .pg-scrim { display: block; position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: none; -webkit-backdrop-filter: none; animation: nmFade .25s ease; }
+  html.pph .navmenu.pm .nm-panel, .pguide .pg-panel { width: 76%; border-radius: 0 26px 26px 0; border: 1px solid rgba(255,255,255,0.16); border-left: 0; box-shadow: none; background: #080c0b; background-image: radial-gradient(80% 30% at 0% 0%, rgba(var(--acr),0.14), rgba(var(--acr),0) 70%);
+    padding: calc(var(--sat, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; font-size: var(--mf, 15px);
+    display: flex; flex-direction: column; animation: pmIn .32s cubic-bezier(.2,.8,.2,1); }
+  @keyframes pmIn { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes pgIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  html.pph .navmenu.pm.out .nm-panel { transform: translateX(-40px); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
+  html.pph .pm .nm-top { align-items: flex-start; }
+  html.pph .pm .nm-eye, .pguide .nm-eye { font-size: .72em; letter-spacing: .24em; }
+  html.pph .pm .nm-title, .pguide .nm-title { font-size: 1.45em; line-height: 1.15; margin-top: .3em; }
+  html.pph .pm .nm-x, .pguide .nm-x { width: 40px; height: 40px; border-radius: 20px; flex: none; }
+  html.pph .pm .nm-quick { flex-wrap: wrap; gap: .4em; margin-top: 1em; padding-bottom: 1em; }
+  html.pph .pm .nm-quick .nm-guide, html.pph .pm .nm-quick .nm-guide.nm-flow { margin: 0; }
+  html.pph .pm .nm-quick .nm-ptitle { height: 2.3em; font-size: 1em; padding: 0 .9em; border-radius: 1.15em; }
+  html.pph .pm .nm-guide { height: 2.6em; border-radius: 1.3em; padding: 0 .8em; font-size: .86em; display: inline-flex; align-items: center; gap: .45em; white-space: nowrap; }
+  html.pph .pm .nm-cols { flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1em; row-gap: .3em; margin-top: 1.2em; align-content: space-between; }
+  html.pph .pm .nm-page { margin-bottom: .6em; }
+  html.pph .pm .nm-cols .nm-ptitle { font-size: 1.25em; line-height: 1.2; padding-bottom: .35em; margin-bottom: .25em; }
+  html.pph .pm .nm-sec { font-size: .92em; line-height: 1.15; padding: .34em 0 .34em 1px; gap: .5em; }
+  html.pph .pm .nm-sec::before { width: 6px; height: 6px; }
+  html.pph .pm .nm-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: .4em; margin-top: .4em; padding-top: .9em; }
+  html.pph .pm .nm-bottom .nm-guide { justify-content: flex-start; overflow: hidden; }
+  html.pph .pm .nm-guide svg { flex: none; }
+  /* recruiting guide drawer (iPhone portrait) — slides in from the right */
+  .pguide .pg-panel { position: absolute; right: 0; top: 0; bottom: 0; left: auto; box-sizing: border-box; border-radius: 26px 0 0 26px; border: 1px solid rgba(255,255,255,0.16); border-right: 0; overflow: hidden;
+    background-image: radial-gradient(80% 30% at 100% 0%, rgba(5,229,175,0.14), rgba(5,229,175,0) 70%); animation: pgIn .32s cubic-bezier(.2,.8,.2,1); }
+  .pguide.out .pg-panel { transform: translateX(40px); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
+  .pguide.out .pg-scrim { opacity: 0; transition: opacity .22s ease; }
+  .pguide .nm-eye { color: #05E5AF; text-transform: uppercase; }
+  .pguide .nm-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .pguide .nm-x { cursor: pointer; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; padding: 0; }
+  .pg-steps { display: flex; gap: 6px; overflow-x: auto; margin: 14px -16px 0; padding: 2px 16px 12px; scrollbar-width: none; flex: none; }
+  .pg-steps::-webkit-scrollbar { display: none; }
+  .pg-steps button { flex: none; height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.62); font: inherit; font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 7px; cursor: pointer; }
+  .pg-steps button i { font-style: normal; font-size: 11px; color: rgba(255,255,255,0.4); font-variant-numeric: tabular-nums; }
+  .pg-steps button.done { color: rgba(255,255,255,0.85); }
+  .pg-steps button.done i { color: #05E5AF; }
+  .pg-steps button.on { border-color: #05E5AF; background: rgba(5,229,175,0.14); color: #fff; font-weight: 600; }
+  .pg-steps button.on i { color: #05E5AF; }
+  .pg-bar { height: 2px; border-radius: 1px; background: rgba(255,255,255,0.12); flex: none; }
+  .pg-bar b { display: block; height: 100%; border-radius: 1px; background: #05E5AF; transition: width .4s cubic-bezier(.2,.8,.2,1); }
+  .pg-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; margin: 0 -16px; padding: 16px 16px 8px; }
+  .pg-step { zoom: 0.74; animation: nmFade .3s ease; }
+  .pg-step [style*="font-size: 52px"] { font-size: 36px !important; line-height: 39px !important; }
+  .pg-step [style*="font-size: 12.5px"] { font-size: 14.5px !important; }
+  .pg-step [style*="font-size: 14px"], .pg-step [style*="font-size: 14.5px"], .pg-step [style*="font-size: 15px"], .pg-step [style*="font-size: 15.5px"] { font-size: 17px !important; line-height: 23px !important; }
+  .pg-step [style*="font-size: 17px"], .pg-step [style*="font-size: 17.5px"], .pg-step [style*="font-size: 18px"] { font-size: 20px !important; line-height: 27px !important; }
+  .pg-step .sg { max-height: none !important; overflow: visible !important; padding: 6px 20px 14px !important; box-shadow: none !important; border-radius: 20px !important; }
+  .pg-nav { display: flex; gap: 8px; padding-top: 12px; flex: none; }
+  .pg-nav button { height: 42px; border-radius: 21px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; }
+  .pg-nav .pg-prev { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; flex: none; }
+  .pg-nav .pg-next { flex: 1; min-width: 0; border: 0; background: #05E5AF; color: #04140f; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pg-nav button[disabled] { opacity: .3; pointer-events: none; }
   /* feedback, crash report, what's new sheets */
   .fsheet.fc .fs-card { left: 0; right: 0; margin: 0 auto; }
   .fb-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 16px 6px; overscroll-behavior: contain; }
@@ -857,6 +915,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     viewport.style.height = Math.round(H * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
     document.documentElement.style.setProperty('--SS', Math.max(1, 34 / (50 * scale)).toFixed(3));   // the section star stays at least ~34px on screen
+    setTimeout(phHome, 0);
   }
 
   // ---------------- tiny runtime for the design-canvas board format ----------------
@@ -1848,13 +1907,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       layer.style.left = ((pos && pos.x) || 0) + 'px'; layer.style.top = ((pos && pos.y) || 0) + 'px';
       frame.appendChild(layer);
       overlay = { board: t.board, layer };
+      if (pphOn() && aid === GUIDE_AID && openPGuide(layer)) { layer.style.visibility = 'hidden'; layer.style.pointerEvents = 'none'; return; }
       await animate(layer, null, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       startScreen(layer);
     } finally { busy = false; FR.set('nav', 'idle'); uiSync(); }
   }
   function closeOverlay(instant) {
     if (!overlay) return;
-    const l = overlay.layer; overlay = null; stopVideos(l); uiSync();
+    const l = overlay.layer; overlay = null; stopVideos(l); closePGuide(instant); uiSync();
     if (instant) { destroyLayer(l); return; }
     l.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'both' }).finished.then(() => destroyLayer(l));
   }
@@ -2392,7 +2452,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22s';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22t';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2548,6 +2608,38 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (instant) { m.remove(); uiSync(); return; }
     m.classList.add('out'); setTimeout(() => m.remove(), 260); uiSync();
   }
+  // grow the iPhone menu's type until it fills the drawer's height (no scroll), between 12px and 19px
+  function pmFit(m) { const pn = m.querySelector('.nm-panel'); if (!pn) return; let lo = 10.5, hi = 19;
+    for (let k = 0; k < 7; k++) { const mid = (lo + hi) / 2; pn.style.setProperty('--mf', mid + 'px'); if (pn.scrollHeight <= pn.clientHeight + 1) lo = mid; else hi = mid; }
+    pn.style.setProperty('--mf', lo + 'px'); }
+  // iPhone portrait: the recruiting guide as a screen-size drawer built from the guide board's own steps
+  let pguideEl = null;
+  function closePGuide(instant) { const g = pguideEl; if (!g) return; pguideEl = null; if (instant) g.remove(); else { g.classList.add('out'); setTimeout(() => g.remove(), 240); } }
+  function openPGuide(layer) {
+    closePGuide(true);
+    const steps = [...layer.querySelectorAll('[data-name="Guide step"]')]; if (!steps.length) return false;
+    const labs = steps.map((st, i) => { const e = st.firstElementChild; return ((e && e.textContent.trim()) || ('Step ' + (i + 1))).replace(/^step\s*\d+\s*[·:\-–—]\s*/i, ''); });
+    const html = steps.map(st => { const c = st.cloneNode(true); c.querySelectorAll('button').forEach(b => { const w = b.parentElement; b.remove(); if (w && w !== c && !w.children.length && !w.textContent.trim()) w.remove(); });
+      c.querySelectorAll('[style*="position: absolute"]').forEach(x => x.remove()); return c.innerHTML; });
+    const g = document.createElement('div'); g.className = 'pguide';
+    g.innerHTML = '<div class="pg-scrim"></div><div class="pg-panel"><div class="nm-top"><div><div class="nm-eye">Recruiting guide</div><div class="nm-title">Run the meeting.</div></div>'
+      + '<button type="button" class="nm-x" aria-label="Close recruiting guide"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
+      + '<div class="pg-steps">' + labs.map((l, i) => '<button type="button" data-i="' + i + '"><i>' + String(i + 1).padStart(2, '0') + '</i>' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</button>').join('') + '</div>'
+      + '<div class="pg-bar"><b></b></div><div class="pg-body"></div><div class="pg-nav"><button type="button" class="pg-prev" aria-label="Previous step"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M13 7H2M6 3L2 7l4 4"/></svg></button><button type="button" class="pg-next"></button></div></div>';
+    const body = g.querySelector('.pg-body'), bar = g.querySelector('.pg-bar b'), sb = [...g.querySelectorAll('.pg-steps button')], prev = g.querySelector('.pg-prev'), next = g.querySelector('.pg-next');
+    let cur = 0;
+    const show = i => { cur = Math.max(0, Math.min(steps.length - 1, i));
+      body.innerHTML = '<div class="pg-step">' + html[cur] + '</div>'; body.scrollTop = 0;
+      sb.forEach((b, k) => { b.classList.toggle('on', k === cur); b.classList.toggle('done', k < cur); });
+      const a = sb[cur], row = a.parentElement; row.scrollTo({ left: a.offsetLeft - (row.clientWidth - a.offsetWidth) / 2, behavior: 'smooth' });
+      bar.style.width = ((cur + 1) / steps.length * 100) + '%';
+      prev.disabled = cur === 0; next.disabled = cur === steps.length - 1;
+      next.innerHTML = cur < steps.length - 1 ? 'Next: ' + labs[cur + 1].replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'Last step'; };
+    g.addEventListener('click', e => { e.stopPropagation(); const t = e.target.closest('button, .pg-scrim'); if (!t) return;
+      if (t.dataset.i != null) show(+t.dataset.i); else if (t === prev) show(cur - 1); else if (t === next) show(cur + 1); else if (t.classList.contains('nm-x') || t.classList.contains('pg-scrim')) closeOverlay(); });
+    ['pointerdown', 'touchstart'].forEach(ev => g.addEventListener(ev, e => e.stopPropagation()));
+    document.body.appendChild(g); pguideEl = g; show(0); return true;
+  }
   function openMenu() {
     if (menuEl || !P) return;
     const curAid = currentAid(), cur = current && current.board;
@@ -2578,7 +2670,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       closeMenu();
     });
     ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
-    closeQnav(); closeSheet(); frame.appendChild(m); menuEl = m; uiSync();
+    closeQnav(); closeSheet(); if (pphOn()) { m.classList.add('pm'); document.body.appendChild(m); pmFit(m); } else frame.appendChild(m); menuEl = m; uiSync();
   }
   viewport.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-x="Menu button"]');
@@ -2649,7 +2741,69 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const vStart = root => root.querySelectorAll('[data-vstart]').forEach(v => { if (!v.isConnected || !v.clientHeight) return;
     const k = v.dataset.vstart, r = v.querySelector('[data-age="' + k + '"], [data-vkey="' + k + '"]'), hd = v.querySelector('[role="row"]'), y = v.__vs ? v.__vst || 0 : r ? r.offsetTop - (hd ? hd.offsetHeight : 0) : 0;
     v.scrollTop = y; if (!v.__vs) { v.__vs = 1; v.__vst = y; v.addEventListener('scroll', () => { v.__vst = v.scrollTop; }, { passive: true }); } });
+
+  // iPhone upright Home: everything at phone size — logo centred a quarter of the way down, NOT LIKE US lined up with the
+  // page menu (same height, side by side), "In loving memory" bottom left beside a bigger Begin. Measured from where the
+  // board puts things, then moved with a style sheet (re-renders rewrite inline styles, not this sheet).
+  let phHomeSt = null;
+  function phHome() {
+    if (!phHomeSt) { phHomeSt = document.createElement('style'); phHomeSt.id = 'phHome'; document.head.appendChild(phHomeSt); }
+    const L = frame.querySelector('.layer[data-fn="Main.dc.html"]');
+    if (!pphOn() || !L) { phHomeSt.textContent = ''; return; }
+    const B = L.querySelector('.board'); if (!B) return;
+    const lr = L.getBoundingClientRect(); if (!lr.width) return;
+    const k = 1466 / lr.width, W = lr.width, scH = window.innerHeight, M = Math.round(W * 0.05);
+    const q = n => B.querySelector('[data-name="' + n + '"]');
+    const nm = e => e.getAttribute('data-name') ? ['data-name', e.getAttribute('data-name')] : ['data-x', e.getAttribute('data-x')];
+    const S = e => { const [a, v] = nm(e); return 'html.pph .layer[data-fn="Main.dc.html"] .board [' + a + '="' + v.replace(/"/g, '\\"') + '"]'; };
+    const rc = e => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
+    const txt = e => { const g = document.createRange(); g.selectNodeContents(e); const r = g.getBoundingClientRect(); return { x: r.left, y: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; };
+    // the pieces (only named ones can be targeted)
+    const pill = q('Glass arrow pill'), labs = [...B.querySelectorAll('[data-name^="("]')];
+    const G = { logo: [q('Vivint Logo')], title: ['Not', 'Like', 'Us'].map(q), menu: [q('Landing menu'), q('Home dot'), ...labs],
+      cta: [B.querySelector('[data-x="Custom flow"]'), ...['Glass arrow pill', 'Begin', 'Group 6502', 'Group 6504 hotspot'].map(q)], mem: [q('In memory')] };
+    if (pill && pill.nextElementSibling && pill.nextElementSibling.getAttribute('data-name')) G.cta.push(pill.nextElementSibling);
+    Object.keys(G).forEach(n => G[n] = G[n].filter(e => e && (e.getAttribute('data-name') || e.getAttribute('data-x'))));
+    const all = [].concat(...Object.values(G));
+    const still = all.map(e => S(e) + ' { transition: none !important; }').join('\n') + '\n';   // (these pieces have "transition: all": measure and move them without it)
+    phHomeSt.textContent = still; void L.offsetWidth;
+    const vis = new Map(all.map(e => [e, rc(e)])), memT = G.mem[0] ? txt(G.mem[0]) : null;
+    // raw boxes: with this page's own phone translate/scale switched off
+    phHomeSt.textContent = still + all.map(e => S(e) + ' { translate: none !important; scale: none !important; transform-origin: 0 0 !important; }').join('\n'); void L.offsetWidth;
+    const raw = new Map(all.map(e => [e, rc(e)])), memR = G.mem[0] ? txt(G.mem[0]) : null;
+    let css = still;
+    // (a piece inside a scaled holder moves in that holder's units: screen px per unit = its raw width / its own width)
+    const put = (e, X, Y, w) => { const r0 = raw.get(e); if (!r0 || !r0.w) return; const u = e.offsetWidth ? e.offsetWidth / r0.w : k;
+      css += S(e) + ' { transform-origin: 0 0 !important; translate: ' + ((X - r0.x) * u).toFixed(1) + 'px ' + ((Y - r0.y) * u).toFixed(1) + 'px !important; scale: ' + (w / r0.w).toFixed(4) + ' !important; }\n'; };
+    const box = els => { const rs = els.map(e => vis.get(e)).filter(r => r && (r.w || r.h)); if (!rs.length) return null;
+      const x = Math.min(...rs.map(r => r.x)), y = Math.min(...rs.map(r => r.y)), r = Math.max(...rs.map(r => r.r)), b = Math.max(...rs.map(r => r.b)); return { x, y, r, b, w: r - x, h: b - y }; };
+    // move a group (its visible box g) so its top-left lands on X,Y, s times bigger
+    // (a piece inside another moved piece rides along with it)
+    const place = (els, g, X, Y, s) => els.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const v = vis.get(e); if (v && v.w) put(e, X + (v.x - g.x) * s, Y + (v.y - g.y) * s, v.w * s); });
+    // logo: centred, a quarter of the way down the screen
+    const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, (W - lb.w * s) / 2, scH * 0.25 - lb.h * s / 2, s); }
+    // NOT LIKE US + page menu side by side, the same height, centred on each other
+    const tb = box(G.title), mv = box([q('Home dot'), ...labs].filter(Boolean)), mb = box(G.menu);
+    if (tb && mv && mb) {
+      const th = tb.h * 0.9, mw = Math.max(...labs.map(e => txt(e).r)) - mv.x, avail = W - 2 * M - Math.round(W * 0.04);
+      const st = avail / (tb.w + mw * th / mv.h), sm = st * th / mv.h, cy = lr.top + lr.height * 0.555;
+      place(G.title, tb, M, cy - tb.h * st / 2, st);
+      place(G.menu, mv, W - M - mw * sm, cy - mv.h * sm / 2, sm);
+    }
+    // Custom flow + Begin: bigger, bottom right
+    const cf = G.cta.filter(e => e.getAttribute('data-x') === 'Custom flow'), beg = G.cta.filter(e => cf.indexOf(e) < 0);
+    const cb = box(beg), pb = box([pill].filter(Boolean)), fb = box(cf); let mid = null, pl = W - M;
+    if (cb && pb) { const s = 1.35, X = W - M - cb.w * s, Y = lr.bottom - Math.round(W * 0.045) - cb.h * s;
+      place(beg, cb, X, Y, s); mid = Y + ((pb.y + pb.b) / 2 - cb.y) * s; pl = X + (pb.x - cb.x) * s;
+      if (fb) { const s2 = 1.6; place(cf, fb, W - M + 4 - fb.w * s2, Y - 8 - fb.h * s2, s2); } }
+    // In loving memory: bottom left, level with Begin, as big as fits beside it
+    const im = G.mem[0];
+    if (im && mid != null && memT && memR && memT.w) { const r0 = raw.get(im), s = Math.min(1.5, (pl - 14 - M) / memT.w), f = (memT.w * s) / memR.w;
+      const X = M - (memR.x - r0.x) * f, Y = mid - memT.h * s / 2 - (memR.y - r0.y) * f; put(im, X, Y, r0.w * f); }
+    phHomeSt.textContent = css;
+  }
   function startScreen(layer) {
+    if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') setTimeout(phHome, 0);
     vStart(layer); requestAnimationFrame(() => vStart(layer));
     startVideos(layer);
     setupReveal(layer);
