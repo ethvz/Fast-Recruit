@@ -72,6 +72,7 @@
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
   /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
   .board [data-vscroll], .board [data-name="Income rows"] { pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .board [data-vscroll][data-vchain] { overscroll-behavior-y: auto; }   /* lists that hand the swipe back to the page at their ends */
   .board .hsc::-webkit-scrollbar { display: none; }
   /* scroll reveal for copy */
   .board .rv { opacity: 0; transform: translateY(38px); transition: opacity .9s cubic-bezier(.2,.75,.2,1), transform 1.05s cubic-bezier(.2,.75,.2,1); transition-delay: var(--rvd, 0ms); }
@@ -1739,7 +1740,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2187,8 +2188,22 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }, { passive: true });
     const VSC = '[data-vscroll], [data-name="Income rows"]';   // inner lists that scroll on their own: the page doesn't snap around them
     let inner = false;
-    sc.addEventListener('touchstart', e => { inner = !!(e.target.closest && e.target.closest(VSC)); if (inner) return; touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() }; }, { passive: true });
+    // a data-vchain list keeps the swipe while it can scroll that way; at its top or bottom the swipe moves (and snaps) the page instead
+    let innerEl = null, tsY = 0, decided = false;
+    let drive = null;   // the page follows the finger by hand: the browser keeps the gesture latched to the list
+    const pageGrab = y => { inner = false; touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() };
+      drive = { y, top: sc.scrollTop, el: innerEl }; innerEl.style.overflowY = 'hidden'; };
+    const unDrive = () => { if (drive) { drive.el.style.overflowY = ''; drive = null; } };
+    sc.addEventListener('touchmove', e => {
+      if (drive && e.touches[0]) { sc.scrollTop = drive.top - (e.touches[0].clientY - drive.y); return; }
+      if (!inner || decided || !innerEl || !innerEl.hasAttribute('data-vchain') || !e.touches[0]) return;
+      const dy = e.touches[0].clientY - tsY; if (Math.abs(dy) < 6) return; decided = true;
+      const atTop = innerEl.scrollTop <= 1, atBot = innerEl.scrollTop + innerEl.clientHeight >= innerEl.scrollHeight - 1;
+      if ((dy > 0 && atTop) || (dy < 0 && atBot)) pageGrab(e.touches[0].clientY);
+    }, { passive: true });
+    sc.addEventListener('touchstart', e => { innerEl = e.target.closest ? e.target.closest(VSC) : null; inner = !!innerEl; decided = false; tsY = e.touches[0] ? e.touches[0].clientY : 0; if (inner) return; touching = true; stopSpring(); sc.style.overflowY = ''; clearTimeout(idleT); vel = 0; last = { y: sc.scrollTop, t: performance.now() }; }, { passive: true });
     const release = () => {
+      unDrive();
       if (inner) { inner = false; return; }
       if (!touching) return; touching = false;
       relT = performance.now(); lastZ = zoneAt(sc.scrollTop);
