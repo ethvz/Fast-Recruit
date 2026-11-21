@@ -166,6 +166,30 @@
      things near the edges stay pinned to the real screen edges */
   #frame, .layer, .board { width: var(--FW, 1466px) !important; }
   .board .fx-full { width: var(--FW, 1466px) !important; }
+  /* ---- portrait v2 header: logo + menu stay put, the page links scroll sideways ---- */
+  html.pstack .layer .board :is([data-name="Header"], [data-name="Header bar"], [data-x="Menu button"], img[data-name^="Vivint Logo"], img[data-name^="Logo (header"], button[aria-label$="section menu"], [aria-label="Open the recruiting guide"], [aria-label="Open the onboarding tool"]) { display: none !important; }
+  #phdr { position: fixed; left: 0; right: 0; top: 0; z-index: 70; display: none; box-sizing: border-box; align-items: center; height: calc(var(--sat, 0px) + 58px); padding: var(--sat, 0px) 0 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.75) 60%, rgba(0,0,0,0) 100%);
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
+  html.pstack #phdr.on { display: flex; }
+  #phdr.idle { opacity: 0; transform: translateY(-14px); filter: blur(10px); }
+  #phdr .ph-fix { flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 6px; height: 100%; }
+  #phdr .ph-menu { width: 44px; height: 44px; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  #phdr .ph-logo { height: 21px; width: auto; display: block; filter: brightness(0) invert(1); cursor: pointer; padding: 10px 6px; box-sizing: content-box; }
+  #phdr .ph-scroll { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    padding: 0 14px 0 6px; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%); touch-action: pan-x; }
+  #phdr .ph-scroll::-webkit-scrollbar { display: none; }
+  #phdr .ph-l { flex: none; height: 36px; padding: 0 11px; border: 0; background: none; color: rgba(255,255,255,.86); font: 600 12.5px/36px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; cursor: pointer; border-radius: 18px; }
+  #phdr .ph-l.cur { color: #05E5AF; }
+  #phdr .ph-p { flex: none; height: 30px; padding: 0 14px; margin-left: 4px; border-radius: 15px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font: 700 11px/28px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+  #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
+  #phdr .ph-sec { position: absolute; left: 12px; top: calc(var(--sat, 0px) + 64px); width: 38px; height: 38px; border-radius: 19px; border: 1px solid rgba(5,229,175,.55); background: rgba(0,0,0,.55); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; transition: background .25s ease; }
+  #phdr.navopen .ph-sec { background: rgba(5,229,175,.25); }
+  /* portrait v2 section menu: hidden until its button is pressed; open, it sits on a dark panel */
+  html.pstack .layer:not(.pnav-open) .board nav { opacity: 0 !important; visibility: hidden; transition: opacity .3s ease, visibility 0s linear .3s; }
+  html.pstack .layer.pnav-open .board nav { opacity: 1; visibility: visible; transform: none !important; }
+  html.pstack .layer.pnav-open .board nav::before { content: ''; position: absolute; left: -30px; top: -30px; width: 330px; bottom: -40px; border-radius: 0 24px 24px 0; background: rgba(8,10,9,.9); box-shadow: 0 20px 60px rgba(0,0,0,.6); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+
   .board .fx-c { margin-left: var(--X, 0px) !important; }
   .board .fx-r { margin-left: var(--X2, 0px) !important; }
   .board [data-name^="Background (stays"] { width: var(--FW, 1466px) !important; }
@@ -525,6 +549,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   setTimeout(() => { if (!booted) hardReload(); }, 30000);   // stuck on the loading screen
   // phones: the header, section menu and arrow buttons are drawn bigger (CS) so they're readable at phone size
   const PHONE = SIM ? SIM.phone : (() => { try { return Math.min(screen.width, screen.height) < 600; } catch (e) { return false; } })();
+  // Portrait layout v2 (in progress): sections reflow into one column — boxes that sat side by side are stacked and each
+  // block is sized to the screen width, sections grow taller when their content needs it. Shown in the Screen Preview
+  // (and with ?portrait=1, remembered on that device) until Ethan approves it for everyone.
+  const PSTACK = (() => { try { const q = new URLSearchParams(location.search).get('portrait'); if (q === '1') lsSet('fr_pstack', '1'); if (q === '0') lsSet('fr_pstack', null); } catch (e) {}
+    return !!SIM || lsGet('fr_pstack') === '1'; })();
+  const pstackOn = () => PSTACK && upright && H !== 1024 && !stk;
   const PM = new Set(/*PM*/["1b48837719f96a87e2b2cfe5e00346dc", "1d17da7e3562b1a110b7b09ae99010f6", "1f3d709c32dbf093df6058f97a065641", "242f58b1436638aa5d29b0be31eca403", "27974bda65412130fb0b1a0180854d97", "2eab26d6191eb75606adaa42923a536a", "3796b33cd0cc8a96d19cb4a99123b36c", "38162b275fae6a8eafdb61fc5e384668", "39fe3c98e1c5bcea7ff0bf6de0a49b7a", "3b0d5c51a89c14bea925cd241350a524", "42cae177dbf79313c5934dab3c3a7f2d", "47c0c6cf3618c5c0122410c6f6a37e38", "47c14db229ad23d71d8a7cad89c4e43c", "4c54ea5a368d41c1370d8f42bd358f40", "52eac5d62e395739f7b8e3b9c2b70515", "53a4e94a2219624d3d93646b7280df96", "559acad5ae1afbaa1a07ab562568c842", "603bb16680e43b65aa02dbc28e2c013f", "6136d8598de34dfb02d8d5ecb97d510c", "61e371568ed904f426b41958220c1603", "623129128d2c0c71a36aa8cc1e636f1d", "6721230c3ebd9ae91f943e5d829309b0", "6bd23956d9f566bc19a788f4c7ee7b41", "6c29f25842e1f7717406736e1e091fda", "6c69e336cca8c7a1880b2d8afd97465c", "703e423ff80101dab818d16f2eff4e12", "7981db00c6b51e1aeb0905e3190b3782", "7bb8c1b0aea1d21a786469b94284e33a", "82b676794961c05b65aeca2bbded97e3", "8b858fe21afb6c3c63a26a44ddddf5a0", "8c8b7db52ce1c0a7ed3b1cb2a4d6c799", "92713904c7fb1bf9225b19e0f3c9e748", "971f9d9f94efd2f4bd9a233f51926f6d", "9f3bf660b6eb1ce16cd77e37f8bc7707", "a661bcc467d3c851dbcb1983a26ff820", "b0145f4c014443135ff90c7fec0d2a12", "bdd6b4fe4a2b52d907d354736c5dcdff", "be3a7b2cc5c42f12e6fb1b4ab62727dd", "c4514d8bae30da00c9166cc05f0ff764", "d58b5be8e666f1e54d679244df1a046e", "dcb95084f01d957fcc91fe21982a44f4", "de9eed867877409028061b22235fb468", "e34b82d397ba79fb1ddf5160c815287c", "ec32d7235fa090a892ecaf4849a5ff2e", "f9d6d41fd957efa1b2bebdc58f7d670f", "fb737a5fe9ec3193ba239f5a589dcb66", "fb9b1a4fed5c17172ce9dba78f99c32f", "ff412b1956c7660da83a2975c3e29a8e", "05907ad564dbbee1b725e11dfe61c164", "0ae914cc303f1b14d10398f409e89f2d", "12c880a04bc45bd5295bba6da7c4c811", "1670aaaa901b257243c17e74d5e70c2f", "19a9f30b96da1c37c75b45712cce806f", "1b9d736047fcdf3e5414c04bfa499fc5", "1c98b66b51ca0675993321e95a01adc0", "2028ceacef7a3d9794d62b457e037e65", "355f9936f19ec153715b1946202beb5b", "453898bb40a590bec02c96072ecdfa06", "48ee496ca0b2ca47f73ee8922fa920f3", "5280c3f3d0f6da932ce1b43035e6b12a", "5d97f06d266185fa60dec1e5027d9243", "675c63b4e94b022eb2cc5010da119b80", "71657b01c835ce6e55e751af2ab0ef18", "7cebbf09967857148e7a37ea060aa39e", "7cf127109cf683ca2c040533c6c9aee8", "858f0c6afb1bddb0d50e7c5325d74dfc", "8599b9782d9049397002b3cac22994e3", "8ea796e98761b3176b69fa2b3666ce20", "91778effb50c25d8cc4c319beeed6287", "9607a9522dd50fe97b0bc18097c6e255", "9694a9e4fe16263a16d97581e3cd7edf", "9b0ad1860e2b6446d96c2ba73803707c", "a17b67c1050b5160ea9875fa56dfb3a7", "aa16ac714dff2392ae2418ca3bdcc754", "adabc795359a0b2ec2996347af1a22c0", "b0537f226465fdf740812e5983b9db0f", "b1737d73b2d22f159840f6378141adb0", "b9d785296cf8448714bbe53f09be1e4e", "bb84cb5b5d533d10ca8b3abae1e11e1c", "bba15889688ee105fc0410405a8166f8", "bdf2c0d7eaa637cd592f34050ac8d9ff", "c2e862b99c546805c64a9ff7a1f8c762", "c3fe7ad545a80070379bcb8cbbadab27", "c493941f8350fc9d6320e592f6cab613", "c941727c6d34a1cda7852cdf7ebbd68c", "cbeba98ecc3471538804c6d9df0c2f88", "db60120848e353dcda3101af17db5b8f", "de596b031edb77b80fbf49bdf8146683", "e1b2b76c7984dd11ef99c10cad36b44a", "f8319d6755d98fc68fdd7cf9ccf4353c"]/*PM*/);
   const SP = () => (stk ? (H - 1024) / 2 : 0);   // phone portrait: empty room above/below so a section can sit in the middle
   const st2pre = st => { const X = (FW - W) / 2; st.setProperty('--FW', FW + 'px'); st.setProperty('--X', X + 'px'); st.setProperty('--X2', 2 * X + 'px'); };
@@ -565,16 +595,19 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     document.documentElement.classList.toggle('port', H !== 1024 && !stk);
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
     document.documentElement.classList.toggle('stack', stk); document.documentElement.classList.toggle('phone', PHONE);
+    document.documentElement.classList.toggle('pstack', pstackOn()); try { if (typeof phdrSync === 'function') phdrSync(); } catch (e) {}
     // phone held sideways: photos on the right three quarters; header, menu and arrows kept clear of the screen edges and notch
     const pland = PHONE && !portrait && FW > W; document.documentElement.classList.toggle('pland', pland);
     { const k = 1 / scale, f = frame.style; f.setProperty('--MXL', pland ? Math.round((safeL + 16) * k) + 'px' : '0px'); f.setProperty('--MXR', pland ? Math.round((safeR + 16) * k) + 'px' : '0px'); f.setProperty('--MY', pland ? Math.round(12 * k) + 'px' : '0px'); }
-    const ncs = PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
+    const ncs = pstackOn() ? Math.max(1, Math.min(2.2, 0.54 / scale)) : PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
+    document.documentElement.style.setProperty('--sat', safeTop + 'px');
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
     const st2 = frame.style; st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
     // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
     // growing/shrinking while you scroll change the height many times a second: then only the sizes above update
     // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
     const relayout = oldH !== H && !(stk && wasStk);
+    frame.querySelectorAll('section[id^="sec-"]').forEach(x => applyHr(x));
     if (relayout) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
     if (relayout) frame.querySelectorAll('.layer').forEach(l => { navFor(l); if (l._sdim) l._sdim(); });
     if (relayout) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
@@ -759,6 +792,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       im.addEventListener('touchend', e => { const q = t0; t0 = null; const t = e.changedTouches[0]; if (!q || !t || Math.hypot(t.clientX - q.x, t.clientY - q.y) > 20) return; if (Date.now() - (im.__fired || 0) < 800) return; im.__fired = Date.now(); e.preventDefault(); home(); });
     });
     setupQnav(layer);
+    // portrait v2: the section menu closes itself after you pick a section (or tap outside it)
+    layer.addEventListener('click', e => { if (!pstackOn()) return; const inst = layer._inst; if (!inst || !inst.state || inst.state.navOpen === false) return;
+      const inNav = e.target.closest && e.target.closest('.board nav'), tog = e.target.closest && e.target.closest('.board button[aria-label$="section menu"]');
+      if (tog) return; if (inNav && !(e.target.closest('a'))) return;
+      setTimeout(() => withOwner(null, () => inst.setState({ navOpen: false })), inNav ? 220 : 0); }, true);
     // header and page arrows fade out after a few still seconds; a tap anywhere along the top brings them back
     // (that tap only wakes them — it doesn't also press whatever is underneath)
     let wokeAt = 0;
@@ -769,7 +807,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       inst.setState({ hdrHide: false }); if (typeof inst.hdrKick === 'function') inst.hdrKick();
     }, true);
     layer.addEventListener('click', e => { if (Date.now() - wokeAt < 700) { e.preventDefault(); e.stopPropagation(); wokeAt = 0; } }, true);
-    host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); try { dnRefresh(); } catch (e) {} };
+    host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); layer.classList.toggle('pnav-open', !!(st && st.navOpen !== false)); try { dnRefresh(); } catch (e) {} try { if (phdr && current && current.layer === layer) phdrSync(); } catch (e) {} };
     flowCompact(layer);   // before the phone layout, so it lays out the trimmed header
     phoneChrome(layer); stackDim(layer);
     addStars(layer); setupFlowBtn(layer); buildFlowNav(layer);
@@ -791,7 +829,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function secMap(sc) {
     if (sc.__map && sc.__mapE === H) return sc.__map;
     let T = 0, R = 0; const m = [];
-    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { const h = +el.dataset.h || el.offsetHeight, tall = h > 1100; const hr = tall ? h : h + (H - 1024); m.push({ T, R, h, hr, tall }); T += h; R += hr; });
+    sc.querySelectorAll(':scope > section[id^="sec-"]').forEach(el => { const h = +el.dataset.h || el.offsetHeight, tall = h > 1100 && !el.__hr; const hr = el.__hr || (tall ? h : h + (H - 1024)); m.push({ T, R, h, hr, tall, ps: !!el.__hr }); T += h; R += hr; });
     sc.__map = m; sc.__mapE = H; return m;
   }
   // Content position on the real (portrait) page -> the same spot in landscape. Short sections have padding above and
@@ -799,11 +837,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function posP(m, yr) {
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (yr >= x.R) s = x; });
     const c = Math.min(yr - s.R, s.hr);
+    if (s.ps) return s.T + Math.max(0, Math.min(s.h, c * s.h / s.hr));   // reflowed portrait section: proportional
     return s.tall ? s.T + Math.min(s.h, c) : s.T + Math.max(0, Math.min(s.h, c - E / 2));
   }
   function Pinv(m, v) {
     const E = H - 1024; let s = m[0]; m.forEach(x => { if (v > x.T) s = x; });
     const c = v - s.T;
+    if (s.ps) return s.R + Math.min(s.h, c) * s.hr / s.h;
     if (s.tall) return s.R + c;
     return c >= s.h ? s.R + s.hr : s.R + E / 2 + c;
   }
@@ -960,8 +1000,104 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
   }
   // portrait: scale each section's content up so it fills the screen width (full-bleed decoration may crop at the sides)
+  // ---- portrait v2: one-column reflow ----
+  // stackSection measures a section once (at its design size) and groups its content into rows; side-by-side boxes in a row
+  // become separate groups. placeStack then sizes every group to the screen width (up to a readable maximum) and stacks
+  // them top to bottom; the section grows taller if the column needs it. Positions go in per-element CSS rules (translate +
+  // scale), so they survive the page re-rendering and switch off by themselves when the screen turns sideways.
+  let pstSeq = 0;
+  function stackSection(sec) {
+    if (sec.__stk) return; const wrap = sec.querySelector(':scope > .pcont'); if (!wrap || !wrap.children.length) return;
+    const t0 = wrap.style.transform; wrap.style.transform = 'none';
+    const r0 = wrap.getBoundingClientRect(), k0 = r0.width / 1466 || 1;
+    const items = [];
+    const take = el => [...el.children].forEach(c => {
+      const tag = c.tagName; if (tag === 'STYLE' || tag === 'SCRIPT') return;
+      const st = c.getAttribute('style') || '';
+      if (tag === 'SC-SLOT' || /display:\s*contents/.test(st)) { take(c); return; }
+      if (c.getAttribute('role') === 'dialog') return;
+      const b = c.getBoundingClientRect(); if (b.width < 2 || b.height < 2) return;
+      // layout box without any running animation transform
+      let x, y, w, h;
+      if (c.offsetParent === wrap && c.offsetWidth != null) { x = c.offsetLeft; y = c.offsetTop; w = c.offsetWidth; h = c.offsetHeight; }
+      else { x = (b.left - r0.left) / k0; y = (b.top - r0.top) / k0; w = b.width / k0; h = b.height / k0; }
+      if (w < 2 || h < 2) return;
+      const cs = getComputedStyle(c), o = (cs.transformOrigin || '0 0').split(' ').map(parseFloat);
+      if (!c.dataset.pst) c.dataset.pst = 'p' + (++pstSeq);
+      items.push({ id: c.dataset.pst, x, y, w, h, ox: o[0] || 0, oy: o[1] || 0, full: w >= 1300, txt: (c.textContent || '').trim().length > 12, hid: cs.visibility === 'hidden' });
+    });
+    take(wrap); wrap.style.transform = t0;
+    // closed sheets / pop-overs don't shape the column; they ride along with the box they sit over
+    const floaters = items.filter(i => i.hid); items.splice(0, items.length, ...items.filter(i => !i.hid));
+    if (!items.length) { sec.__stk = { skip: true }; return; }
+    items.sort((a, b) => a.y - b.y || a.x - b.x);
+    // rows: things whose heights overlap; columns inside a row: things whose widths overlap
+    const rows = []; items.forEach(it => { const r = rows[rows.length - 1]; if (r && !it.full && !r.full && it.y < r.y1 - 6) { r.items.push(it); r.y1 = Math.max(r.y1, it.y + it.h); } else rows.push({ items: [it], y0: it.y, y1: it.y + it.h, full: it.full }); });
+    const groups = [];
+    rows.forEach(r => {
+      const cols = []; [...r.items].sort((a, b) => a.x - b.x).forEach(it => { const c = cols[cols.length - 1]; if (c && it.x < c.x1 - 6) { c.items.push(it); c.x1 = Math.max(c.x1, it.x + it.w); } else cols.push({ items: [it], x0: it.x, x1: it.x + it.w }); });
+      const rx0 = Math.min(...r.items.map(i => i.x)), rx1 = Math.max(...r.items.map(i => i.x + i.w));
+      const ri = rows.indexOf(r), cw = c => c.x1 - c.x0;
+      const mk = (its, k) => { const x0 = Math.min(...its.map(i => i.x)), y0 = Math.min(...its.map(i => i.y));
+        its.forEach(i => { i.rx = i.x - x0; i.ry = i.y - y0; });
+        groups.push({ items: its, full: r.full, row: ri, x0, y0, w: Math.max(...its.map(i => i.x + i.w)) - x0, h: Math.max(...its.map(i => i.y + i.h)) - y0 }); };
+      if (cols.length >= 3 && Math.max(...cols.map(cw)) <= 460 && rx1 - rx0 > 560) {
+        // a row of small boxes (tiles, stats): two per line
+        for (let k = 0; k < cols.length; k += 2) { const a = cols[k], b = cols[k + 1], its = [];
+          const y0 = Math.min(...a.items.concat(b ? b.items : []).map(i => i.y));
+          a.items.forEach(i => { i.rx = i.x - a.x0; i.ry = i.y - y0; its.push(i); });
+          if (b) b.items.forEach(i => { i.rx = cw(a) + 28 + (i.x - b.x0); i.ry = i.y - y0; its.push(i); });
+          groups.push({ items: its, row: ri, x0: a.x0, y0, w: cw(a) + (b ? 28 + cw(b) : 0), h: Math.max(...its.map(i => i.ry + i.h)) }); }
+      } else if (cols.length > 1 && rx1 - rx0 > 560 && cols.every(c => cw(c) >= 260)) cols.forEach((c, k) => mk(c.items, k));   // big boxes side by side: stack them
+      else mk(r.items, 0);
+    });
+    groups.forEach(g => { g.pic = !g.items.some(i => i.txt) && g.w * g.h < 140000; });
+    floaters.forEach(f => { let best = null, bd = 1e12; groups.forEach(g => { if (g.full) return; const dx = Math.max(0, g.x0 - f.x, f.x - (g.x0 + g.w)), dy = Math.max(0, g.y0 - f.y, f.y - (g.y0 + g.h)), d = dx * dx + dy * dy; if (d < bd) { bd = d; best = g; } });
+      if (best) { f.rx = f.x - best.x0; f.ry = f.y - best.y0; (best.fl = best.fl || []).push(f); } });
+    sec.__stk = { groups };
+  }
+  // measure a section even while it's unloaded (its content is put back for a moment, then put away again)
+  function stackParked(sec) {
+    if (sec.__stk) return;
+    if (!sec.__vout || !sec.__frag) { stackSection(sec); return; }
+    const fr = sec.__frag; sec.appendChild(fr); try { stackSection(sec); } catch (e) {}
+    const f2 = document.createDocumentFragment(); while (sec.firstChild) f2.appendChild(sec.firstChild); sec.__frag = f2;
+  }
+  function placeStack(sec) {
+    const S = sec.__stk; if (!S || S.skip) return null;
+    const PADX = 56, CW = 1466 - 2 * PADX, kmax = Math.max(1, Math.min(3.4, 0.92 / scale));
+    const key = kmax.toFixed(3); if (S.key === key) return S.res;
+    let rules = '', y = 0, prev = null; const sc = g => g.full ? 1 : Math.min(g.pic ? Math.min(kmax, 1.8) : kmax, CW / Math.max(1, g.w));
+    const colW = Math.min(CW, Math.max(...S.groups.filter(g => !g.full).map(g => g.w * sc(g)), 0)), left = (1466 - colW) / 2;
+    S.groups.forEach(g => {
+      const k = sc(g);
+      if (prev) y += prev.row === g.row ? 28 * Math.min(k, 2) : Math.max(16, Math.min(110, g.y0 - (prev.y0 + prev.h))) * Math.min(k, 1.6);
+      const X = g.full ? g.x0 : left, Y = y;
+      g.items.concat(g.fl || []).forEach(it => {
+        const nx = g.full ? it.x : X + it.rx * k, ny = Y + it.ry * k;
+        const dx = nx - it.x - it.ox * (1 - k), dy = ny - it.y - it.oy * (1 - k);
+        rules += 'html.pstack [data-pst="' + it.id + '"]{translate:' + dx.toFixed(1) + 'px ' + dy.toFixed(1) + 'px !important;' + (k !== 1 ? 'scale:' + k.toFixed(4) + ' !important;' : '') + '}\n';
+      });
+      y += g.h * k; prev = g;
+    });
+    if (!S.style) { S.style = document.createElement('style'); document.head.appendChild(S.style); }
+    S.style.textContent = rules; S.key = key; S.res = { total: y };
+    return S.res;
+  }
+  // portrait v2 section height: one screen, or as tall as its column (header room on top, arrow buttons below)
+  function applyHr(sec) {
+    const on = pstackOn() && sec.__stk && !sec.__stk.skip, sc = sec.parentElement;
+    if (!on) { if (sec.__hr) { sec.style.height = sec.__h0; sec.__hr = 0; if (sc) sc.__map = null; } return; }
+    const res = placeStack(sec); if (!res) return;
+    const top = 150 / scale / 2.2 + 120, bot = 110 / scale / 2.2 + 60;
+    const hr = Math.round(Math.max(H, res.total + top + bot));
+    if (sec.__h0 == null) sec.__h0 = sec.style.height;
+    sec.__pty = top + Math.max(0, (hr - top - bot - res.total) / 2);
+    if (sec.__hr !== hr) { sec.__hr = hr; sec.style.height = hr + 'px'; if (sc) sc.__map = null; }
+  }
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
+    if (pstackOn()) { stackSection(sec); applyHr(sec); if (sec.__hr) { wrap.style.top = '0px'; wrap.style.transformOrigin = '0 0'; wrap.style.transform = 'translate(0px,' + sec.__pty.toFixed(1) + 'px)'; return; } }
     const h = +sec.dataset.h || 1024;
     if (H === 1024 || !upright || stk) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // landscape fill: no rescaling, just centred
     const tall = h > 1100;
@@ -1181,6 +1317,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       // page first, then fade the new one in
       if (old && (lowMem() || TOUCH)) { destroyLayer(old); old = null; if (tr !== 'none') tr = 'dissolve'; }
       frame.appendChild(layer);
+      if (pstackOn()) layer.querySelectorAll('section[id^="sec-"]').forEach(x => { stackParked(x); applyHr(x); });
       if (overlay) frame.appendChild(overlay.layer);
       const sc = scrollerOf(layer);
       if (sc) { sc.style.scrollBehavior = 'auto'; sc.scrollTop = restore ? (restore.v != null ? rScroll(sc, restore.v) : restore.top) : rScroll(sc, sectionTop(t.board, t.section)); requestAnimationFrame(() => { sc.style.scrollBehavior = ''; }); }
@@ -1189,6 +1326,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       navFor(layer);
       if (sc && H !== 1024) sc.dispatchEvent(new Event('scroll'));   // portrait: sync the board with the mapped position
       current = { board: t.board, layer };
+      try { phdrSync(); } catch (e) {}
       { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
@@ -1790,7 +1928,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -1882,6 +2020,43 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     return { feedback, crash, news, unseen };
   })();
+  // ---- portrait v2 header (screen-sized, outside the scaled page): menu + logo fixed, page links + Guide/Onboard scroll ----
+  let phdr = null;
+  function phdrSync() {
+    const L = current && current.layer, on = pstackOn() && L && L.isConnected && !!L.querySelector('.board [data-name="Header"]');
+    if (!phdr) {
+      phdr = document.createElement('div'); phdr.id = 'phdr';
+      phdr.innerHTML = '<div class="ph-fix"><button class="ph-menu" type="button" aria-label="Open menu"><svg width="22" height="16" viewBox="0 0 22 16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M1 1h20M1 8h20M1 15h20"/></svg></button><img class="ph-logo" alt="Vivint home"></div><div class="ph-scroll"></div><button class="ph-sec" type="button" aria-label="Sections on this page"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#05E5AF" stroke-width="1.8" stroke-linecap="round"><circle cx="3" cy="3.5" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="8" r="1.2" fill="#05E5AF" stroke="none"/><circle cx="3" cy="12.5" r="1.2" fill="#05E5AF" stroke="none"/><path d="M7 3.5h7M7 8h7M7 12.5h7"/></svg></button>';
+      document.body.appendChild(phdr);
+      // hidden (idle): a tap anywhere on it only brings it back
+      phdr.addEventListener('pointerdown', e => { if (!phdr.classList.contains('idle')) return; e.preventDefault(); e.stopPropagation(); const i = current && current.layer && current.layer._inst; phdr.__woke = Date.now(); if (i) { i.setState({ hdrHide: false }); if (i.hdrKick) i.hdrKick(); } }, true);
+      phdr.addEventListener('click', e => { if (Date.now() - (phdr.__woke || 0) < 700) { e.preventDefault(); e.stopPropagation(); } }, true);
+      phdr.querySelector('.ph-sec').addEventListener('click', e => { e.stopPropagation(); const i = current && current.layer && current.layer._inst; if (i && i.setState) withOwner(null, () => i.setState({ navOpen: i.state.navOpen === false })); });
+      phdr.querySelector('.ph-menu').addEventListener('click', () => { const b = current && current.layer.querySelector('.board [data-x="Menu button"]'); if (b) b.click(); else openMenu(); });
+      phdr.querySelector('.ph-logo').addEventListener('click', () => { const im = current && current.layer.querySelector('.board img[data-name="Vivint Logo"]'); if (im) im.click(); });
+    }
+    phdr.classList.toggle('on', !!on); if (!on) return;
+    phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
+    phdr.classList.toggle('idle', L.classList.contains('fav-idle')); phdr.classList.toggle('navopen', L.classList.contains('pnav-open')); phdr.querySelector('.ph-sec').hidden = !L.querySelector('.board nav');
+    const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'); if (im.getAttribute('src') !== logo.getAttribute('src')) im.src = logo.src; }
+    if (phdr.__for === L) return; phdr.__for = L;
+    const row = phdr.querySelector('.ph-scroll'); row.innerHTML = '';
+    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Lifestyle', 'Culture.dc.html'], ['Opportunity', 'Opportunity.dc.html'], ['FAQs', 'FAQs.dc.html']];
+    PAGES.forEach(([t, fn]) => {
+      const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
+      const top = Object.keys(P.artboards).find(k => P.artboards[k].board === fn && P.artboards[k].section == null) || ((P.boards[fn] && P.boards[fn].sections || [])[0] || {}).aid;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-l' + (current && current.board === fn ? ' cur' : ''); b.textContent = t;
+      let lp = 0, held = false;
+      b.addEventListener('pointerdown', () => { held = false; clearTimeout(lp); if (!hot) return; lp = setTimeout(() => { held = true; try { haptic('select'); } catch (e) {} openQnav(L, hot, b); }, 450); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(k => b.addEventListener(k, () => clearTimeout(lp)));
+      b.addEventListener('contextmenu', e => e.preventDefault());
+      b.addEventListener('click', () => { if (held) { held = false; return; } if (current && current.board === fn) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; }
+        const list = hot ? (L._ia[hot.id] || []).filter(x => x.t === 'tap') : []; if (list.length) run(list[0], L, hot); else if (top) go(top, 'dissolve', 0.3, 'ease-out'); });
+      row.appendChild(b); });
+    [['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; b.textContent = t; b.addEventListener('click', () => o.click()); row.appendChild(b); });
+    requestAnimationFrame(() => { const c = row.querySelector('.cur'); if (c) row.scrollLeft = Math.max(0, c.offsetLeft - row.offsetLeft - 18); });
+  }
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl; menuEl = null;
     if (instant) { m.remove(); uiSync(); return; }
@@ -2041,7 +2216,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   let qnavInst = null;
   const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; uiSync(); q.classList.remove('on'); setTimeout(() => q.remove(), 220);
     const ins = qnavInst; qnavInst = null; if (ins && ins.hdrKick) ins.hdrKick(); };   // header's idle timer starts again once the menu closes
-  function openQnav(layer, el) {
+  function openQnav(layer, el, anchor) {
     const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
     if (!ab || !P.boards[ab.board]) return false;
     const secs = P.boards[ab.board].sections || []; if (secs.length < 2) return false;
@@ -2054,7 +2229,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.innerHTML = '<span class="n"></span><span></span>'; b.firstChild.textContent = String(i).padStart(2, '0'); b.lastChild.textContent = x.name;
       b.addEventListener('click', e => { e.stopPropagation(); closeQnav(); go(x.aid, 'dissolve', 0.3, 'ease-out'); }); q.appendChild(b); });
     document.body.appendChild(q);
-    const r = el.getBoundingClientRect(), w = q.offsetWidth, vw = innerWidth, vh = innerHeight;
+    const r = (anchor || el).getBoundingClientRect(), w = q.offsetWidth, vw = innerWidth, vh = innerHeight;
     let left = Math.max(10, Math.min(vw - w - 10, r.left + r.width / 2 - w / 2)), top = r.bottom + 6;
     if (top + q.offsetHeight > vh - 10) q.style.maxHeight = Math.max(160, vh - top - 10) + 'px';
     q.style.left = left + 'px'; q.style.top = top + 'px';
