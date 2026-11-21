@@ -322,7 +322,7 @@
   html.pstack :is(#sec-guests, #sec-incentive-trips) [data-cf]:is([style*="brightness(0.35)"], [style*="brightness(0.4)"]) { visibility: hidden !important; }
   html.pph #sec-incentive-trips [data-name="Destination backdrop"] { filter: none !important; transform: none !important; opacity: .35 !important; }
   /* iPhone upright, Path to progression: the info tile is a single column that fills its height (scrolls if a level runs long) */
-  html.pph #sec-positions [data-name="Position detail"] > div { overflow-y: auto; scrollbar-width: none; padding: 24px 22px 40px !important; }
+  html.pph #sec-positions [data-name="Position detail"] > div { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; pointer-events: auto; scrollbar-width: none; padding: 24px 22px 40px !important; }
   html.pph #sec-positions [data-name="Position detail"] > div > div[style*="display: flex; gap: 8px"] { flex-wrap: wrap; }
   html.pph #sec-positions [data-name="Position detail"] > div > div[style*="display: flex; gap: 22px"] { flex-direction: column; gap: 0 !important; }
   html.pph #sec-positions [data-name="Position detail"] > div > div[style*="font-size: 36px"] { font-size: 30px !important; line-height: 34px !important; white-space: normal !important; }
@@ -1501,11 +1501,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // iPhones, Path to progression: the levels run down the left, the info tile fills the rest of the screen beside them
     if (PHONE && sec.id === 'sec-positions') { const all = S.rows.flatMap(r => r.cols.flatMap(c => c.items)), tile = all.find(i => i.el && i.el.matches('[data-name="Position detail"]')),
         lad = all.find(i => i.el && i.el.matches('[data-name="Ladder"]')), lv = all.filter(i => i !== tile && i !== lad && i.y > 340 && i.h < 90 && i.x < 600);
-      if (tile && lv.length) { const y0 = minTop, yB = Math.min(hr, H) - BOT, aH = yB - y0, WL = CW * 0.3, kL = Math.min(WL / 270, 2.2), ly0 = Math.min(...lv.map(i => i.y)), ly1 = Math.max(...lv.map(i => i.y)),
+      if (tile && lv.length) { const y0 = minTop, yB = Math.min(hr, H) - BOT, aH = yB - y0, WL = CW * 0.34, kL = Math.min(WL / 232, 2.7), ly0 = Math.min(...lv.map(i => i.y)), ly1 = Math.max(...lv.map(i => i.y)),
           fy = (aH - 56 * kL) / Math.max(1, ly1 - ly0), R = (it, x, y, k, extra) => { if (!it.el.dataset.pst) return; rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (x - it.x).toFixed(1) + 'px ' + (y - it.y).toFixed(1) + 'px !important;scale:' + k.toFixed(4) + ' !important;' + (extra || '') + '}\n'; };
         lv.forEach(i => R(i, PADX, y0 + (i.y - ly0) * fy, kL));
         if (lad) R(lad, PADX + (lad.x - 380) * kL, y0 + (lad.y - ly0) * fy, kL, 'height:' + (lad.h * fy / kL).toFixed(1) + 'px !important;');
-        const xT = PADX + WL + 24, WT = 1466 - PADX - xT, kT = 2.45 * 0.268 / scale; R(tile, xT, y0, kT, 'width:' + (WT / kT).toFixed(1) + 'px !important;height:' + (aH / kT).toFixed(1) + 'px !important;'); } }
+        tile.el.querySelectorAll(':scope > div').forEach(d => { d.dataset.vscroll = '1'; d.dataset.vchain = '1'; });   // (the info scrolls inside its tile)
+        const xT = PADX + CW * 0.375 + 14, WT = 1466 - PADX - xT, kT = 2.45 * 0.268 / scale; R(tile, xT, y0, kT, 'width:' + (WT / kT).toFixed(1) + 'px !important;height:' + (aH / kT).toFixed(1) + 'px !important;'); } }
     if (S.kitOT) { const kit = Object.values(S.rows).flatMap(r => r.cols.flatMap(c => c.items)).find(i => i.el && i.el.matches('[data-name="Kit copy"]')), pl = kit && PL[kit.id];
       if (pl) { const y0 = pl.ny + (S.kitOT - 400 + 10) * pl.k, y1 = pl.ny + (S.kitOT - 16) * pl.k, s = (y1 - y0) / 1174 * 1.7;   // (large, and running off the right edge)
         rules += 'html.pstack #sec-sales-tools [data-name="Sales tools iPads"]{overflow:visible !important;transform-origin:1215px 557px !important;translate:' + (Math.round(1466 * 0.44 + 565 * s) - 1215) + 'px ' + ((y0 + y1) / 2 - 557).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;}\n'; } }
@@ -2387,7 +2388,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22k';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22l';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
