@@ -2392,7 +2392,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22m';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22o';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2973,20 +2973,25 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       e.preventDefault(); e.stopPropagation(); woke = Date.now(); inst.setState({ hdrHide: false }); if (typeof inst.hdrKick === 'function') inst.hdrKick(); }, true);
     addEventListener('click', e => { if (Date.now() - woke < 700) { e.preventDefault(); e.stopPropagation(); woke = 0; } }, true); }
   // upright, open section menu: its backing box reaches past the last item and the longest label (they can run outside the nav's own box)
-  function navFitBox(layer) { if (!pstackOn() || !layer.classList.contains('pnav-open')) return; const n = layer.querySelector('.board nav'); if (!n) return;
+  // upright, open section menu: placed and sized once when it opens (and on resize), from layout numbers only — never from
+  // on-screen boxes, which move while the menu swings open or the page scrolls
+  function navFitBox(layer, force) { const n = layer.querySelector('.board nav'), open = pstackOn() && layer.classList.contains('pnav-open');
+    if (!open) { layer.__nfb = 0; return; } if (!n) return;
+    const V = layer.__nfv = layer.__nfv || {}, put = (k, v) => { V[k] = v; n.style.setProperty(k, v); };
+    if (layer.__nfb && !force) { Object.keys(V).forEach(k => { if (n.style.getPropertyValue(k) !== V[k]) n.style.setProperty(k, V[k]); }); return; }   // (a re-render rewrites the menu's style: put the numbers back, measure nothing)
+    layer.__nfb = 1;
+    const sN = pphOn() ? 1 : parseFloat(((n.style.transform || '').match(/scale\(([\d.]+)/) || [0, 1])[1]) || 1, og = (n.style.transformOrigin || '0px 0px').split(' ').map(parseFloat), ox = og[0] || 0, oy = og[1] || 0;
+    // the box reaches past the last item and the longest label
+    let B = n.offsetHeight, Rt = n.offsetWidth; n.querySelectorAll(':scope > a').forEach(a => { B = Math.max(B, a.offsetTop + a.offsetHeight); Rt = Math.max(Rt, a.offsetLeft + a.scrollWidth); });
+    put('--nvb', (B - n.offsetHeight + 4).toFixed(1) + 'px'); put('--nvr', Math.max(0, Rt - n.offsetWidth).toFixed(1) + 'px');
     // iPhones: the menu's line starts right under the section button, and its box wraps the button in its top-left corner
-    if (pphOn() && phdr) { const btn = phdr.querySelector('.ph-sec').getBoundingClientRect(), trk = n.querySelector(':scope > div'); if (btn.width && trk) {
-      const an = n.style.animation; n.style.animation = 'none'; const cx = parseFloat(n.style.getPropertyValue('--nvx')) || 0, cy = parseFloat(n.style.getPropertyValue('--nvy')) || 0;
-      const nr = n.getBoundingClientRect(), k = nr.width / (n.offsetWidth || 1) || 1, kb = k / (parseFloat((n.style.transform.match(/scale\(([\d.]+)/) || [0, 1])[1]) || 1), tr = trk.getBoundingClientRect();
-      const dx = (btn.left + btn.width / 2 - (tr.left + tr.width / 2)) / kb, dy = (btn.bottom + 10 - tr.top) / kb;
-      n.style.setProperty('--nvx', (cx + dx).toFixed(1) + 'px'); n.style.setProperty('--nvy', (cy + dy).toFixed(1) + 'px');
-      n.style.setProperty('--nvt', Math.max(0, (nr.top + dy * kb - (btn.top - 10)) / k).toFixed(1) + 'px');
-      n.style.setProperty('--nvl', Math.max(0, (nr.left + dx * kb - (btn.left - 10)) / k).toFixed(1) + 'px');
-      n.style.animation = an; } }
-    const fit = () => { const r = n.getBoundingClientRect(), k = r.width / (n.offsetWidth || 1) || 1; let B = r.bottom, Rt = r.right;
-      n.querySelectorAll('a, button, span, div').forEach(e => { const q = e.getBoundingClientRect(); if (q.width && q.height && getComputedStyle(e).visibility !== 'hidden') { B = Math.max(B, q.bottom); Rt = Math.max(Rt, q.right); } });
-      n.style.setProperty('--nvb', ((B - r.bottom) / k).toFixed(1) + 'px'); n.style.setProperty('--nvr', ((Rt - r.right) / k).toFixed(1) + 'px'); };
-    requestAnimationFrame(fit); setTimeout(fit, 350); setTimeout(fit, 700); }   // (again once the opening animation has settled)
+    if (pphOn() && phdr) { const btn = phdr.querySelector('.ph-sec').getBoundingClientRect(), trk = n.querySelector(':scope > div'), P = n.offsetParent;
+      if (btn.width && trk && P) { const pr = P.getBoundingClientRect(), bd = n.closest('.board'), kb = (() => { let k = bd ? bd.getBoundingClientRect().width / (bd.offsetWidth || 1) || 1 : 1; for (let e = n.parentElement; e && e !== bd; e = e.parentElement) { const g = getComputedStyle(e); if (g.transform !== 'none') k *= new DOMMatrix(g.transform).a; if (g.scale && g.scale !== 'none') k *= parseFloat(g.scale) || 1; if (g.zoom && g.zoom !== '1' && g.zoom !== 'normal') k *= parseFloat(g.zoom) || 1; } return k; })(), sx = s => ox + (s - ox) * sN, sy = s => oy + (s - oy) * sN;
+        const tx = (btn.left + btn.width / 2 - pr.left) / kb - n.offsetLeft - sx(trk.offsetLeft + trk.offsetWidth / 2), ty = (btn.bottom + 10 - pr.top) / kb - n.offsetTop - sy(trk.offsetTop);
+        put('--nvx', tx.toFixed(1) + 'px'); put('--nvy', ty.toFixed(1) + 'px');
+        const nl = n.offsetLeft + tx, nt = n.offsetTop + ty, bl = (btn.left - 10 - pr.left) / kb, bt = (btn.top - 10 - pr.top) / kb;
+        put('--nvl', Math.max(0, -(((bl - nl) - ox) / sN + ox)).toFixed(1) + 'px'); put('--nvt', Math.max(0, -(((bt - nt) - oy) / sN + oy)).toFixed(1) + 'px'); } } }
+  addEventListener('resize', () => { try { if (current && current.layer) navFitBox(current.layer, true); } catch (e) {} });
   // upright card carousels: the invisible swipe strip is laid exactly over the front card (wherever the layout put it)
   function alignCarousel(sec) { const h = sec.querySelector('.hsc'), cards = [...sec.querySelectorAll('[data-cf]')]; if (!h || !cards.length || !pstackOn()) return;
     const c = cards.find(e => /brightness\(1\)/.test(e.getAttribute('style') || '')) || cards[0], p = h.offsetParent; if (!p) return;
