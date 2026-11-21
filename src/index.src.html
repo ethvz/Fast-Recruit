@@ -200,14 +200,14 @@
   html.port:not(.pland) #sec-environment [data-name^="Background"] [data-name^="Photo"] { opacity: 1 !important; }
   html.port:not(.pland) #sec-environment [data-name^="Background"] > :is([data-name="Scrim"], [data-name="Fade to black"], [data-name="Blend to black"]) { background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.65) 82%, #000 100%) !important; }
   /* upright, Sales tools: a band is opened in the copy (before "Best-in-class apps") and the iPads sit in it, mid-screen */
-  html.pstack #sec-sales-tools [data-name="Kit copy"] > p:nth-of-type(2) { margin-top: 340px !important; }
+  html.pstack #sec-sales-tools [data-name="Kit copy"] > p:nth-of-type(2) { margin-top: 400px !important; }
   /* iPhone upright: background photos fade only at the bottom (no top or side fades) */
   html.pph .board [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
   html.pph .board [data-pf="m"] { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; }
   html.pph .board section[id^="sec-"] [data-name^="Background"] > :is([data-name="Blend to black"], [data-name="Fade to black"], [data-name="Scrim"], [data-name="Sky shade"], [data-name="Photo fade"]) { background: linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.22) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
   html.pph .board :has(> .pbgw)::after { display: none !important; }   /* (no side fades on iPhones upright) */
   /* iPhone upright: a photo that covered only part of the design (Hourly comparison's right half) spans the whole width */
-  html.pph .board section:not(#sec-nrg) [data-name^="Background"] > :is([data-name="Photo"], [data-name="Photo fade"], [data-name$=" photo"]) { left: 0 !important; width: 100% !important; }
+  html.port:not(.pland) .board section:not(#sec-nrg) [data-name^="Background"] > :is([data-name="Photo"], [data-name="Photo fade"], [data-name$=" photo"]) { left: 0 !important; width: 100% !important; }
   /* Products (upright): no tagline under each name; the product photos take the room */
   html.port:not(.pland) .pdtile > div[style*="top: 24px"] > div + div { display: none !important; }
   html.port:not(.pland) .pdtile > div[style*="top: 110px"] { top: 70px !important; bottom: 18px !important; }
@@ -227,6 +227,66 @@
   html.pph #sec-sales-tools [data-name="Section heading"] { width: 700px !important; }
   /* upright, Marketing: the first photo lines up with the eyebrow instead of reaching up into the header */
   html.pstack #sec-marketing [data-name="Opener photo"][style*="top: 132px"] { top: 196px !important; }
+  /* iPhone upright, Travel: laid out like the other sections; the flight-path drawing and the big year are left out */
+  html.pph #sec-travel :is([data-name="Year mark"], [data-name="Plane"]), html.pph #sec-travel .pcont svg:not([data-name] svg):not(button svg) { display: none !important; }
+  /* iPhone upright, Rookie scenarios: the weekly chart spans the tile (same margins as the pace pills) and takes the spare height;
+     below it, average earnings and the hourly equivalent sit side by side */
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 30px 36px"] { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] { flex: 1 1 auto; height: auto !important; min-height: 190px; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(1), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(2) { left: 0% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(3), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(4) { left: 5% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(5), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(6) { left: 10% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(7), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(8) { left: 15% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(9), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(10) { left: 20% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(11), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(12) { left: 25% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(13), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(14) { left: 30% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(15), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(16) { left: 35% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(17), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(18) { left: 40% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(19), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(20) { left: 45% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(21), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(22) { left: 50% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(23), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(24) { left: 55% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(25), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(26) { left: 60% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(27), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(28) { left: 65% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(29), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(30) { left: 70% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(31), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(32) { left: 75% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(33), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(34) { left: 80% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(35), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(36) { left: 85% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(37), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(38) { left: 90% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(39), html.pph #sec-rookie-scenarios div[style*="height: 190px"] > div:nth-child(40) { left: 95% !important; width: 5% !important; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] { display: grid !important; grid-template-columns: 1.12fr 1fr; grid-auto-flow: row dense; column-gap: 22px; align-content: center; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] > :nth-child(-n+3) { grid-column: 1; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] > :nth-child(4) { display: none; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] > :nth-child(n+5):nth-child(-n+7) { grid-column: 2; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] > :nth-child(n+8) { grid-column: 1 / -1; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] > :nth-child(6) [style*="font-size: 52px"] { font-size: 40px !important; }
+  html.pph #sec-rookie-scenarios [data-name="Glass card"] > div[style*="padding: 34px 34px"] button { width: 150px !important; }
+  /* iPhone upright, Preseason projections: the sales rows share out the main tile's height */
+  html.pph #sec-preseason-projections [data-name="Glass card"] > div[style*="padding: 30px 40px"] { height: 100%; box-sizing: border-box; display: flex; flex-direction: column; }
+  html.pph #sec-preseason-projections [data-name="Glass card"] > div[style*="padding: 30px 40px"] > div[style*="margin-top: 16px"] { flex: 1; display: flex; flex-direction: column; }
+  html.pph #sec-preseason-projections [data-name="Glass card"] > div[style*="padding: 30px 40px"] > div[style*="margin-top: 16px"] > div { flex: 1 1 0; height: auto !important; min-height: 50px; }
+  /* iPhone upright, 3 Year Plan: the table fills its tile — slim row titles that stay put, three years across with no gap at
+     the right, more years scroll sideways inside the tile; the rows share out the height */
+  html.pph #sec-three-year-plan [data-name="Row labels"] { width: 150px !important; padding-left: 10px !important; display: flex; flex-direction: column; }
+  html.pph #sec-three-year-plan [data-name="Row labels"] > div { flex: 1 1 0; height: auto !important; min-height: 24px; }
+  html.pph #sec-three-year-plan [data-name="Row labels"] > div > div { font-size: 9.5px !important; letter-spacing: .12em !important; line-height: 12px !important; }
+  html.pph #sec-three-year-plan .hsc > div { min-width: 100%; height: 100%; box-sizing: border-box; padding-right: 8px !important; }
+  html.pph #sec-three-year-plan [data-name="Plan year"] { flex: 1 0 156px !important; width: 156px !important; min-width: 0; display: flex; flex-direction: column; }
+  html.pph #sec-three-year-plan [data-name="Plan year"] :is(select, input) { min-width: 0 !important; max-width: 100% !important; }
+  html.pph #sec-three-year-plan [data-name="Plan year"] > div { flex: 1 1 0; height: auto !important; min-height: 24px; }
+  /* upright, Pro spotlight: the rep tile runs to the bottom of the screen — name, then the production chart, then the bio */
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] { flex-direction: column !important; gap: 0 !important; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div { display: contents !important; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(2) > :nth-child(1) { order: 1; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(2) > :nth-child(2) { order: 2; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(2) > :nth-child(3) { order: 3; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(1) > :nth-child(1) { order: 4; margin-top: 22px; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(1) > :nth-child(2) { order: 5; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(1) > :nth-child(3) { order: 6; flex: 1 1 auto; height: auto !important; min-height: 90px; }
+  html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(2) > :nth-child(n+4) { order: 7; }
+  /* upright, 5 keys: the words wrap inside their tile, whatever width the tile is re-cut to */
+  html.pstack #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] { right: 28px; width: auto !important; }
+  html.pstack #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] > div { width: auto !important; max-width: 100%; }
+  /* iPhone upright, Hourly comparison: larger type and pills */
   /* iPhone upright, Environment: the words set narrower so they come out larger */
   html.pph #sec-environment [data-name="Environment intro"] { width: 500px !important; }
   /* Summer job comparison: green bars everywhere; thicker on iPhones upright */
@@ -237,14 +297,14 @@
   html.pph #sec-averages [data-name="Average cards"] > div > div[style*="font-size: 44px"] { font-size: 30px !important; line-height: 36px !important; }
   html.pph #sec-averages [data-name="Average cards"] > div { padding-left: 16px !important; padding-right: 16px !important; }
   /* upright, calculators: the toggle and "How it's calculated" leave the title and sit on their own line above the tiles */
-  html.pstack :is(#sec-pay-scales, #sec-override-calculator) :is([data-name="Pay scale toggle"], [data-name="Override toggle"]) { left: 380px !important; top: 366px !important; }
-  html.pstack :is(#sec-pay-scales, #sec-override-calculator) .pcont button[style*="top: 290px"] { top: 369px !important; left: 732px !important; }
-  html.pstack #sec-override-calculator .pcont button[style*="top: 290px"] { left: 812px !important; }
-  html.pstack :is(#sec-pay-scales, #sec-override-calculator) [data-name="Glass card"] { top: 450px !important; }
-  html.pstack #sec-pay-scales button[style*="top: 888px"], html.pstack #sec-override-calculator button[style*="top: 926px"] { top: 1000px !important; }
-  html.pstack #sec-wealth-multiplier [data-name="Source"] { top: 986px !important; }
-  html.pstack #sec-wealth-multiplier .pcont button[style*="top: 290px"] { left: 380px !important; right: auto !important; width: 200px !important; top: 392px !important; }
-  html.pstack #sec-wealth-multiplier :is([data-name="Retirement table"], [data-name="Retirement calculator"]) { top: 462px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) :is([data-name="Pay scale toggle"], [data-name="Override toggle"]) { left: 380px !important; top: 366px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) .pcont button[style*="top: 290px"] { top: 369px !important; left: 732px !important; }
+  html.pph #sec-override-calculator .pcont button[style*="top: 290px"] { left: 812px !important; }
+  html.pph :is(#sec-pay-scales, #sec-override-calculator) [data-name="Glass card"] { top: 450px !important; }
+  html.pph #sec-pay-scales button[style*="top: 888px"], html.pph #sec-override-calculator button[style*="top: 926px"] { top: 1000px !important; }
+  html.pph #sec-wealth-multiplier [data-name="Source"] { top: 986px !important; }
+  html.pph #sec-wealth-multiplier .pcont button[style*="top: 290px"] { left: 380px !important; right: auto !important; width: 200px !important; top: 392px !important; scale: 1.5; transform-origin: 0 0; }
+  html.pph #sec-wealth-multiplier :is([data-name="Retirement table"], [data-name="Retirement calculator"]) { top: 462px !important; }
   /* iPhone upright, US salaries: the chart on top, the age list underneath it */
   html.pph #sec-us-annual-salaries [data-name="Income list"] { left: 18px !important; top: 560px !important; width: calc(100% - 36px) !important; height: auto !important; bottom: 16px; }
   /* iPhone upright, FAQs: the questions at phone size, full width, spread over the screen between header and footer */
@@ -1114,6 +1174,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // them top to bottom; the section grows taller if the column needs it. Positions go in per-element CSS rules (translate +
   // scale), so they survive the page re-rendering and switch off by themselves when the screen turns sideways.
   let pstSeq = 0;
+  const PSPLIT = { 'sec-travel': 1 };   // sections whose plain holders are always taken apart (so the title is found)
   function stackSection(sec) {
     if (sec.__stk) return; const wrap = sec.querySelector(':scope > .pcont'); if (!wrap || !wrap.children.length) return;
     const t0 = wrap.style.transform; wrap.style.transform = 'none';
@@ -1124,16 +1185,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const st = c.getAttribute('style') || '';
       if (tag === 'SC-SLOT' || /display:\s*contents/.test(st)) { take(c); return; }
       if (c.getAttribute('role') === 'dialog') return;
-      const b = c.getBoundingClientRect(); if (b.width < 2 || b.height < 2) return;
+      const b = c.getBoundingClientRect(); if ((b.width < 2 && !c.matches('[data-name="Ladder"]')) || b.height < 2) return;   // (the levels' progress line is thin but must move with its list)
       // layout box without any running animation transform
       let x, y, w, h;
       if (c.offsetParent === wrap && c.offsetWidth != null) { x = c.offsetLeft; y = c.offsetTop; w = c.offsetWidth; h = c.offsetHeight; }
       else { x = (b.left - r0.left) / k0; y = (b.top - r0.top) / k0; w = b.width / k0; h = b.height / k0; }
-      if (w < 2 || h < 2) return;
+      if ((w < 2 && !c.matches('[data-name="Ladder"]')) || h < 2) return;
       const rot = PHONE && c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = 1100; x += (w0 - w) / 2; y += 30; }   // (laid out a little shorter than it is: its ends fade out anyway)   // History wheel: stands upright in portrait
       { const g = getComputedStyle(c);   // a plain holder of several boxes (a grid of cards): its boxes are laid out one by one
-        if (!rot && h >= 240 && c.children.length >= 2 && c.children.length <= 16 && g.visibility !== 'hidden' && g.overflowX === 'visible' && g.backgroundImage === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(g.backgroundColor) && parseFloat(g.borderTopWidth) === 0
-          && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; })) { take(c); return; } }
+        if (!rot && h >= 240 && c.children.length >= 2 && c.children.length <= 30 && g.visibility !== 'hidden' && g.overflowX === 'visible' && g.backgroundImage === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(g.backgroundColor) && parseFloat(g.borderTopWidth) === 0
+          && (PSPLIT[sec.id] && c.tagName === 'DIV' && !c.dataset.name || c.children.length <= 16 && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; }))) { take(c); return; } }
       const cs = getComputedStyle(c), o = (cs.transformOrigin || '0 0').split(' ').map(parseFloat);
       if (!c.dataset.pst) c.dataset.pst = 'p' + (++pstSeq);
       let fs = 0; if (y < 420 && h < 400) [c, ...c.querySelectorAll('*')].forEach(e => { if ([...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) fs = Math.max(fs, parseFloat(getComputedStyle(e).fontSize) || 0); });
@@ -1188,7 +1249,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     'sec-awards': ph => ({ sel: '[data-name="Awards grid"] > a', cols: 2, fit: ph }),
     'sec-job-description': ph => ({ sel: '[data-name="Card"]', cols: 2 }),
     'sec-growth': ph => ({ lo: 1, hi: 8, fit: true, sel: '[data-name="Skill tile"]', cols: ph ? 2 : 3, span: ph ? null : { 0: 2 }, k: ph ? 0.6 : 0 }),
-    'sec-matts-big-3': ph => ph ? { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 1, k: 0.62 } : { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 2, span: { 4: 2 } },
+    'sec-matts-big-3': ph => ph ? { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 1, k: 0.62 } : { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 2, span: { 2: 2 } },
     'sec-nrg': ph => ph ? { sel: '[data-name="NRG stock card"], [data-name="NRG fact"]', cols: 1 } : null,
     'sec-housing': ph => ph ? { sel: '[data-name="Housing card"]', cols: 2, fit: true } : null,
     // (phones: each package is two lines inside its tile, name and price over the equipment; the tiles fill the free height)
@@ -1198,17 +1259,19 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // out at; vs = rows inside the tile spread out over the extra height; rev = tiles in reverse order)
   const FILL = { lo: 1, hi: 8 };
   Object.assign(PGRID, {
-    'sec-us-annual-salaries': ph => ph ? { ...FILL, sel: '[data-name="Income chart"]', kw: 620 } : null,
+    'sec-us-annual-salaries': ph => ph ? { ...FILL, sel: '[data-name="Income chart"]', kw: 620, usq: true } : null,
     'sec-career-comparison': ph => ph ? { ...FILL, sel: '[data-name="Career chart"]', kw: 680 } : null,
     'sec-summer-jobs': ph => ph ? { ...FILL, sel: '[data-name="Summer chart"]', vs: true } : null,
-    'sec-hourly-comparison': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', vs: true } : null,
+    'sec-hourly-comparison': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', vs: true, kw: 470 } : null,
     'sec-rookie-scenarios': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
     'sec-preseason-projections': ph => ph ? { ...FILL, sel: '[data-name="Glass card"], [data-name="Blitz card"], [data-name="Home market card"]', cols: 2, span: { 0: 2 }, k: 0.56 } : null,
     'sec-averages': ph => ph ? { ...FILL, sel: '[data-name="Average cards"] > *' } : null,
     'sec-six-streams': ph => ph ? { ...FILL, gp: 40, sel: '[data-name="Stream detail"], [style*="width: 420px; height: 94px"]', cols: 1, k: 0.62, vs: true, small: { sel: '[style*="width: 420px; height: 94px"]', f: 0.62 } } : null,
-    'sec-pay-scales': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : { ...FILL, sel: '[data-name="Glass card"]' },
-    'sec-override-calculator': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : { ...FILL, sel: '[data-name="Glass card"]' },
-    'sec-wealth-multiplier': ph => ph ? { ...FILL, sel: '[data-name="Retirement table"], [data-name="Retirement calculator"]', cols: 1, k: 0.6, rev: true } : { ...FILL, sel: '[data-name="Retirement table"], [data-name="Retirement calculator"]' },
+    'sec-pay-scales': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
+    'sec-override-calculator': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', cols: 1, k: 0.6 } : null,
+    'sec-three-year-plan': ph => ph ? { ...FILL, sel: '[data-name="Glass card"]', kw: 700 } : null,
+    'sec-pro-highlights': ph => ({ ...FILL, sel: '[data-name="Rep detail"]', kw: ph ? 560 : 820 }),
+    'sec-wealth-multiplier': ph => ph ? { ...FILL, sel: '[data-name="Retirement table"], [data-name="Retirement calculator"]', cols: 1, k: 0.6 } : null,
   });
   // phones: these stay one screen (the body is fitted, not allowed to run on)
   const PFIT = { 'sec-sales-tools': 1, 'sec-travel': 1 };
@@ -1220,7 +1283,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 26 / scale : 70;
     // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
     const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
-    const cw = c => c.x1 - c.x0, ok = w => !PHONE || CW / Math.max(1, w) * scale >= READ;
+    const cw = c => c.x1 - c.x0, ok = w => !PHONE || !!PSPLIT[sec.id] || CW / Math.max(1, w) * scale >= READ;
     let rules = ''; const PL = {}; const put = (it, nx, ny, k) => { PL[it.id] = { nx, ny, k };
       if (it.rot) { const cx = nx + it.w * k / 2 - (it.X0 + it.w0 / 2), cy = ny + it.h * k / 2 - (it.Y0 + it.h0 / 2);
         rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:50% 50% !important;translate:' + cx.toFixed(1) + 'px ' + cy.toFixed(1) + 'px !important;rotate:90deg !important;scale:' + k.toFixed(4) + ' !important;}\n'; return; }
@@ -1237,6 +1300,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const txt = (c.textContent || '').trim().length > 0, h2 = txt ? h : h * Math.min(f, 1.8), cy = A + (t + h / 2 - A) * f;
         if (!c.dataset.vs) c.dataset.vs = 'v' + (++pstSeq);
         rules += 'html.pstack [data-vs="' + c.dataset.vs + '"]{top:' + (cy - h2 / 2).toFixed(1) + 'px !important;' + (h2 !== h && st.height ? 'height:' + h2.toFixed(1) + 'px !important;' : '') + '}\n'; }); };
+    // US salaries (iPhones): the chart is squeezed down so the age list under it shows at least five rows
+    const usSquash = (it, Hn) => { const T = 545, f = Math.max(0.42, Math.min(1, (Hn - Math.max(262, Hn * 0.46)) / T));
+      [...it.el.children].forEach(c => { const st = c.style; if (!st || c.matches('[data-name="Income list"]') || !/px$/.test(st.top)) return;
+        const t = parseFloat(st.top), h = parseFloat(st.height) || 0; if (t > T) return; if (!c.dataset.vs) c.dataset.vs = 'v' + (++pstSeq);
+        rules += 'html.pstack [data-vs="' + c.dataset.vs + '"]{' + (c.tagName === 'BUTTON' ? 'top:' + (t * f).toFixed(1) + 'px !important;transform-origin:0 0 !important;scale:1 ' + f.toFixed(4) + ' !important;' : 'top:' + ((t + h / 2) * f - h / 2).toFixed(1) + 'px !important;') + '}\n'; });
+      rules += 'html.pph #sec-us-annual-salaries [data-name="Income chart"] [data-name="Income list"]{top:' + (T * f + 14).toFixed(1) + 'px !important;}\n'; };
     const rows = S.rows, box = (rs) => ({ x0: Math.min(...rs.map(r => r.x0)), x1: Math.max(...rs.map(r => r.x1)), y0: Math.min(...rs.map(r => r.y0)), y1: Math.max(...rs.map(r => r.y1)) });
     const each = (rs, f) => rs.forEach(r => r.cols.forEach(c => c.items.concat(c.fl || []).forEach(f)));
     if (S.first) {   // opening title: one block, centred on the screen
@@ -1294,7 +1363,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         if (m === 'pair') { const pw = Math.max(...cols.map(cw)) * 2 + 28; for (let k = 0; k < cols.length; k += 2) grp(cols.slice(k, k + 2), ri, 28, pw); return; }
         cols.forEach(c => {
           // a menu-style list that shares its column with a box: the two sit side by side, so the list stays small
-          const lines = c.items.filter(i => i.h < 90), boxes = c.items.filter(i => i.h >= 150);
+          const lines = c.items.filter(i => i.h < 90), boxes = c.items.filter(i => i.h >= 150 && i.w >= 40);
           if (PHONE && lines.length >= 4 && boxes.length >= 1 && lines.length + boxes.length === c.items.length) {
             const mkc = (its, fl) => ({ items: its, fl, x0: Math.min(...its.map(i => i.x)), x1: Math.max(...its.map(i => i.x + i.w)), y0: Math.min(...its.map(i => i.y)), y1: Math.max(...its.map(i => i.y + i.h)) });
             grp([mkc(lines, c.fl), mkc(boxes)], ri, 28); return; }
@@ -1302,16 +1371,17 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (GT) { const at = G.findIndex(g => g.row >= gridAt), gg = { grid: true, row: -1, full: false, its: [], w: CW, h: GRID ? GRID.total : 0, y0: GT[0].y0, y1: GT[GT.length - 1].y1 };
         if (at < 0) G.push(gg); else G.splice(at, 0, gg); }
       const ks = G.filter(g => !g.full && !g.pic && !g.lab && !g.grid).map(g => CW / Math.max(1, g.w)).sort((a, b) => a - b), kRef = ks.length ? ks[Math.floor(ks.length / 2)] : Math.max(1.2, 0.7 / KS);
-      G.forEach(g => { g.k = g.full || g.grid ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
+      G.forEach(g => { g.k = PHONE && sec.id === 'sec-positions' && !g.full && g.h > 400 && g.w < 400 ? Math.min(CW / g.w, Math.max(0.33 * availR, availR - 40 - 556 * CW / 674) / g.h) :   // (iPhones, Path to progression: the levels list takes at most 40% of the screen)
+        g.full || g.grid ? 1 : g.pic ? Math.min(1.8, CW / g.w) : g.lab ? Math.min(CW / g.w, kRef) : CW / Math.max(1, g.w); });
       let t = 0; G.forEach((g, n) => { g.gap = n ? (G[n - 1].row === g.row ? 28 : Math.max(16, Math.min(90, g.y0 - G[n - 1].y1))) * Math.min(g.k, 1.6) : 0; t += g.gap + g.h * g.k; });
       return { G, total: t }; };
     const availB = HL - TOP - tH - (nT ? GAP : 0) - BOT, availR = H - TOP - tH - (nT ? GAP : 0) - BOT, hasRot = bR.some(r => r.cols.some(c => c.items.some(i => i.rot)));
     let L = layout(mode);
-    if (GT) { GRID = gridLay(Math.max(400, availR - L.total)); L = layout(mode); }
+    if (GT) { GRID = gridLay(Math.max(RC.minA || 400, availR - L.total - (PHONE ? 30 / scale : 60))); L = layout(mode); }
     // how much of the free space an arrangement uses (too tall = it has to shrink, which narrows it)
     // (phones: boxes keep the full width; a section may run a little past one screen instead of shrinking)
     const cover = t => t.total <= availB ? t.total / availB : PHONE && !hasRot && !pfit ? (t.total <= availB * 1.7 ? 0.95 : 0) : availB / t.total;
-    if (one && !GT) for (let pass = 0; pass < 8 && cover(L) < (pfit ? 0.9 : 0.74); pass++) {   // open rows up while that fills the screen better
+    if (one && !GT && !PSPLIT[sec.id]) for (let pass = 0; pass < 8 && cover(L) < (pfit ? 0.9 : 0.74); pass++) {   // open rows up while that fills the screen better
       let best = null;
       const sig = n => mode[n] + ':' + bR[n].cols.length + ':' + small(bR[n]);
       mode.forEach((m, n) => { const nx = m === 'side' ? (small(bR[n]) ? 'pair' : 'stack') : m === 'pair' ? 'stack' : null; if (!nx) return;
@@ -1328,20 +1398,24 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // iPads, Environment: the team photo keeps the top of the screen; the words run the full width underneath it
     if (!PHONE && sec.id === 'sec-environment') { const bw = Math.max(...L.G.filter(g => !g.full).map(g => g.w)), k0 = CW / Math.max(1, bw);
       L.G.forEach(g => { if (!g.full) g.k = k0; }); y = Math.max(y, 1024 + 40); }
+    // phones, one-screen sections taken apart (Travel): leftover height goes into the gaps, so the body runs to the footer
+    if (PHONE && PSPLIT[sec.id] && fitB === 1 && total < availR && L.G.length > 1) { const gs = L.G.slice(1).reduce((a, g) => a + g.gap, 0) || 1, ex = Math.min(availR - total, gs * 1.5);
+      L.G.forEach((g, gi) => { if (gi) g.gap += ex * g.gap / gs; }); y = minTop; }
     L.G.forEach((g, gi) => { const k = g.k * (g.full ? 1 : fitB); y += g.gap * fitB;
       if (g.grid) {   // re-cut tiles: own width and height, text kept at a readable scale
         const G2 = GRID, kk = G2.k, X0 = (1466 - CW * fitB) / 2; let yy = y;
         G2.rows.forEach(r => { let xx = X0; r.tiles.forEach(o => { const it = o.it;
           rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (xx - it.x).toFixed(1) + 'px ' + (yy - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (o.w * fitB / kk).toFixed(1) + 'px !important;height:' + (r.h * fitB / kk).toFixed(1) + 'px !important;max-width:none !important;}\n';
           if (RC.vs && it.el) vStretch(it, r.h * fitB / kk);
+          if (RC.usq && it.el) usSquash(it, r.h * fitB / kk);
           xx += (o.w + G2.gp) * fitB; }); yy += (r.h + G2.gp) * fitB; });
         G2.fl.forEach(it => { rules += 'html.pstack [data-pst="' + it.id + '"]{transform-origin:0 0 !important;translate:' + (X0 - it.x).toFixed(1) + 'px ' + (y - it.y).toFixed(1) + 'px !important;scale:' + kk.toFixed(4) + ' !important;width:' + (CW * fitB / kk).toFixed(1) + 'px !important;height:' + (g.h * fitB / kk).toFixed(1) + 'px !important;}\n'; });
         y += g.h * fitB; return; }
-      const X = g.full ? 0 : !PHONE ? PADX : g.lab || g.pic ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;   // (iPads: body lines up with the title)
+      const X = g.full ? 0 : !PHONE ? PADX : g.lab || g.pic ? (1466 - CW * fitB) / 2 : PADX;   // (body lines up with the title)   // (iPads: body lines up with the title)
       g.its.forEach(o => put(o.it, g.full ? o.it.x : X + o.rx * k, y + o.ry * k, k)); y += g.h * k; });
     if (S.kitOT) { const kit = Object.values(S.rows).flatMap(r => r.cols.flatMap(c => c.items)).find(i => i.el && i.el.matches('[data-name="Kit copy"]')), pl = kit && PL[kit.id];
-      if (pl) { const y0 = pl.ny + (S.kitOT - 340 + 10) * pl.k, y1 = pl.ny + (S.kitOT - 16) * pl.k, s = Math.min((y1 - y0) / 1174, (1466 - PADX) / 1130);
-        rules += 'html.pstack #sec-sales-tools [data-name="Sales tools iPads"]{overflow:visible !important;transform-origin:1215px 557px !important;translate:' + (733 - 1215) + 'px ' + ((y0 + y1) / 2 - 557).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;}\n'; } }
+      if (pl) { const y0 = pl.ny + (S.kitOT - 400 + 10) * pl.k, y1 = pl.ny + (S.kitOT - 16) * pl.k, s = (y1 - y0) / 1174 * 1.7;   // (large, and running off the right edge)
+        rules += 'html.pstack #sec-sales-tools [data-name="Sales tools iPads"]{overflow:visible !important;transform-origin:1215px 557px !important;translate:' + (Math.round(1466 * 0.44 + 565 * s) - 1215) + 'px ' + ((y0 + y1) / 2 - 557).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;}\n'; } }
     if (S.cf) {   // card carousel: the card you land on fills the screen width, centred in the space under the title
       const c = S.cf, top = minTop, bot = hr - BOT, s = Math.min((1466 - PADX) / c.w, (bot - top - 30) / c.h) / 1.09, Yc = (top + bot) / 2, sel = 'html.pstack #' + sec.id + ' ';
       rules += sel + '[data-cfst]{transform-origin:' + (c.x - c.fx).toFixed(1) + 'px ' + (c.y - c.fy).toFixed(1) + 'px !important;translate:' + (733 - c.x).toFixed(1) + 'px ' + (Yc - c.y).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;-webkit-mask-image:none !important;mask-image:none !important;}\n';
@@ -2220,7 +2294,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21s';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21t';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2976,7 +3050,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         requestAnimationFrame(() => requestAnimationFrame(() => ws.forEach(w => { w.style.transition = ''; })));
       }
     }
-    if (!zoomed() && wasZoomed) setNav(true);   // back out to normal size: the section menu opens again
+    if (!zoomed() && wasZoomed && !pstackOn()) setNav(true);   // (upright: the section menu stays closed)   // back out to normal size: the section menu opens again
     wasZoomed = zoomed();
     if (zoomed()) { watchSec(el); if (zSec == null || pinch) zSec = secAt(el) || zSec; } else zSec = null;
     if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
@@ -3056,7 +3130,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (pinch && e.touches.length >= 2) {
       e.preventDefault();
       const i = pinchInfo(e.touches), z = Math.max(1, Math.min(maxZ(), pinch.z0 * i.d / pinch.d0));
-      if (pinch.z0 <= 1.001 && !pinch.opened && i.d / pinch.d0 < 0.82) { pinch.opened = true; setNav(true); }
+      if (pinch.z0 <= 1.001 && !pinch.opened && i.d / pinch.d0 < 0.82 && !pstackOn()) { pinch.opened = true; setNav(true); }
       const px = (pinch.m0[0] - pinch.x0) / pinch.z0, py = (pinch.m0[1] - pinch.y0) / pinch.z0;
       zoom = { z, x: i.m[0] - z * px, y: i.m[1] - z * py }; applyZoom(false); return;
     }
@@ -3078,7 +3152,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // trackpad pinch / ctrl + scroll wheel on a computer
   viewport.addEventListener('wheel', e => {
     if (!e.ctrlKey || !current || overlay) return; e.preventDefault(); e.stopImmediatePropagation();
-    if (!zoomed() && e.deltaY > 0) { setNav(true); return; }
+    if (!zoomed() && e.deltaY > 0) { if (!pstackOn()) setNav(true); return; }
     const m = toFrame(e.clientX, e.clientY), z = Math.max(1, Math.min(maxZ(), zoom.z * Math.exp(-e.deltaY * 0.01)));
     const px = (m[0] - zoom.x) / zoom.z, py = (m[1] - zoom.y) / zoom.z; zoom = { z, x: m[0] - z * px, y: m[1] - z * py }; applyZoom(false);
   }, { passive: false, capture: true });
