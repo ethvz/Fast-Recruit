@@ -89,6 +89,7 @@
   .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(var(--dy, 0px)); }
   .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
   .pmid.pass { pointer-events: none; }
+  .ptop { position: absolute; left: 0; top: 0; width: 1466px; height: 0; pointer-events: none; }
   /* portrait: every section grows to one full screen (--E extra); its background fills it, its content stays centred */
   /* phones held sideways: the screen is much wider than the design, so a photo stretched edge to edge is cropped hard
      (looks zoomed in). Keep each section photo at the design's own frame, centred, and fade its sides into black. */
@@ -99,6 +100,15 @@
     background: linear-gradient(90deg, #000 0px, #000 var(--X, 0px), rgba(0,0,0,0) calc(var(--X, 0px) + 190px), rgba(0,0,0,0) calc(var(--X, 0px) + 1276px), #000 calc(var(--X, 0px) + 1466px), #000 100%); }
   html.port .pbgimg, html.fill .pbgimg { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover; }
   .pcont.ptall { top: 0 !important; }
+  /* upright screens: section photos keep their own shape across the full width at the top of the section, and fade into
+     the black below (a gradient drawn over them, not a mask — masks double the photo memory on phones) */
+  html.port:not(.pland) .board .pbx { top: 0 !important; height: var(--ph, 1024px) !important; margin-top: 0 !important; }
+  html.port:not(.pland) .board .pbx-side { left: 0 !important; width: 100% !important; }
+  html.port:not(.pland) .board .pbx img { object-fit: cover; }
+  .board .pfade { display: none; }
+  html.port:not(.pland) .board .pfade { display: block; position: absolute; left: 0; width: 100%; top: calc(var(--ph, 1024px) * 0.42); height: calc(var(--ph, 1024px) * 0.58 + 2px);
+    pointer-events: none; z-index: 2; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.45) 45%, rgba(0,0,0,.85) 78%, #000 100%); }
+  html.port:not(.pland) .board .pfade + * { }
   /* phone held sideways: each section's photo fills the right three quarters of the screen and fades in from black on the left */
   html.pland .board .pbx { left: 25% !important; width: 75% !important; top: 0 !important; height: 100% !important; margin: 0 !important; transform: none !important;
   }
@@ -111,14 +121,14 @@
   .board img.hot[data-name="Vivint Logo"] { touch-action: none !important; -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
   .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
-  html.pland .board .pmid > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
-  html.pland .board .pmid > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
-  html.pland .board .pmid > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
+  html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
+  html.pland .board :is(.pmid, .ptop) > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
+  html.pland .board :is(.pmid, .ptop) > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
-  html.pland .board .pmid > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
-  html.pland .board .pmid > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 300px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
-  html.pland .board .pmid > [aria-label="Open the onboarding tool"] { scale: var(--CS); transform-origin: 188px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 300px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open the onboarding tool"] { scale: var(--CS); transform-origin: 188px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
   html.pland .board .pbx-side::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
@@ -537,16 +547,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     st.style.top = safeTop + 'px'; st.style.height = vh + 'px';
     // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
     const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
-    // portrait mode is switched off for now: upright screens show the landscape design scaled to fit.
-    // (set PORTRAIT = true to bring it back)
-    const PORTRAIT = false;
+    // upright iPhones and iPads: every section is one full screen tall; its photo runs edge to edge along the top and fades
+    // into black, the content sits in the middle (set PORTRAIT = false to go back to the landscape design scaled to fit)
+    const PORTRAIT = true;
     // landscape screens are filled edge to edge: wider than the design -> wider canvas, squarer -> a little taller
     // phone held upright: the design keeps its width, and the screen's extra height shows the sections above and below
     // (dimmed) around the one in the middle — header and section menu at the top, arrow buttons at the bottom
     // upright-phone layout (sections stacked mid-screen) is switched off for now — upright phones show the app scaled to fit
     const STACK = false;
     const wasStk = stk; stk = STACK && PHONE && portrait;
-    const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(ar >= 0.66 ? W / ar : W * 1194 / 834)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
+    const nh = stk ? Math.max(1024, Math.round(W / ar)) : PORTRAIT && portrait ? Math.max(1024, Math.round(W / ar)) : (!portrait && ar < W / 1024 ? Math.round(W / ar) : 1024);
     FW = !portrait && ar > W / 1024 ? Math.round(1024 * ar) : W; upright = portrait;
     const saved = [...frame.querySelectorAll('.layer')].map(l => { const sc = scrollerOf(l); return [l, sc, sc ? vScroll(sc) : 0]; });
     H = nh;
@@ -842,7 +852,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       };
       const walk = (el, x0, y0, low) => {
         [...el.children].forEach(c => {
-          if (c === sc || c.tagName === 'STYLE' || c.tagName === 'SC-SLOT' || c.classList.contains('pmid') || c.classList.contains('pnavw')) return;
+          if (c === sc || c.tagName === 'STYLE' || c.tagName === 'SC-SLOT' || c.classList.contains('pmid') || c.classList.contains('ptop') || c.classList.contains('pnavw')) return;
           if (c.classList.contains('pdown')) { walk(c, x0, y0, true); return; }
           const st = c.getAttribute('style') || '', dn = c.dataset.name || '';
           if (dn === 'Header bar') { c.setAttribute('data-pc', b + '-hb'); pcRule(b + '-hb', '[data-pc="' + b + '-hb"] { scale: 1 var(--CS); transform-origin: 0 0 !important; } html.stack [data-pc="' + b + '-hb"] { scale: 1 calc(var(--CS) * 1.45); }'); return; }
@@ -1020,7 +1030,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
             [...c.children].forEach(k => { const dn = k.dataset.name || '', st = k.getAttribute('style') || '', w = numIn(st, 'width'), hh = parseFloat((st.match(/height:\s*(?:calc\()?([\d.]+)px/) || [])[1]);
               if (dn === 'Photo fade') { k.classList.add('pbx-fade'); return; }
               if (/Destination|Wheel|iPads|Award|Opener|Image 65|glow/i.test(dn) || numIn(st, 'top') > 0) return;
-              if ((k.tagName === 'IMG' || k.querySelector('img')) && hh >= 1000 && w >= 600) { k.classList.add('pbx'); if (w < 1400) k.classList.add('pbx-side'); } });
+              if ((k.tagName === 'IMG' || k.querySelector('img')) && hh >= 1000 && w >= 600) { k.classList.add('pbx'); if (w < 1400) k.classList.add('pbx-side');
+                k.style.setProperty('--ph', hh + 'px');
+                const f = document.createElement('div'); f.className = 'pfade'; f.style.setProperty('--ph', hh + 'px'); c.appendChild(f); } });
             c.querySelectorAll('img').forEach(im => { const st = im.getAttribute('style') || ''; if (/position:\s*absolute/.test(st)) im.classList.add('pbgimg'); const w = numIn(st, 'width'); if (/width:\s*100%/.test(st) || (w != null && w >= 1400)) im.classList.add('pbgw'); });
             return; }
           // plain full-screen tints (no content inside) stretch with the background
@@ -1047,14 +1059,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       });
     } else {
       // single-screen boards: backgrounds stretch to fill, everything else sits centred
-      const mid = document.createElement('div'); mid.className = 'pmid'; const low = document.createElement('div'); low.className = 'pdown';
+      const mid = document.createElement('div'); mid.className = 'pmid'; const low = document.createElement('div'); low.className = 'pdown'; const top = document.createElement('div'); top.className = 'ptop';
       [...root.children].forEach(c => {
         if (isFull(c) && topOf(c) === 0 && /(Photo|Background|bg)/i.test(c.dataset.name || '')) { c.style.height = '100%'; c.classList.add('fx-full'); c.querySelectorAll('img').forEach(im => { if (/position:\s*absolute/.test(im.getAttribute('style') || '')) im.classList.add('pbgimg'); }); return; }
         anchorX(c);
         if (topOf(c) >= 880) { low.appendChild(c); return; }   // bottom buttons stay at the bottom
+        if (topOf(c) < 90 && !isFull(c) && (numIn(c.getAttribute('style') || '', 'height') || 999) < 150) { top.appendChild(c); return; }   // menu, logo, Guide / Onboard stay along the top
         mid.appendChild(c);
       });
-      root.appendChild(mid); if (low.children.length) root.appendChild(low);
+      root.appendChild(mid); if (top.children.length) root.appendChild(top); if (low.children.length) root.appendChild(low);
     }
   }
   // header page links: same gap between every title (the design gives each a 150px box, so short titles like FAQs
@@ -1777,7 +1790,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21d';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21e';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
