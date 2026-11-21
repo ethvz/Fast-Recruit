@@ -337,6 +337,11 @@
   html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(1) > :nth-child(2) { order: 5; }
   html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(1) > :nth-child(3) { order: 6; flex: 1 1 auto; height: auto !important; min-height: 90px; }
   html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div:nth-child(2) > :nth-child(n+4) { order: 7; }
+  /* iPhone upright, 5 keys: bigger, bolder titles and body inside the 2-up tiles */
+  html.pph #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] { top: auto !important; bottom: 26px; }
+  html.pph #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] > div:first-child { font-size: 40px !important; line-height: 42px !important; padding-right: 74px; }
+  html.pph #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] > div:last-child { font-size: 21px !important; line-height: 29px !important; }
+  html.pph #sec-matts-big-3 [data-name="Rule card"] > div[style*="font-size: 110px"] { font-size: 96px !important; line-height: 96px !important; }
   /* upright, 5 keys: the words wrap inside their tile, whatever width the tile is re-cut to */
   html.pstack #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] { right: 28px; width: auto !important; }
   html.pstack #sec-matts-big-3 [data-name="Rule card"] > div[style*="left: 28px"] > div { width: auto !important; max-width: 100%; }
@@ -1326,7 +1331,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     'sec-awards': ph => ({ sel: '[data-name="Awards grid"] > a', cols: 2, fit: ph }),
     'sec-job-description': ph => ({ sel: '[data-name="Card"]', cols: 2 }),
     'sec-growth': ph => ({ lo: 1, hi: 8, fit: true, sel: '[data-name="Skill tile"]', cols: ph ? 2 : 3, span: ph ? null : { 0: 2 }, k: ph ? 0.6 : 0 }),
-    'sec-matts-big-3': ph => ph ? { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 1, k: 0.62 } : { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 2, span: { 2: 2 } },
+    'sec-matts-big-3': ph => ph ? { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 2, span: { 2: 2 }, k: 0.5 } : { lo: 1, hi: 8, sel: '[data-name="Rule card"]', cols: 2, span: { 2: 2 } },
     'sec-nrg': ph => ph ? { sel: '[data-name="NRG stock card"], [data-name="NRG fact"]', cols: 1 } : null,
     'sec-housing': ph => ph ? { sel: '[data-name="Housing card"]', cols: 2, fit: true } : null,
     // (phones: each package is two lines inside its tile, name and price over the equipment; the tiles fill the free height)
@@ -2379,7 +2384,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22i';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22j';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
