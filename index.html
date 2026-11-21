@@ -298,6 +298,10 @@
   html.pph .board section[id^="sec-"] * { will-change: auto !important; }
   html.pph .board section[id^="sec-"] :is(#sec-marketing, #sec-swag, #sec-guests, #sec-incentive-trips) *, html.pph :is(#sec-marketing, #sec-swag, #sec-guests, #sec-incentive-trips) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   html.pph #sec-marketing [data-name="Partner marquee"] { -webkit-mask-image: none !important; mask-image: none !important; }
+  /* iPhones upright, Marketing (still closing the page): every photo and line is drawn flat — no clipping, no 3D/scale
+     transforms, no layer promotion — so the section paints like a plain page */
+  html.pph #sec-marketing * { transform: none !important; clip-path: none !important; -webkit-clip-path: none !important; transition: none !important; animation: none !important; }
+  html.pph #sec-marketing [style*="opacity: 0"] { opacity: 1 !important; }
   /* upright, card carousels (Trips, Guests): only the cards near the front are drawn, without their heavy shadows;
      the blurred backdrop photo is left out on iPhones (iPhones ran out of memory with all of it) */
   html.pstack :is(#sec-guests, #sec-incentive-trips) [data-cf] { box-shadow: none !important; }
@@ -2332,7 +2336,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22c';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22d';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
