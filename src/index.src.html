@@ -60,13 +60,14 @@
   /* "next section" button: a pulsing down arrow centred between the page arrows, on every section that has one below it.
      It replaces the title screen's own arrow so every section has the same one. Solid tint (no live blur) so its pulse stays cheap. */
   .board a[aria-label^="Scroll to"] > svg[data-name="Footer"] { display: none !important; }
-  .board .secdn { position: absolute; width: 58px; height: 58px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 6;
-    transition: opacity .35s ease, transform .35s cubic-bezier(.2,.7,.2,1); }
-  .board .secdn svg { animation: secdnBlink 1.6s ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
-  .board .secdn.tap svg { animation: none; transform: translateY(6px); transition: transform .15s; }
-  .board .secdn.off { opacity: 0; transform: translateY(12px); }
-  html.still .board .secdn svg { animation-play-state: running !important; }
-  html.safe .board .secdn svg { animation: none !important; }
+  .secdn { position: fixed; left: 50%; top: 0; width: 58px; height: 58px; margin-left: -29px; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 60;
+    transition: opacity .45s ease, transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease; }
+  .secdn svg { animation: secdnBlink 1.6s ease-in-out infinite; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+  .secdn.tap svg { animation: none; transform: translateY(6px); transition: transform .15s; }
+  .secdn.off { opacity: 0; transform: translateY(12px); filter: blur(8px); }
+  .secdn.gone { display: none; }
+  html.still .secdn svg { animation-play-state: running !important; }
+  html.safe .secdn svg { animation: none !important; }
   @keyframes secdnBlink { 0%, 100% { opacity: 1; } 50% { opacity: .12; } }
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
   /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
@@ -79,6 +80,9 @@
   /* phones: only render the sections near the screen */
   .board section[id^="sec-"] { content-visibility: auto; }
   .layer { touch-action: pan-y; }
+  /* nothing on the site can be highlighted or copied (typing in boxes still works) */
+  html, body, body * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  input, textarea, select, [contenteditable="true"], [contenteditable="true"] * { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
   /* portrait: the canvas grows taller (--H); bottom controls ride down with it, fixed-size screens sit centred */
   #frame, .layer, .board { height: var(--H, 1024px) !important; }
   .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(var(--dy, 0px)); }
@@ -730,7 +734,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       im.addEventListener('touchend', e => { const q = t0; t0 = null; const t = e.changedTouches[0]; if (!q || !t || Math.hypot(t.clientX - q.x, t.clientY - q.y) > 20) return; if (Date.now() - (im.__fired || 0) < 800) return; im.__fired = Date.now(); e.preventDefault(); home(); });
     });
     setupQnav(layer);
-    host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); };
+    host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); try { dnRefresh(); } catch (e) {} };
     flowCompact(layer);   // before the phone layout, so it lays out the trimmed header
     phoneChrome(layer); stackDim(layer);
     addStars(layer); setupFlowBtn(layer); buildFlowNav(layer);
@@ -1748,7 +1752,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20d';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20e';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2235,28 +2239,29 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   // A pulsing down arrow centred between the page arrows (same height). Tapping anywhere in the footer strip between the
   // two page arrows glides to the top of the next section. The strip doesn't block scrolling: the arrow itself ignores the
   // finger, and taps are caught on the page by where they land. Hidden on the last section. Works in custom flow too.
+  // no copying page text (form fields and the layout editor are exempt)
+  const canSel = t => t && t.closest && (t.closest('input, textarea, select, [contenteditable="true"]') || document.body.classList.contains('ly-on'));
+  ['copy', 'cut'].forEach(ev => document.addEventListener(ev, e => { if (!canSel(document.activeElement) && !canSel(e.target)) e.preventDefault(); }, true));
+  document.addEventListener('selectstart', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
+  const DN = new Set(), dnRefresh = () => requestAnimationFrame(() => DN.forEach(f => f()));
   function setupDownArrow(layer) {
     if (layer.__dn) return;
     const sc = scrollerOf(layer); if (!sc) return;
     const secs = [...sc.querySelectorAll('section[id^="sec-"]')]; if (secs.length < 2) return;
     const pill = layer.querySelector('[data-name="Glass arrow pill"]'); if (!pill || !pill.parentElement) return;
     const host = pill.parentElement, b = document.createElement('div');
-    b.className = 'secdn off'; b.setAttribute('aria-hidden', 'true');
+    b.className = 'secdn off gone'; b.setAttribute('aria-hidden', 'true');
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#05E5AF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5l7 7 7-7"/></svg>';
-    host.appendChild(b); layer.__dn = b;
+    // pinned to the screen (not the page), bottom centre, level with the page arrows
+    document.body.appendChild(b); layer.__dn = b;
     const pills = [...host.querySelectorAll('[data-name="Glass arrow pill"]')];
-    // measured on screen (phones enlarge the page arrows on their own), then mapped back into the board's coordinates
     const place = () => {
-      const rs = pills.map(p => p.getBoundingClientRect()).sort((x, y) => x.left - y.left), r1 = rs[0], r2 = rs[rs.length - 1];
-      if (!r1.width || !b.offsetWidth) return;
-      const br = b.getBoundingClientRect(), k = br.width / b.offsetWidth || 1, ps = r1.height / (pills[0].offsetHeight || 50);
-      const size = Math.round(58 * ps / k), ox = br.left - k * b.offsetLeft, oy = br.top - k * b.offsetTop;
-      // centred on the screen (not between the page arrows, which can sit unevenly around a notch or the browser's edges);
-      // the layer's left edge is added so it stays put while a page slides in or out
-      const vw = (window.visualViewport && visualViewport.width) || innerWidth, lx = layer.getBoundingClientRect().left;
-      const cx = lx + vw / 2, cy = r1.top + r1.height / 2;
-      b.style.width = b.style.height = size + 'px'; b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
-      b.style.left = ((cx - ox) / k - size / 2) + 'px'; b.style.top = ((cy - oy) / k - size / 2) + 'px';
+      const r = pills.map(p => p.getBoundingClientRect()).find(x => x.width > 0 && x.bottom > 0 && x.top < innerHeight);
+      const size = r ? Math.max(40, Math.min(64, Math.round(r.height * 1.16))) : 52;
+      b.style.width = b.style.height = size + 'px'; b.style.marginLeft = (-size / 2) + 'px';
+      b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
+      if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
+      else { b.style.top = 'auto'; b.style.bottom = 'calc(env(safe-area-inset-bottom) + 22px)'; }
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
@@ -2272,13 +2277,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
       return null;
     };
     let raf = 0;
-    const upd = () => { raf = 0; b.classList.toggle('off', target() == null); };
+    // shown only for the page on screen, when there's a section below, and hidden along with the header and page arrows
+    // (they fade out after a few idle seconds and come back when you scroll); menus and sheets cover it too
+    const upd = () => { raf = 0;
+      if (!layer.isConnected) { b.remove(); DN.delete(upd); return; }
+      const mine = current && current.layer === layer && !layer.__gone;
+      b.classList.toggle('gone', !mine); if (!mine) return;
+      place(); b.classList.toggle('off', target() == null || layer.classList.contains('fav-idle') || uiTop() !== 'none'); };
+    DN.add(upd);
     sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(upd); }, { passive: true });
-    addEventListener('resize', () => { place(); upd(); });
+    addEventListener('resize', () => upd());
     const TAPPABLE = 'button, a[href]:not([aria-label^="Scroll to"]), input, select, textarea, label, [role="button"], .hapsw, nav';
     // taps are read from pointer down/up (touch screens here don't always send a click); a drag or long press is not a tap
     let pd = null, doneT = 0;
-    const hit = (x, y, el) => !b.classList.contains('off') && !document.body.classList.contains('ly-on') && inStrip(x, y)
+    const hit = (x, y, el) => !b.classList.contains('off') && !b.classList.contains('gone') && !document.body.classList.contains('ly-on') && inStrip(x, y)
       && !(el && el.closest && el.closest(TAPPABLE) && !el.closest('a[aria-label^="Scroll to"]'));   // a real button there still works
     // (on window, ahead of the page-swipe handler, which can stop touch events before they reach the page)
     addEventListener('pointerdown', e => { pd = e.isPrimary && layer.isConnected && !layer.__gone && layer.contains(e.target) && hit(e.clientX, e.clientY, e.target) ? { x: e.clientX, y: e.clientY, t: performance.now(), y0: sc.scrollTop } : null; }, true);
@@ -2295,7 +2307,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     addEventListener('pointercancel', () => { pd = null; }, true);
     // swallow the click that follows a handled tap, so nothing underneath also reacts
     addEventListener('click', e => { if (performance.now() - doneT < 700 && layer.contains(e.target) && inStrip(e.clientX, e.clientY)) { e.preventDefault(); e.stopPropagation(); } }, true);
-    place(); setTimeout(() => { place(); upd(); }, 60); setTimeout(() => { place(); upd(); }, 900);
+    upd(); setTimeout(upd, 60); setTimeout(upd, 900);
   }
 
   // ---------------- side nav fit (phones sideways) ----------------
@@ -2466,7 +2478,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     if (overlay) return 'overlay';
     return 'none';
   }
-  function uiSync() { try { FR.set('ui', uiTop()); } catch (e) {} }
+  function uiSync() { try { FR.set('ui', uiTop()); } catch (e) {} try { dnRefresh(); } catch (e) {} }
   FR.ui = uiSync;
   const uiBlocks = () => { const u = uiTop(); return u !== 'none' && u !== 'overlay'; };
   FR.provide('page', () => current ? pageName(current.board) || current.board : '');
