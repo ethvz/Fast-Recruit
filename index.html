@@ -1254,7 +1254,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // 3D card carousel (Incentive trips, Guests): where its front card sits, so portrait can blow it up to the screen width
     let CF = null; { const cf = wrap.querySelector('[data-cfst]'), card = cf && cf.querySelector('[data-cf]');
       const at = el => { let x = 0, y = 0, e = el; while (e && e !== wrap && wrap.contains(e)) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return [x, y]; };
-      if (card && card.offsetWidth) { const [x, y] = at(card), [fx, fy] = at(cf); CF = { x: x + card.offsetWidth / 2, y: y + card.offsetHeight / 2, w: card.offsetWidth, h: card.offsetHeight, fx, fy }; } }
+      if (card && card.offsetWidth) { const [x, y] = at(card), [fx, fy] = at(cf), hs = wrap.querySelector('.hsc'), ey = hs && hs.offsetParent ? at(hs.offsetParent)[1] : 0; CF = { x: x + card.offsetWidth / 2, y: y + card.offsetHeight / 2, w: card.offsetWidth, h: card.offsetHeight, fx, fy, ey }; } }
     const kitP = sec.id === 'sec-sales-tools' && wrap.querySelectorAll('[data-name="Kit copy"] > p')[1];
     sec.__stk = { kitOT: kitP ? kitP.offsetTop : 0, cf: CF, rows: R, bgs, h: +sec.dataset.h || 1024, first: !sec.previousElementSibling || !/^sec-/.test(sec.previousElementSibling.id || '') };
     void all;
@@ -1446,9 +1446,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (pl) { const y0 = pl.ny + (S.kitOT - 400 + 10) * pl.k, y1 = pl.ny + (S.kitOT - 16) * pl.k, s = (y1 - y0) / 1174 * 1.7;   // (large, and running off the right edge)
         rules += 'html.pstack #sec-sales-tools [data-name="Sales tools iPads"]{overflow:visible !important;transform-origin:1215px 557px !important;translate:' + (Math.round(1466 * 0.44 + 565 * s) - 1215) + 'px ' + ((y0 + y1) / 2 - 557).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;}\n'; } }
     if (S.cf) {   // card carousel: the card you land on fills the screen width, centred in the space under the title
-      const c = S.cf, top = minTop, bot = hr - BOT, s = Math.min((1466 - PADX) / c.w, (bot - top - 30) / c.h) / 1.09, Yc = (top + bot) / 2, sel = 'html.pstack #' + sec.id + ' ';
-      rules += sel + '[data-cfst]{transform-origin:' + (c.x - c.fx).toFixed(1) + 'px ' + (c.y - c.fy).toFixed(1) + 'px !important;translate:' + (733 - c.x).toFixed(1) + 'px ' + (Yc - c.y).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;-webkit-mask-image:none !important;mask-image:none !important;}\n';
-      rules += sel + '.hsc{top:' + (Yc - c.h * s * 0.6).toFixed(1) + 'px !important;height:' + (c.h * s * 1.2).toFixed(1) + 'px !important;}\n'; }
+      const c = S.cf, top = minTop, bot = hr - BOT, s = Math.min((1466 - PADX) / c.w, (bot - top - 30) / c.h) / 1.09, Yc = PHONE && sec.id === 'sec-guests' ? top + 20 + c.h * s * 1.045 / 2 : (top + bot) / 2, sel = 'html.pstack #' + sec.id + ' ';   // (iPhones, Guests: the carousel sits right under the title)
+      rules += sel + '[data-cfst]{transform-origin:' + (c.x - c.fx).toFixed(1) + 'px ' + (c.y - c.fy).toFixed(1) + 'px !important;translate:' + (733 - c.x).toFixed(1) + 'px ' + (Yc - c.y).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;-webkit-mask-image:none !important;mask-image:none !important;}\n'; }
     return fin(hr);
   }
   // portrait v2 section height
@@ -1462,6 +1461,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
+    if (pstackOn() && sec.querySelector('[data-cfst]')) { requestAnimationFrame(() => alignCarousel(sec)); setTimeout(() => alignCarousel(sec), 400); }
     if (pphOn() && !sec.__pf && sec.querySelector('[data-name^="Background"]')) { sec.__pf = 1; sec.querySelectorAll('[data-name^="Background"]').forEach(bg => bg.querySelectorAll('*').forEach(el => {
         const g = getComputedStyle(el); if (el.tagName === 'DIV' && /linear-gradient/.test(g.backgroundImage) && !el.querySelector('img') && !el.dataset.name) el.dataset.pf = 'g';
         else if (/gradient/.test(g.webkitMaskImage || g.maskImage || '') && (el.tagName === 'IMG' || el.querySelector('img'))) el.dataset.pf = 'm'; })); }
@@ -2323,7 +2323,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21z';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22a';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2891,6 +2891,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       n.querySelectorAll('a, button, span, div').forEach(e => { const q = e.getBoundingClientRect(); if (q.width && q.height && getComputedStyle(e).visibility !== 'hidden') { B = Math.max(B, q.bottom); Rt = Math.max(Rt, q.right); } });
       n.style.setProperty('--nvb', ((B - r.bottom) / k).toFixed(1) + 'px'); n.style.setProperty('--nvr', ((Rt - r.right) / k).toFixed(1) + 'px'); };
     requestAnimationFrame(fit); setTimeout(fit, 350); setTimeout(fit, 700); }   // (again once the opening animation has settled)
+  // upright card carousels: the invisible swipe strip is laid exactly over the front card (wherever the layout put it)
+  function alignCarousel(sec) { const h = sec.querySelector('.hsc'), cards = [...sec.querySelectorAll('[data-cf]')]; if (!h || !cards.length || !pstackOn()) return;
+    const c = cards.find(e => /brightness\(1\)/.test(e.getAttribute('style') || '')) || cards[0], p = h.offsetParent; if (!p) return;
+    const cr = c.getBoundingClientRect(); if (!cr.height) return;
+    // (the strip sits inside scaled layers: find how its top/height map to the screen by trying two values)
+    const set = (t, hh) => { h.style.setProperty('top', t.toFixed(1) + 'px', 'important'); h.style.setProperty('height', hh.toFixed(1) + 'px', 'important'); };
+    set(0, 1000); const a = h.getBoundingClientRect(); set(1000, 2000); const b = h.getBoundingClientRect();
+    const ky = (b.top - a.top) / 1000, kh = (b.height - a.height) / 1000; if (!ky || !kh) return;
+    const pad = cr.height * 0.06; set((cr.top - pad - a.top) / ky, (cr.height + pad * 2) / kh); }
   function setupDownArrow(layer) {
     if (layer.__dn) return;
     const sc = scrollerOf(layer); if (!sc) return;
