@@ -1222,6 +1222,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // measure again once they arrive
     if (!sec.__stkImgW) { const pend = [...sec.querySelectorAll('img')].filter(im => !/height:\s*\d/.test(im.getAttribute('style') || '') && (!im.complete || im.naturalWidth <= 1));
       if (pend.length) { sec.__stkImgW = 1; let t = 0; const again = () => { clearTimeout(t); t = setTimeout(() => { if (!sec.isConnected || sec.__vout || pend.some(im => !im.complete || im.naturalWidth <= 1)) return;
+          pend.forEach(im => im.removeEventListener('load', again));   // (once: images that are unloaded off-screen and come back must not set off another re-measure)
           const st = sec.__stk && sec.__stk.style; if (st) st.disabled = true; sec.__stk = null; stackSection(sec); if (st) st.disabled = false; if (sec.__stk) sec.__stk.style = st; fitSection(sec); try { if (current) { const sc = scrollerOf(current.layer); if (sc) sc.dispatchEvent(new Event('scroll')); } } catch (e) {} }, 120); };
         pend.forEach(im => im.addEventListener('load', again)); } }
     // 3D card carousel (Incentive trips, Guests): where its front card sits, so portrait can blow it up to the screen width
@@ -2296,7 +2297,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21v';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21w';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
