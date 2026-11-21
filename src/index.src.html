@@ -1762,7 +1762,7 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-20h';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-20i';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2253,6 +2253,20 @@ try { if (Math.min(screen.width, screen.height) < 600) document.documentElement.
   const canSel = t => t && t.closest && (t.closest('input, textarea, select, [contenteditable="true"]') || document.body.classList.contains('ly-on'));
   ['copy', 'cut'].forEach(ev => document.addEventListener(ev, e => { if (!canSel(document.activeElement) && !canSel(e.target)) e.preventDefault(); }, true));
   document.addEventListener('selectstart', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
+  // iPhone/iPad ignore "no selection" on a long press over the header links and the hold-to-edit buttons, and pop up
+  // Copy / Translate. Holding those can't start a selection now: their touch is kept from the browser, and a plain tap is
+  // passed on as a click (the hold menus run on pointer events, which still arrive).
+  const HOLDSEL = '.hot[data-name^="("], [data-x="Custom flow"], .fstar';
+  let hold = null;
+  document.addEventListener('touchstart', e => {
+    const t = e.target.closest && e.target.closest(HOLDSEL); hold = null;
+    if (!t || e.touches.length > 1 || canSel(e.target)) return;
+    e.preventDefault(); const p = e.touches[0]; hold = { el: e.target, x: p.clientX, y: p.clientY, moved: false };
+  }, { capture: true, passive: false });
+  document.addEventListener('touchmove', e => { if (hold && e.touches[0] && Math.hypot(e.touches[0].clientX - hold.x, e.touches[0].clientY - hold.y) > 10) hold.moved = true; }, { capture: true, passive: true });
+  document.addEventListener('touchend', e => { const h = hold; hold = null; if (!h || h.moved || !h.el.isConnected) return;
+    h.el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: h.x, clientY: h.y })); }, { capture: true, passive: true });
+  document.addEventListener('touchcancel', () => { hold = null; }, { capture: true, passive: true });
   // iPhone/iPad: a long press can still start a selection (and its Copy bubble) or a link/picture preview; drop both at once
   document.addEventListener('contextmenu', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
   document.addEventListener('dragstart', e => { if (!canSel(e.target)) e.preventDefault(); }, true);
