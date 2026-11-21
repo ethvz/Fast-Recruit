@@ -273,6 +273,16 @@
   html.pph #sec-three-year-plan [data-name="Plan year"] { flex: 1 0 156px !important; width: 156px !important; min-width: 0; display: flex; flex-direction: column; }
   html.pph #sec-three-year-plan [data-name="Plan year"] :is(select, input) { min-width: 0 !important; max-width: 100% !important; }
   html.pph #sec-three-year-plan [data-name="Plan year"] > div { flex: 1 1 0; height: auto !important; min-height: 24px; }
+  /* iPhone upright, Growth: an open skill covers the tiles fully; its three boxes stack and fill the panel under the title */
+  html.pph #sec-growth [data-name="Skill detail"] { background: linear-gradient(150deg, rgb(20,30,28), rgb(6,10,9)) !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] { top: 210px; bottom: 36px !important; flex-direction: column; gap: 18px !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div { flex: 1 1 0 !important; display: flex; flex-direction: column; justify-content: center; padding: 20px 26px !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div > div:last-child { font-size: 31px !important; line-height: 40px !important; margin-top: 12px !important; letter-spacing: -0.01em; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div span { font-size: 24px !important; line-height: 28px !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div span:first-child { width: 40px !important; height: 40px !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] > div { padding: 18px 32px !important; min-height: 0; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div:nth-child(3) { font-size: 34px !important; line-height: 44px !important; }
+  html.pph #sec-growth [data-name="Skill detail"] > div > div[style*="bottom: 40px"] { top: 250px; }
   /* upright, Pro spotlight: the rep tile runs to the bottom of the screen — name, then the production chart, then the bio */
   html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] { flex-direction: column !important; gap: 0 !important; }
   html.pstack #sec-pro-highlights [data-name="Rep detail"] > div[style*="gap: 40px"] > div { display: contents !important; }
@@ -2296,7 +2306,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21w';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21x';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
