@@ -418,7 +418,9 @@
   #phdr.navopen .ph-prog { scale: 0 1; opacity: 0; transition: scale .26s cubic-bezier(.4,0,.2,1), opacity .1s ease .18s; }   /* (the line draws back into the button) */
   html.pph .layer.pnav-open .board nav { animation: pnavGrow .42s cubic-bezier(.25,.8,.25,1) both !important; }   /* (!important: phones switch board animations off) */
   html.pph .layer.pnav-open .board nav a > span:last-child { animation: pnavText .3s ease .26s both !important; }
-  @keyframes pnavGrow { from { clip-path: inset(-120px -80px 100% -80px); } to { clip-path: inset(-120px -80px -80px -80px); } }   /* (the menu grows down out of the button) */
+  html.pph .layer.pnav-open .board nav > div { transform-origin: 50% 0 !important; animation: pnavLine .4s cubic-bezier(.25,.8,.25,1) both !important; }   /* (the progress line itself runs down out of the button) */
+  @keyframes pnavLine { from { scale: 1 0; } to { scale: 1 1; } }
+  @keyframes pnavGrow { from { clip-path: inset(-200px -200px 100% -200px); } to { clip-path: inset(-200px -200px calc(-120px - var(--nvb, 0px)) -200px); } }   /* (the menu grows down out of the button) */
   @keyframes pnavText { from { opacity: 0; translate: -8px 0; } to { opacity: 1; translate: 0 0; } }
   /* portrait v2 section menu: hidden until its button is pressed; open, it sits on a dark panel */
   html.pph .layer:not(.pnav-open) .board nav { opacity: 0 !important; visibility: hidden; transition: opacity .3s ease, visibility 0s linear .3s; }
@@ -2390,7 +2392,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22r';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22s';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
