@@ -125,6 +125,7 @@
   html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
   html.pland .board :is(.pmid, .ptop) > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
   html.pland .board :is(.pmid, .ptop) > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
+  html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: 50%; top: 0; width: auto !important; height: 100% !important; max-width: none; transform: translate(calc(var(--repx, 0.262) * -160%), -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen */
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
@@ -185,7 +186,7 @@
   #phdr .ph-p { flex: none; height: 30px; padding: 0 14px; margin-left: 4px; border-radius: 15px; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; font: 700 11px/28px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
   #phdr .ph-p.g { border-color: rgba(5,229,175,.6); color: #05E5AF; }
   /* iPhone portrait: the section star + extra buttons sit top right, level with the section-menu button */
-  html.pph .favw { top: calc(var(--isc, 1) * 64px) !important; right: calc(var(--isc, 1) * 12px) !important; scale: calc(var(--isc, 1) * 0.42); transform-origin: 100% 0; }
+  html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
   /* product tiles re-cut shorter in portrait: their pictures shrink to fit */
   html.pstack .pdtile img { height: auto !important; max-height: 100% !important; }
   /* portrait: background photos keep only their bottom fade (side and top fades go; a light even dim stays for the text) */
@@ -194,6 +195,24 @@
   html.port:not(.pland) #sec-environment [data-name^="Background"] [data-name^="Photo"] { opacity: 1 !important; }
   html.port:not(.pland) #sec-environment [data-name^="Background"] > :is([data-name="Scrim"], [data-name="Fade to black"], [data-name="Blend to black"]) { background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.65) 82%, #000 100%) !important; }
   html.port:not(.pland) #sec-sales-tools [data-name="Sales tools iPads"] { opacity: .32 !important; }
+  /* iPhone upright: background photos fade only at the bottom (no top or side fades) */
+  html.pph .board [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
+  html.pph .board [data-pf="m"] { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%) !important; }
+  html.pph .board section[id^="sec-"] [data-name^="Background"] > :is([data-name="Blend to black"], [data-name="Fade to black"], [data-name="Scrim"], [data-name="Sky shade"], [data-name="Photo fade"]) { background: linear-gradient(180deg, rgba(0,0,0,.22) 0%, rgba(0,0,0,.22) 58%, rgba(0,0,0,.7) 84%, #000 100%) !important; }
+  /* Products (upright): no tagline under each name; the product photos take the room */
+  html.port:not(.pland) .pdtile > div[style*="top: 24px"] > div + div { display: none !important; }
+  html.port:not(.pland) .pdtile > div[style*="top: 110px"] { top: 70px !important; bottom: 18px !important; }
+  html.port:not(.pland) .pdtile > div[style*="top: 96px"] { top: 58px !important; bottom: 16px !important; }
+  html.port:not(.pland) .pdtile > div[style*="top: 16px"] { top: 8px !important; }
+  html.port:not(.pland) .pdtile img { max-width: 94% !important; }
+  /* iPhone upright, Package costs: each package is two lines, name and price over the equipment */
+  html.pph #sec-package-costs [data-name="Package rows"] > div { flex-wrap: wrap !important; align-content: center !important; row-gap: 14px; padding: 16px 24px !important; }
+  html.pph #sec-package-costs [data-name="Package rows"] > div > div:first-child { order: 3; width: 100% !important; display: flex; justify-content: center; }
+  html.pph #sec-package-costs [data-name="Package rows"] > div > div:first-child img { width: auto !important; max-width: 100% !important; height: auto !important; max-height: 112px; }
+  html.pph #sec-package-costs [data-name="Package rows"] > div > div:nth-child(2) { padding-left: 4px !important; }
+  /* section buttons (Sales rules, star, Custom flow edit/exit) larger upright; on iPhones the size of the sections button */
+  html.pstack:not(.pph) .favw { scale: 1.5; }
+  html.pph .favw { scale: calc(var(--isc, 1) * 38 / 36) !important; top: calc(var(--isc, 1) * 64px) !important; }
   #phdr .ph-scroll { justify-content: flex-end; }
   /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
   html.pph .layer .board [data-name="Glass arrow pill"], html.pph .layer .board .pdown { display: none !important; }
@@ -832,7 +851,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     let wokeAt = 0;
     layer.addEventListener('pointerdown', e => {
       const inst = layer._inst; if (!layer.classList.contains('fav-idle') || !inst || !inst.state || !inst.state.hdrHide) return;
-      const r = layer.getBoundingClientRect(), y = (e.clientY - r.top) / (r.height / (H || 1024)); if (y > 120) return;
+      const r = layer.getBoundingClientRect(), y = (e.clientY - r.top) / (r.height / (H || 1024)); if (y > 120 && y < (H || 1024) - 120) return;   // the top (header) or bottom (footer) strip
       e.preventDefault(); e.stopPropagation(); wokeAt = Date.now();
       inst.setState({ hdrHide: false }); if (typeof inst.hdrKick === 'function') inst.hdrKick();
     }, true);
@@ -1061,7 +1080,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; })) { take(c); return; } }
       const cs = getComputedStyle(c), o = (cs.transformOrigin || '0 0').split(' ').map(parseFloat);
       if (!c.dataset.pst) c.dataset.pst = 'p' + (++pstSeq);
-      items.push({ el: c, id: c.dataset.pst, x, y, w, h, ox: o[0] || 0, oy: o[1] || 0, full: !rot && w >= 1300, bg: !rot && w >= 1300 && h >= 900, rot, w0, h0, X0, Y0, txt: (c.textContent || '').trim().length > 12, hid: cs.visibility === 'hidden' });
+      items.push({ el: c, id: c.dataset.pst, x, y, w, h, ox: o[0] || 0, oy: o[1] || 0, full: !rot && w >= 1300, bg: !rot && w >= 1300 && h >= 900 && y < 50, rot, w0, h0, X0, Y0, txt: (c.textContent || '').trim().length > 12, hid: cs.visibility === 'hidden' });
     });
     take(wrap); wrap.style.transform = t0;
     // closed sheets / pop-overs don't shape the column; they ride along with the box they sit over
@@ -1085,7 +1104,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (pend.length) { sec.__stkImgW = 1; let t = 0; const again = () => { clearTimeout(t); t = setTimeout(() => { if (!sec.isConnected || sec.__vout || pend.some(im => !im.complete || im.naturalWidth <= 1)) return;
           const st = sec.__stk && sec.__stk.style; if (st) st.disabled = true; sec.__stk = null; stackSection(sec); if (st) st.disabled = false; if (sec.__stk) sec.__stk.style = st; fitSection(sec); try { if (current) { const sc = scrollerOf(current.layer); if (sc) sc.dispatchEvent(new Event('scroll')); } } catch (e) {} }, 120); };
         pend.forEach(im => im.addEventListener('load', again)); } }
-    sec.__stk = { rows: R, bgs, h: +sec.dataset.h || 1024, first: !sec.previousElementSibling || !/^sec-/.test(sec.previousElementSibling.id || '') };
+    // 3D card carousel (Incentive trips, Guests): where its front card sits, so portrait can blow it up to the screen width
+    let CF = null; { const cf = wrap.querySelector('[data-cfst]'), card = cf && cf.querySelector('[data-cf]');
+      const at = el => { let x = 0, y = 0, e = el; while (e && e !== wrap && wrap.contains(e)) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; } return [x, y]; };
+      if (card && card.offsetWidth) { const [x, y] = at(card), [fx, fy] = at(cf); CF = { x: x + card.offsetWidth / 2, y: y + card.offsetHeight / 2, w: card.offsetWidth, h: card.offsetHeight, fx, fy }; } }
+    sec.__stk = { cf: CF, rows: R, bgs, h: +sec.dataset.h || 1024, first: !sec.previousElementSibling || !/^sec-/.test(sec.previousElementSibling.id || '') };
     void all;
   }
   // measure a section even while it's unloaded (its content is put back for a moment, then put away again)
@@ -1108,12 +1131,18 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     'sec-job-description': ph => ({ sel: '[data-name="Card"]', cols: 2 }),
     'sec-growth': ph => ph ? null : { sel: '[data-name="Skill tile"]', cols: 3, span: { 0: 2 } },
     'sec-matts-big-3': ph => ph ? { sel: '[data-name="Rule card"]', cols: 1 } : null,
+    'sec-nrg': ph => ph ? { sel: '[data-name="NRG stock card"], [data-name="NRG fact"]', cols: 1 } : null,
+    'sec-housing': ph => ph ? { sel: '[data-name="Housing card"]', cols: 2, fit: true } : null,
+    // (phones: each package is two lines inside its tile, name and price over the equipment; the tiles fill the free height)
+    'sec-package-costs': ph => ph ? { sel: '[data-name="Package rows"] > div', cols: 1, k: 0.42, hi: 3 } : null,
   };
+  // phones: these stay one screen (the body is fitted, not allowed to run on)
+  const PFIT = { 'sec-sales-tools': 1, 'sec-travel': 1 };
   function placeStack(sec) {
     const S = sec.__stk; if (!S || S.skip) return null;
     const key = scale.toFixed(4) + ':' + H; if (S.key === key) return S.res;
     const RC = PGRID[sec.id] && PGRID[sec.id](PHONE);
-    let one = S.h <= 1100 || !!(RC && RC.fit); const PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
+    const pfit = PHONE && !!PFIT[sec.id]; let one = S.h <= 1100 || !!(RC && RC.fit) || pfit; const PADX = PHONE ? (pfit ? 34 : 50) : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
     const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 16 / scale : 44;
     // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
     const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
@@ -1154,9 +1183,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (RC.cols) { packed = []; let row = [], used = 0; all.forEach((it, i) => { const sp = (RC.span && RC.span[i]) || 1; if (used + sp > RC.cols) { packed.push(row); row = []; used = 0; } row.push({ it, sp }); used += sp; }); if (row.length) packed.push(row);
         packed = packed.map(r => r.map(o => ({ it: o.it, share: o.sp / RC.cols, gaps: o.sp - 1 }))); }
       else packed = src.map(r => { const tw = r.reduce((a, it) => a + it.w, 0); return r.map(it => ({ it, share: it.w / tw, gaps: 0, n: r.length })); });
-      let k = RC.cols ? (PHONE ? 0.72 / scale : 0.9 / KS) : CW / origW;
+      let k = RC.cols ? (PHONE ? (RC.k || 0.72) / scale : 0.9 / KS) : CW / origW;
       const rowH = packed.map(r => Math.max(...r.map(o => o.it.h))), sumH = rowH.reduce((a, b) => a + b, 0), gaps = gp * (packed.length - 1);
-      let hs = (avail - gaps) / (sumH * k); const lo = RC.cols ? 0.92 : 0.5, hi = RC.cols ? 1.3 : PHONE ? 1.7 : 1.15;
+      let hs = (avail - gaps) / (sumH * k); const lo = RC.lo || (RC.cols ? 0.92 : 0.5), hi = RC.hi || (RC.cols ? 1.3 : PHONE ? 1.7 : 1.15);
       if (hs < lo) { k = k * hs / lo; hs = lo; } hs = Math.min(hs, hi);
       const out = packed.map((r, ri) => { const n = RC.cols ? RC.cols : r.length, cellW = (CW - gp * (n - 1));
         return { h: rowH[ri] * hs * k, tiles: r.map(o => ({ it: o.it, w: cellW * o.share + gp * o.gaps })) }; });
@@ -1199,20 +1228,23 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (GT) { GRID = gridLay(Math.max(400, availR - L.total)); L = layout(mode); }
     // how much of the free space an arrangement uses (too tall = it has to shrink, which narrows it)
     // (phones: boxes keep the full width; a section may run a little past one screen instead of shrinking)
-    const cover = t => t.total <= availB ? t.total / availB : PHONE && !hasRot ? (t.total <= availB * 1.7 ? 0.95 : 0) : availB / t.total;
-    if (one && !GT) for (let pass = 0; pass < 8 && cover(L) < 0.74; pass++) {   // open rows up while that fills the screen better
+    const cover = t => t.total <= availB ? t.total / availB : PHONE && !hasRot && !pfit ? (t.total <= availB * 1.7 ? 0.95 : 0) : availB / t.total;
+    if (one && !GT) for (let pass = 0; pass < 8 && cover(L) < (pfit ? 0.9 : 0.74); pass++) {   // open rows up while that fills the screen better
       let best = null;
       const sig = n => mode[n] + ':' + bR[n].cols.length + ':' + small(bR[n]);
       mode.forEach((m, n) => { const nx = m === 'side' ? (small(bR[n]) ? 'pair' : 'stack') : m === 'pair' ? 'stack' : null; if (!nx) return;
         const md = mode.map((x, q) => sig(q) === sig(n) ? nx : x), t = layout(md); if (cover(t) >= 0.6 && (!best || cover(t) > cover(best.t))) best = { md, t }; });
       if (!best || cover(best.t) <= cover(L) + 0.06) break; mode.splice(0, mode.length, ...best.md); L = best.t;
     }
-    let fitB = one && L.total > availR ? availR / L.total : 1; const grow = PHONE && !hasRot && fitB < 0.94; if (grow) fitB = 1;
+    let fitB = one && L.total > availR ? availR / L.total : 1; const grow = PHONE && !hasRot && !pfit && fitB < 0.94; if (grow) fitB = 1;
     const total = L.total * fitB;
     const hr = Math.round(one && !grow ? H : Math.max(H, TOP + tH + (nT ? GAP : 0) + total + BOT));
     const minTop = TOP + tH + (nT ? GAP : 0);
     let y = one && !grow ? Math.max(minTop, Math.min((H - total) / 2, H - BOT - total)) : minTop;
-    L.G.forEach(g => { const k = g.k * (g.full ? 1 : fitB); y += g.gap * fitB;
+    // iPads, Environment: the team photo keeps the top of the screen; the words run the full width underneath it
+    if (!PHONE && sec.id === 'sec-environment') { const bw = Math.max(...L.G.filter(g => !g.full).map(g => g.w)), k0 = CW / Math.max(1, bw);
+      L.G.forEach(g => { if (!g.full) g.k = k0; }); y = Math.max(y, 1024 + 40); }
+    L.G.forEach((g, gi) => { const k = g.k * (g.full ? 1 : fitB); y += g.gap * fitB;
       if (g.grid) {   // re-cut tiles: own width and height, text kept at a readable scale
         const G2 = GRID, kk = G2.k, X0 = (1466 - CW * fitB) / 2; let yy = y;
         G2.rows.forEach(r => { let xx = X0; r.tiles.forEach(o => { const it = o.it;
@@ -1222,6 +1254,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         y += g.h * fitB; return; }
       const X = g.full ? 0 : g.lab || g.pic || !PHONE ? (1466 - CW * fitB) / 2 : (1466 - g.w * k) / 2;   // (iPads: body lines up with the title)
       g.its.forEach(o => put(o.it, g.full ? o.it.x : X + o.rx * k, y + o.ry * k, k)); y += g.h * k; });
+    if (S.cf) {   // card carousel: the card you land on fills the screen width, centred in the space under the title
+      const c = S.cf, top = minTop, bot = hr - BOT, s = Math.min((1466 - PADX) / c.w, (bot - top - 30) / c.h) / 1.09, Yc = (top + bot) / 2, sel = 'html.pstack #' + sec.id + ' ';
+      rules += sel + '[data-cfst]{transform-origin:' + (c.x - c.fx).toFixed(1) + 'px ' + (c.y - c.fy).toFixed(1) + 'px !important;translate:' + (733 - c.x).toFixed(1) + 'px ' + (Yc - c.y).toFixed(1) + 'px !important;scale:' + s.toFixed(4) + ' !important;-webkit-mask-image:none !important;mask-image:none !important;}\n';
+      rules += sel + '.hsc{top:' + (Yc - c.h * s * 0.6).toFixed(1) + 'px !important;height:' + (c.h * s * 1.2).toFixed(1) + 'px !important;}\n'; }
     return fin(hr);
   }
   // portrait v2 section height
@@ -1235,6 +1271,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
+    if (pphOn() && !sec.__pf && sec.querySelector('[data-name^="Background"]')) { sec.__pf = 1; sec.querySelectorAll('[data-name^="Background"]').forEach(bg => bg.querySelectorAll('*').forEach(el => {
+        const g = getComputedStyle(el); if (el.tagName === 'DIV' && /linear-gradient/.test(g.backgroundImage) && !el.querySelector('img') && !el.dataset.name) el.dataset.pf = 'g';
+        else if (/gradient/.test(g.webkitMaskImage || g.maskImage || '') && (el.tagName === 'IMG' || el.querySelector('img'))) el.dataset.pf = 'm'; })); }
     if (pstackOn()) { stackSection(sec); applyHr(sec); if (sec.__hr) { wrap.style.top = '0px'; wrap.style.transformOrigin = '0 0'; wrap.style.transform = 'translate(0px,' + sec.__pty.toFixed(1) + 'px)'; return; } }
     const h = +sec.dataset.h || 1024;
     if (H === 1024 || !upright || stk) { wrap.style.transform = ''; wrap.style.top = ''; return; }   // landscape fill: no rescaling, just centred
@@ -2093,7 +2132,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-21p';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-21q';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2203,7 +2242,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (!pfoot) { pfoot = document.createElement('div'); pfoot.id = 'pfoot'; pfoot.setAttribute('role', 'navigation'); document.body.appendChild(pfoot); }
     phdr.classList.toggle('on', !!on); pfoot.classList.toggle('on', !!on); if (!on) return;
     document.documentElement.style.setProperty('--sab', (SIM ? SIM.b : 0) + 'px');
-    phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
+    phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px'); document.documentElement.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
     phdr.classList.toggle('idle', L.classList.contains('fav-idle')); phdr.classList.toggle('navopen', L.classList.contains('pnav-open')); phdr.querySelector('.ph-sec').hidden = !L.querySelector('.board nav');
     const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'); if (im.getAttribute('src') !== logo.getAttribute('src')) im.src = logo.src; }
     pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
@@ -2648,6 +2687,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   document.addEventListener('selectionchange', () => { const sl = getSelection && getSelection(); if (!sl || sl.isCollapsed || !sl.rangeCount) return;
     const n = sl.anchorNode, el = n && (n.nodeType === 1 ? n : n.parentElement); if (!canSel(el)) sl.removeAllRanges(); });
   const DN = new Set(), dnRefresh = () => requestAnimationFrame(() => DN.forEach(f => f()));
+  // footer strip (bottom of the screen, safe area included): a tap there while the header and footer are hidden only brings them back
+  { let woke = 0;
+    addEventListener('pointerdown', e => { const L = current && current.layer, inst = L && L._inst; if (!L || !inst || !inst.state || !inst.state.hdrHide || !L.classList.contains('fav-idle') || document.body.classList.contains('ly-on')) return;
+      const r = L.getBoundingClientRect(), band = Math.max(70, 120 * r.height / (H || 1024)); if (e.clientY < r.bottom - band) return;
+      e.preventDefault(); e.stopPropagation(); woke = Date.now(); inst.setState({ hdrHide: false }); if (typeof inst.hdrKick === 'function') inst.hdrKick(); }, true);
+    addEventListener('click', e => { if (Date.now() - woke < 700) { e.preventDefault(); e.stopPropagation(); woke = 0; } }, true); }
   function setupDownArrow(layer) {
     if (layer.__dn) return;
     const sc = scrollerOf(layer); if (!sc) return;
@@ -2669,6 +2714,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
+      if (pphOn()) { const q = b.getBoundingClientRect(); return q.width > 0 && x > q.left - 36 && x < q.right + 36 && y > q.top - 26 && y < q.bottom + 18; }   // phone portrait: the page arrows are hidden, the arrow sits above the footer pill
       // (pages list their two arrows in either order, so sort them left to right)
       const rs = pills.map(p => p.getBoundingClientRect()).sort((x, y) => x.left - y.left), r1 = rs[0], r2 = rs[rs.length - 1], lr = layer.getBoundingClientRect();
       const left = pills.length > 1 ? r1.right + 10 : lr.left, right = pills.length > 1 ? r2.left - 10 : lr.right;
