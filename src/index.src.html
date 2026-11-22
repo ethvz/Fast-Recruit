@@ -534,6 +534,8 @@
   html.pph .pm .nm-page { margin-bottom: .6em; }
   html.pph .pm .nm-cols { grid-template-rows: auto auto 1fr; }
   html.pph .pm .nm-quick { flex-wrap: nowrap; gap: 5px; }
+  html.pph .pm .nm-quick .nm-page { margin: 0; display: flex; }   /* (the column spacing under each page left Home sitting higher than Guide and Custom flow) */
+  html.pph .pm .nm-quick .nm-ptitle { box-sizing: border-box; display: flex; align-items: center; line-height: 1; font-size: 12px !important; font-weight: 700; letter-spacing: 0; padding: 0 14px !important; }
   html.pph .pm .nm-quick .nm-ptitle { height: 34px; font-size: 14px; padding: 0 12px; border-radius: 17px; flex: none; }
   html.pph .pm .nm-quick .nm-guide { height: 34px; font-size: 12px; padding: 0 10px; border-radius: 17px; gap: 6px; flex: none; }
   html.pph .pm .nm-bottom .nm-guide { font-size: 12px; line-height: 1.15; padding: 6px 10px; height: auto; min-height: 38px; border-radius: 19px; white-space: normal; text-align: left; }
@@ -2460,7 +2462,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22v';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22w';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
