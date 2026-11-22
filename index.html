@@ -132,7 +132,7 @@
   html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
   html.pland .board :is(.pmid, .ptop) > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
   html.pland .board :is(.pmid, .ptop) > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
-  html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: 50%; top: 0; width: auto !important; height: 100% !important; max-width: none; transform: translate(calc(var(--repx, 0.262) * -160%), -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen */
+  html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: min(0px, calc(733px - var(--repx, 0.262) * 1.6 * 1.497 * var(--H, 1024px))); top: 0; width: auto !important; height: 100% !important; max-width: none; transform: translate(0, -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen — but never so far right that the photo leaves a black strip on the left (screens that are only just upright, like an iPad in a near-square window) */
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
@@ -2554,7 +2554,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-24b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
