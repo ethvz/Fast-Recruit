@@ -227,6 +227,9 @@
   html.pstack .board [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 74%, rgba(0,0,0,.7) 90%, #000 100%) !important; }
   /* upright: each page's title screen keeps its photo the full height of the screen, fading to black only at the very bottom */
   html.pstack .board :is(#sec-why, #sec-experience, #sec-culture, #sec-opportunity) [data-name^="Background"] > :is([data-pb], [data-pf]) { height: calc(var(--SH, 2048px) * 1) !important; }
+  /* Experience title photo: its bottom third is dark stage floor, so it is drawn taller from the top and the dark part runs off the bottom */
+  html.pstack .board #sec-experience [data-name^="Background"] > [data-pb] { overflow: hidden !important; }
+  html.pstack .board #sec-experience [data-pb] > img { height: 138% !important; object-position: 50% 0% !important; }
   html.pstack .board :is(#sec-why, #sec-experience, #sec-culture, #sec-opportunity) [data-pb]::before { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 84%, rgba(0,0,0,.7) 94%, #000 100%); }
   html.pstack .board :is(#sec-why, #sec-experience, #sec-culture, #sec-opportunity) [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 84%, rgba(0,0,0,.7) 94%, #000 100%) !important; }
   html.pstack .board :is(#sec-why, #sec-experience, #sec-culture, #sec-opportunity) [data-pf="m"] { -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%) !important; mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%) !important; }
@@ -2532,7 +2535,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
