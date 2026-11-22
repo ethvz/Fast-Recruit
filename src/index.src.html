@@ -337,6 +337,10 @@
      the blurred backdrop photo is left out on iPhones (iPhones ran out of memory with all of it) */
   html.pstack :is(#sec-guests, #sec-incentive-trips) [data-cf] { box-shadow: none !important; }
   html.pstack :is(#sec-guests, #sec-incentive-trips) [data-cf]:is([style*="brightness(0.35)"], [style*="brightness(0.4)"]) { visibility: hidden !important; }
+  /* Incentive trips: the blurred backdrop starts 60px off the left edge, so it must also run 60px past the right one
+     (the full-width rule had cut it at the screen width: a black bar on iPhone, a blurred fade on iPad) */
+  .board #sec-incentive-trips [data-name="Destination backdrop"].fx-full, .board #sec-incentive-trips [data-name="Destination backdrop"] { width: calc(var(--FW, 1466px) + 120px) !important; }
+  .board #sec-incentive-trips [data-name="Destination backdrop"] > .fx-full, .board #sec-incentive-trips [data-name="Destination backdrop"] img { width: 100% !important; max-width: none !important; }
   html.pph #sec-incentive-trips [data-name="Destination backdrop"] { filter: none !important; transform: none !important; opacity: .35 !important; }
   /* iPhone upright, Path to progression: the info tile is a single column that fills its height (scrolls if a level runs long) */
   html.pph #sec-positions [data-name="Position detail"] > div { overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain; pointer-events: auto; scrollbar-width: none; padding: 24px 22px 40px !important; }
@@ -2498,7 +2502,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22z';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23a';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
