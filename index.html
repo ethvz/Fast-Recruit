@@ -229,6 +229,16 @@
   html.pstack .board section[id^="sec-"] [data-name^="Background"] > :is([data-pb], [data-pf]) { top: 0 !important; height: calc(var(--SH, 2048px) * 0.64) !important; }
   html.pstack .board section[id^="sec-"] [data-pb] > img { left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: 50% 50% !important; }
   html.pstack .board section[id^="sec-"] [data-pb]::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 74%, rgba(0,0,0,.7) 90%, #000 100%); }
+  /* iPhone sideways: every section photo fills the whole screen (no side fades, no left-hand shading) and fades to
+     black only along the bottom; an even light dim keeps the text readable */
+  html.pland .board section[id^="sec-"] [data-name^="Background"] > [data-pb] { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; -webkit-mask-image: none !important; mask-image: none !important; }
+  html.pland .board section[id^="sec-"] [data-pb] > img { left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: 50% 50% !important; }
+  html.pland .board section[id^="sec-"] [data-pb]::after { display: none !important; }
+  html.pland .board section[id^="sec-"] [data-pb]::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 68%, rgba(0,0,0,.7) 88%, #000 100%); }
+  html.pland .board section[id^="sec-"] [data-name^="Background"] > [data-pf="g"] { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.35) 66%, rgba(0,0,0,.75) 88%, #000 100%) !important; }
+  html.pland .board section[id^="sec-"] [data-name^="Background"] [data-pf="g"]:not([data-name^="Background"] > *) { background: none !important; }
+  html.pland .board section[id^="sec-"] [data-name^="Background"] > [data-pf="g"] ~ [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 80%, rgba(0,0,0,.5) 100%) !important; }   /* (a second shade adds no extra dim) */
+  html.pland .board section[id^="sec-"] [data-pf="m"] { -webkit-mask-image: none !important; mask-image: none !important; }   /* (no masks sideways: they cost a second full-size copy of the photo) */
   html.pstack .board [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 74%, rgba(0,0,0,.7) 90%, #000 100%) !important; }
   /* upright: each page's title screen keeps its photo the full height of the screen, fading to black only at the very bottom */
   html.pstack .board :is(#sec-why, #sec-experience, #sec-culture, #sec-opportunity) [data-name^="Background"] > :is([data-pb], [data-pf]) { height: calc(var(--SH, 2048px) * 1) !important; }
@@ -1683,7 +1693,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function fitSection(sec) {
     const wrap = sec && sec.querySelector(':scope > .pcont'); if (!wrap) return;
     if (pstackOn() && sec.querySelector('[data-cfst]')) { requestAnimationFrame(() => alignCarousel(sec)); setTimeout(() => alignCarousel(sec), 400); }
-    if (pstackOn() && !sec.__pf && sec.querySelector('[data-name^="Background"]')) { sec.__pf = 1; sec.querySelectorAll('[data-name^="Background"]').forEach(bg => { [...bg.children].forEach(c => { if (c.querySelector(':scope > img.pbgw, :scope > img.pbgimg')) c.dataset.pb = '1'; else if (!c.querySelector('img, video') && /^linear-gradient/.test(getComputedStyle(c).backgroundImage)) c.dataset.pf = 'g'; }); bg.querySelectorAll('*').forEach(el => {
+    if ((pstackOn() || PHONE) && !sec.__pf && sec.querySelector('[data-name^="Background"]')) { sec.__pf = 1; sec.querySelectorAll('[data-name^="Background"]').forEach(bg => { [...bg.children].forEach(c => { if (c.querySelector(':scope > img.pbgw, :scope > img.pbgimg')) c.dataset.pb = '1'; else if (!c.querySelector('img, video') && /^linear-gradient/.test(getComputedStyle(c).backgroundImage)) c.dataset.pf = 'g'; }); bg.querySelectorAll('*').forEach(el => {
         const g = getComputedStyle(el); if (el.tagName === 'DIV' && /linear-gradient/.test(g.backgroundImage) && !el.querySelector('img') && !el.dataset.name) el.dataset.pf = 'g';
         else if (/gradient/.test(g.webkitMaskImage || g.maskImage || '') && (el.tagName === 'IMG' || el.querySelector('img'))) el.dataset.pf = 'm'; }); }); }
     if (pstackOn()) { stackSection(sec); applyHr(sec); if (sec.__hr) { wrap.style.top = '0px'; wrap.style.transformOrigin = '0 0'; wrap.style.transform = 'translate(0px,' + sec.__pty.toFixed(1) + 'px)'; return; } }
@@ -2545,7 +2555,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23p';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24a';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
