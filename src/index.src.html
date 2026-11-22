@@ -415,16 +415,34 @@
   #phdr .ph-scroll { justify-content: flex-end; }
   /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
   html.pph .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"], html.pph .layer:not([data-fn="Main.dc.html"]) .board .pdown { display: none !important; }
-  #pfoot { position: fixed; left: 50%; bottom: calc(var(--sab, 0px) + 12px); z-index: 70; display: none; align-items: center; gap: 0; padding: 5px; border-radius: 28px; max-width: calc(100vw - 20px); box-sizing: border-box;
-    transform: translateX(-50%); transform-origin: 50% 100%; border: 1px solid rgba(255,255,255,.22);
-    background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)), rgba(18,22,20,.42); -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1px 0 rgba(255,255,255,.08), 0 14px 40px rgba(0,0,0,.5);
-    transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s ease, filter .38s ease; }
-  html.pph #pfoot.on { display: flex; }
-  #pfoot.sm { transform: translateX(-50%) scale(.78); opacity: .82; }
-  #pfoot.idle { opacity: 0; transform: translateX(-50%) translateY(14px) scale(.9); filter: blur(8px); pointer-events: none; }
-  #pfoot button { flex: none; height: 40px; padding: 0 2.2vw; border: 0; border-radius: 20px; background: none; color: rgba(255,255,255,.82); font: 700 2.3vw/40px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; cursor: pointer; transition: background .3s ease, color .3s ease; }
-  #pfoot button.cur { color: #04120d; background: linear-gradient(180deg, #2af0c0, #05cfa0); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 4px 14px rgba(5,229,175,.35); }
+  /* iPhone upright: the page buttons sit in a clear "liquid glass" bar along the bottom — barely tinted, lightly blurred
+     and brightened, with a bright rim that catches light like a lens; five equal buttons, icon over a small label */
+  #pfoot { position: fixed; left: 12px; right: 12px; bottom: calc(var(--sab, 0px) + 10px); z-index: 70; display: none; box-sizing: border-box; padding: 5px; border-radius: 30px;
+    grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; isolation: isolate;
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 55%, rgba(255,255,255,.06));
+    -webkit-backdrop-filter: blur(7px) saturate(1.9) brightness(1.12) contrast(1.05); backdrop-filter: blur(7px) saturate(1.9) brightness(1.12) contrast(1.05);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 1px 0 0 rgba(255,255,255,.22), inset -1px 0 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.28),
+      inset 0 10px 18px -12px rgba(255,255,255,.35), inset 0 -12px 18px -14px rgba(255,255,255,.22), 0 10px 30px rgba(0,0,0,.35);
+    transform-origin: 50% 100%; transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s ease; }
+  /* the lens: a bright curved rim (stronger on the top-left and bottom-right, like light bending through the edge) */
+  #pfoot::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.2px; pointer-events: none; z-index: -1;
+    background: linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.12) 28%, rgba(255,255,255,0) 50%, rgba(255,255,255,.1) 72%, rgba(255,255,255,.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+  /* a soft specular sheen across the top half */
+  #pfoot::after { content: ''; position: absolute; left: 10px; right: 10px; top: 2px; height: 45%; border-radius: 26px 26px 50% 50% / 26px 26px 14px 14px; pointer-events: none; z-index: -1;
+    background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); }
+  html.pph #pfoot.on { display: grid; }
+  #pfoot.sm { transform: scale(.94); opacity: .9; }
+  #pfoot.idle { opacity: 0; transform: translateY(14px) scale(.94); pointer-events: none; }
+  #pfoot button { position: relative; min-width: 0; height: 50px; padding: 0 2px; border: 0; border-radius: 25px; background: none; color: rgba(255,255,255,.92); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 600 9.5px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .01em;
+    white-space: nowrap; text-shadow: 0 1px 2px rgba(0,0,0,.45); transition: color .3s ease, background .3s ease, box-shadow .3s ease, transform .2s ease; }
+  #pfoot button svg { width: 22px; height: 22px; flex: none; filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.4)); }
+  #pfoot button span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  #pfoot button:active { transform: scale(.92); }
+  /* the page you're on: a brighter glass bubble, icon and label in Vivint green */
+  #pfoot button.cur { color: #2af5c4; background: radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.22), rgba(255,255,255,.06) 60%), rgba(5,229,175,.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(255,255,255,.15), inset 0 0 0 1px rgba(255,255,255,.12), 0 2px 10px rgba(0,0,0,.18); }
   /* portrait: the History wheel stands upright (a vertical timeline you swipe up and down); its text stays level */
   html.pph .board .tlw { touch-action: none !important; }
   html.pph .board [data-name="Swipe hint"] { display: none !important; }
@@ -2507,7 +2525,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23b';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23c';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2600,6 +2618,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     return { feedback, crash, news, unseen };
   })();
   // ---- portrait v2 header (screen-sized, outside the scaled page): menu + logo fixed, page links + Guide/Onboard scroll ----
+  // footer page icons (24 grid, drawn in the button's colour); Why Vivint is the Vivint house mark
+  const FOOTIC = {
+    'Why-Vivint.dc.html': '<svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="fhm"><rect width="24" height="24" fill="#fff"/><circle cx="5" cy="18.6" r="6.6" fill="#000"/></mask></defs><path d="M12 1.6 22.6 9.9V21a1.9 1.9 0 0 1-1.9 1.9H1.4V9.9Z" fill="currentColor" mask="url(#fhm)"/><circle cx="5" cy="18.6" r="2.9" fill="currentColor"/></svg>',
+    'Experience.dc.html': '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="m15.8 8.2-2.2 5.4-5.4 2.2 2.2-5.4z" fill="currentColor" stroke-width="1.4"/></svg>',
+    'Culture.dc.html': '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.2v2.3M12 19.5v2.3M2.2 12h2.3M19.5 12h2.3M5.1 5.1l1.6 1.6M17.3 17.3l1.6 1.6M5.1 18.9l1.6-1.6M17.3 6.7l1.6-1.6"/></svg>',
+    'Opportunity.dc.html': '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 17.5 9 11l4 4 8.5-8.5"/><path d="M15.5 6.5h6v6"/></svg>',
+    'FAQs.dc.html': '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M9.3 9.3a2.8 2.8 0 0 1 5.4 1c0 1.9-2.7 2.5-2.7 4.2"/><circle cx="12" cy="17.4" r=".4" fill="currentColor"/></svg>'
+  };
   let phdr = null, pfoot = null;
   function phdrSync() {
     const L = current && current.layer, on = pphOn() && L && L.isConnected && !!L.querySelector('.board [data-name="Header"]');
@@ -2647,7 +2673,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     PAGES.forEach(([t, fn]) => {
       const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
       const top = Object.keys(P.artboards).find(k => P.artboards[k].board === fn && P.artboards[k].section == null) || ((P.boards[fn] && P.boards[fn].sections || [])[0] || {}).aid;
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-l' + (current && current.board === fn ? ' cur' : ''); b.textContent = t;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-l' + (current && current.board === fn ? ' cur' : ''); b.setAttribute('aria-label', t);
+      b.innerHTML = (FOOTIC[fn] || '') + '<span>' + t + '</span>';
       let lp = 0, held = false;
       b.addEventListener('pointerdown', () => { held = false; clearTimeout(lp); if (!hot) return; lp = setTimeout(() => { held = true; try { haptic('select'); } catch (e) {} openQnav(L, hot, b); }, 450); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(k => b.addEventListener(k, () => clearTimeout(lp)));
