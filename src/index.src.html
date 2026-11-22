@@ -448,6 +448,7 @@
   #pfoot button:active { transform: scale(.92); }
   #pfoot button.cur { background: rgba(0,0,0,.075); }
   #pfoot button.cur span { opacity: 1; font-weight: 700; }
+  #pfoot button.cur :is(svg, .vh) { color: #00c493; }   /* (Vivint green, a shade deeper so it reads on the white bar) */
   #pfoot button.cur svg .f { fill: currentColor; }
   #pfoot button.cur svg .k { stroke: #f2f2f2; }
   #pfoot button.cur svg .kd { fill: #f2f2f2; stroke: none; }
@@ -2543,7 +2544,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23o';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23p';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
