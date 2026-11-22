@@ -484,6 +484,7 @@
   html.pph .layer.pnav-open .board nav { translate: var(--nvx, 0px) var(--nvy, 0px); }
   html.pph .layer.pnav-open .board nav::before { left: calc(-1 * var(--nvl, 14px)); top: calc(-1 * var(--nvt, 26px)); }   /* (opens below its button) */
   html.pstack:not(.pph) .layer.pnav-open .board nav { z-index: 40; }
+  html.pstack:not(.pph) .layer.pnav-open.at-title .board nav::before { display: none; }   /* (iPad upright, on a page's title screen: the menu sits on the photo without its box) */
   html.pstack .layer.pnav-open .board :has(> nav) { z-index: 500 !important; }   /* (the open menu sits above every section's content) */
 
   .board .fx-c { margin-left: var(--X, 0px) !important; }
@@ -1335,7 +1336,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (best === cur) return; cur = best; secs.forEach((x, i) => x.classList.toggle('sdim', i !== best)); };
     // iPad upright: the section menu stands open on the page's title screen and folds away once you move on
     let tRaf = 0; const tUpd = () => { tRaf = 0; if (layer.__gone || !pstackOn() || pphOn()) return; const first = secs.find(x => x.isConnected); if (!first) return;
-      const at = sc.scrollTop < (first.offsetHeight || 1024) * 0.5; if (at === layer._atTitle) return; const was = layer._atTitle; layer._atTitle = at;
+      const at = sc.scrollTop < (first.offsetHeight || 1024) * 0.5; if (at === layer._atTitle) return; const was = layer._atTitle; layer._atTitle = at; layer.classList.toggle('at-title', at);
       if (!at && was === undefined) return;
       const i = layer._inst; if (i && i.setState && i.state && (i.state.navOpen !== false) !== at) withOwner(null, () => i.setState({ navOpen: at })); };
     sc.addEventListener('scroll', () => { if (!tRaf) tRaf = requestAnimationFrame(tUpd); }, { passive: true });
@@ -2542,7 +2543,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23g';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23h';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
