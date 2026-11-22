@@ -532,6 +532,13 @@
   html.pph .pm .nm-guide { height: 2.6em; border-radius: 1.3em; padding: 0 .8em; font-size: .86em; display: inline-flex; align-items: center; gap: .45em; white-space: nowrap; }
   html.pph .pm .nm-cols { flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1em; row-gap: .3em; margin-top: 1.2em; align-content: space-between; }
   html.pph .pm .nm-page { margin-bottom: .6em; }
+  html.pph .pm .nm-cols { grid-template-rows: auto auto 1fr; }
+  html.pph .pm .nm-quick { flex-wrap: nowrap; gap: 5px; }
+  html.pph .pm .nm-quick .nm-ptitle { height: 34px; font-size: 14px; padding: 0 12px; border-radius: 17px; flex: none; }
+  html.pph .pm .nm-quick .nm-guide { height: 34px; font-size: 12px; padding: 0 10px; border-radius: 17px; gap: 6px; flex: none; }
+  html.pph .pm .nm-bottom .nm-guide { font-size: 12px; line-height: 1.15; padding: 6px 10px; height: auto; min-height: 38px; border-radius: 19px; white-space: normal; text-align: left; }
+  html.pph .pm .nm-cols > .nm-page:nth-child(4) { grid-column: 2; grid-row: 2 / 4; }   /* Opportunity runs down the right */
+  html.pph .pm .nm-cols > .nm-page:nth-child(5) { grid-column: 1; grid-row: 3; }   /* FAQs under Lifestyle */
   html.pph .pm .nm-cols .nm-ptitle { font-size: 1.25em; line-height: 1.2; padding-bottom: .35em; margin-bottom: .25em; }
   html.pph .pm .nm-sec { font-size: .92em; line-height: 1.15; padding: .34em 0 .34em 1px; gap: .5em; }
   html.pph .pm .nm-sec::before { width: 6px; height: 6px; }
@@ -2452,7 +2459,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22t';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22u';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2651,10 +2658,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       return '<div class="nm-page' + (fn === cur ? ' on' : '') + '"><div class="nm-ptitle" data-aid="' + B.sections[0].aid + '"><span class="n">' + String(k + 1).padStart(2, '0') + '</span>' + esc(label) + '</div>' + secs + '</div>';
     };
     const hasSecs = fn => { const B = P.boards[fn]; return B && B.sections && B.sections.length > 1; };
-    const quick = MENU.map((x, k) => hasSecs(x[0]) ? '' : page(x, k)).join(''), cols = MENU.map((x, k) => hasSecs(x[0]) ? page(x, k) : '').join('');
+    // iPhone portrait: only Home is a pill; FAQs sits in the columns under Lifestyle
+    const inCols = fn => hasSecs(fn) || (pphOn() && fn !== 'Main.dc.html');
+    const quick = MENU.map((x, k) => inCols(x[0]) ? '' : page(x, k)).join(''), cols = MENU.map((x, k) => inCols(x[0]) ? page(x, k) : '').join('');
+    const flowB = '<button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button>',
+      guideB = '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr));flex:none"></span>' + (pphOn() ? 'Guide' : 'Recruiting Guide') + '</button>';
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
-      + '<div class="nm-quick">' + quick + '<button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button><button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr))"></span>Recruiting Guide</button></div>'
+      + '<div class="nm-quick">' + quick + (pphOn() ? guideB + flowB : flowB + guideB) + '</div>'
       + '<div class="nm-cols">' + cols + '</div>'
       + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button>' + (OFFL.can() ? '<button type="button" class="nm-guide nm-dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span class="nm-dlt">' + OFFL.label() + '</span></button>' : '') + '<button type="button" class="nm-guide nm-fb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Send feedback</button><button type="button" class="nm-guide nm-wn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>What\'s New' + (FB.unseen() ? '<span class="nm-new" aria-label="new"></span>' : '') + '</button></div></div>';
     m.addEventListener('click', e => {
