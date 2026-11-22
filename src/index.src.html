@@ -70,6 +70,10 @@
   html.still .secdn svg { animation-play-state: running !important; }
   html.safe .secdn svg { animation: none !important; }
   @keyframes secdnBlink { 0%, 100% { opacity: 1; } 50% { opacity: .12; } }
+  /* iPhone upright: the next-section arrow matches the footer bar — a frosted white circle with a dark arrow that gently bobs */
+  html.pph .secdn { background: rgba(250,250,250,.86); -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8); border-radius: 50%; box-shadow: 0 8px 28px rgba(0,0,0,.22); }
+  html.pph .secdn svg { stroke: #16191a; filter: none; animation: secdnBob 1.6s ease-in-out infinite; }
+  @keyframes secdnBob { 0%, 100% { transform: translateY(-1.5px); } 50% { transform: translateY(2.5px); } }
   .board .hsc { pointer-events: auto; touch-action: pan-x pan-y; scrollbar-width: none; }
   /* inner lists that scroll up and down on their own (US salaries ages): Safari only scrolls a box the finger can actually touch */
   .board [data-vscroll], .board [data-name="Income rows"] { pointer-events: auto; touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
@@ -1126,7 +1130,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // while a navigation menu is open (upright section menu, the hamburger page menu, the long-press page menu) the header
     // and footer stay put: the page's idle timer may not hide them
     if (inst && typeof inst.setState === 'function') { const ss = inst.setState; inst.setState = function (u, ...rest) {
-      if (u && typeof u === 'object' && u.hdrHide === true && (menuEl || document.querySelector('.qnav') || (pstackOn() && this.state && this.state.navOpen !== false))) { u = Object.assign({}, u); delete u.hdrHide; if (!Object.keys(u).length) return; }
+      // the header, footer and arrows stay on screen all the time (they no longer fade away when the page is still)
+      if (u && typeof u === 'object' && u.hdrHide === true) { u = Object.assign({}, u); delete u.hdrHide; if (!Object.keys(u).length) return; }
       return ss.call(this, u, ...rest); }; }
     // upright: a page re-draws itself on scroll at most every 90 ms (plus once when scrolling stops). Every re-draw rebuilds the
     // whole page, and a fast flick fired dozens a second — iPhones ran out of memory and closed the page.
@@ -2536,7 +2541,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23i';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23j';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -3276,7 +3281,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.style.width = b.style.height = size + 'px'; b.style.marginLeft = (-size / 2) + 'px';
       b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
       if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
-      else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(var(--sab, 0px) + 70px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
+      else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(var(--sab, 0px) + 80px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
