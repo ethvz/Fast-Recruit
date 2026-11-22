@@ -310,6 +310,10 @@
      had 22 forced layers and 14 blurred pills, and iPhones closed the page) */
   html.pph .board section[id^="sec-"] * { will-change: auto !important; }
   html.pph .board section[id^="sec-"] :is(#sec-marketing, #sec-swag, #sec-guests, #sec-incentive-trips) *, html.pph :is(#sec-marketing, #sec-swag, #sec-guests, #sec-incentive-trips) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  /* iPhone upright: Swag (and Freedom just above it) no longer pin their background photo / stat panel while scrolling:
+     pinned layers are redrawn on every scroll frame, which ran iPhone Safari out of memory here */
+  html.pph :is(#sec-swag, #sec-freedom) [data-name="Background (stays put while this section scrolls)"], html.pph #sec-swag [data-name="Stat stage"] > div { position: relative !important; top: 0 !important; }
+  html.pph #sec-swag [style*="mix-blend-mode"] { mix-blend-mode: normal !important; opacity: .7; }
   html.pph #sec-marketing [data-name="Partner marquee"] { -webkit-mask-image: none !important; mask-image: none !important; }
   /* iPhones upright, Marketing (still closing the page): every photo and line is drawn flat — no clipping, no 3D/scale
      transforms, no layer promotion — so the section paints like a plain page */
@@ -2462,7 +2466,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22w';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22x';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
