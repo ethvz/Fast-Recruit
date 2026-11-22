@@ -2543,7 +2543,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-23m';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-23n';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -3465,7 +3465,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (zoomed()) { watchSec(el); if (zSec == null || pinch) zSec = secAt(el) || zSec; } else zSec = null;
     if (!zoomed()) { zoom = { z: 1, x: 0, y: 0 }; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : ''; el.style.transform = ''; return; }
     clampZ(); el.style.transformOrigin = '0 0'; el.style.transition = anim ? 'transform .3s cubic-bezier(.2,.9,.1,1)' : 'none';
-    el.style.transform = 'translate(' + zoom.x.toFixed(1) + 'px,' + zoom.y.toFixed(1) + 'px) scale(' + zoom.z.toFixed(4) + ')';
+    el.style.transform = 'translate(' + zoom.x.toFixed(1) + 'px,' + zoom.y.toFixed(1) + 'px) scale(' + zoom.z.toFixed(4) + ')' + (el.__in && document.documentElement.classList.contains('pph') ? ' scale(var(--isc, 1))' : '');   // (an iPhone's screen-size scroller keeps its own scale-up under the zoom)
   }
   function resetZoom() { const el = zEl(); wasZoomed = false; zoom = { z: 1, x: 0, y: 0 }; pinch = null; zpan = null; if (el) { el.style.transition = ''; el.style.transform = ''; } zPill(); }
   // Liquid Glass "Zoom out" pill at the bottom while zoomed in
