@@ -520,7 +520,7 @@
     padding: calc(var(--sat, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; font-size: var(--mf, 15px);
     display: flex; flex-direction: column; animation: pmIn .32s cubic-bezier(.2,.8,.2,1); }
   @keyframes pmIn { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @keyframes pgIn { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes pgIn { from { transform: translateY(24px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
   html.pph .navmenu.pm.out .nm-panel { transform: translateX(-40px); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
   html.pph .pm .nm-top { align-items: flex-start; }
   html.pph .pm .nm-eye, .pguide .nm-eye { font-size: .72em; letter-spacing: .24em; }
@@ -546,14 +546,15 @@
   html.pph .pm .nm-bottom .nm-guide { justify-content: flex-start; overflow: hidden; }
   html.pph .pm .nm-guide svg { flex: none; }
   /* recruiting guide drawer (iPhone portrait) — slides in from the right */
-  .pguide .pg-panel { position: absolute; right: 0; top: 0; bottom: 0; left: auto; box-sizing: border-box; border-radius: 26px 0 0 26px; border: 1px solid rgba(255,255,255,0.16); border-right: 0; overflow: hidden;
+  .pguide .pg-panel { position: absolute; left: 10px; right: 10px; top: calc(var(--sat, 0px) + 6px); bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); width: auto !important; box-sizing: border-box; border-radius: 28px; border: 1px solid rgba(255,255,255,0.18); overflow: hidden;
+    padding: 18px 18px 14px !important; box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
     background-image: radial-gradient(80% 30% at 100% 0%, rgba(5,229,175,0.14), rgba(5,229,175,0) 70%); animation: pgIn .32s cubic-bezier(.2,.8,.2,1); }
-  .pguide.out .pg-panel { transform: translateX(40px); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
+  .pguide.out .pg-panel { transform: translateY(16px) scale(.98); opacity: 0; transition: transform .22s ease, opacity .22s ease; }
   .pguide.out .pg-scrim { opacity: 0; transition: opacity .22s ease; }
   .pguide .nm-eye { color: #05E5AF; text-transform: uppercase; }
   .pguide .nm-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .pguide .nm-x { cursor: pointer; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; padding: 0; }
-  .pg-steps { display: flex; gap: 6px; overflow-x: auto; margin: 14px -16px 0; padding: 2px 16px 12px; scrollbar-width: none; flex: none; }
+  .pg-steps { display: flex; gap: 6px; overflow-x: auto; margin: 14px -18px 0; padding: 2px 18px 12px; scrollbar-width: none; flex: none; }
   .pg-steps::-webkit-scrollbar { display: none; }
   .pg-steps button { flex: none; height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.62); font: inherit; font-size: 13px; white-space: nowrap; display: flex; align-items: center; gap: 7px; cursor: pointer; }
   .pg-steps button i { font-style: normal; font-size: 11px; color: rgba(255,255,255,0.4); font-variant-numeric: tabular-nums; }
@@ -563,7 +564,7 @@
   .pg-steps button.on i { color: #05E5AF; }
   .pg-bar { height: 2px; border-radius: 1px; background: rgba(255,255,255,0.12); flex: none; }
   .pg-bar b { display: block; height: 100%; border-radius: 1px; background: #05E5AF; transition: width .4s cubic-bezier(.2,.8,.2,1); }
-  .pg-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; margin: 0 -16px; padding: 16px 16px 8px; }
+  .pg-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; margin: 0 -18px; padding: 16px 18px 8px; }
   .pg-step { zoom: 0.74; animation: nmFade .3s ease; }
   .pg-step [style*="font-size: 52px"] { font-size: 36px !important; line-height: 39px !important; }
   .pg-step [style*="font-size: 12.5px"] { font-size: 14.5px !important; }
@@ -2459,7 +2460,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-22u';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-22v';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2772,6 +2773,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // the pieces (only named ones can be targeted)
     const pill = q('Glass arrow pill'), labs = [...B.querySelectorAll('[data-name^="("]')];
     const G = { logo: [q('Vivint Logo')], title: ['Not', 'Like', 'Us'].map(q), menu: [q('Landing menu'), q('Home dot'), ...labs],
+      hdr: ['Open the recruiting guide', 'Open the onboarding tool'].map(l => B.querySelector('.ptop > [aria-label="' + l + '"]')), mbt: [B.querySelector('.ptop > [aria-label="Open menu"]')],
       cta: [B.querySelector('[data-x="Custom flow"]'), ...['Glass arrow pill', 'Begin', 'Group 6502', 'Group 6504 hotspot'].map(q)], mem: [q('In memory')] };
     if (pill && pill.nextElementSibling && pill.nextElementSibling.getAttribute('data-name')) G.cta.push(pill.nextElementSibling);
     Object.keys(G).forEach(n => G[n] = G[n].filter(e => e && (e.getAttribute('data-name') || e.getAttribute('data-x'))));
@@ -2791,6 +2793,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // move a group (its visible box g) so its top-left lands on X,Y, s times bigger
     // (a piece inside another moved piece rides along with it)
     const place = (els, g, X, Y, s) => els.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const v = vis.get(e); if (v && v.w) put(e, X + (v.x - g.x) * s, Y + (v.y - g.y) * s, v.w * s); });
+    // header: Guide + Onboard tucked into the top-right corner, a little smaller; the menu button level with them
+    const hb = box(G.hdr); let hMid = null;
+    if (hb) { const s = 0.85, Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }
+    const mbb = box(G.mbt); if (mbb && hMid != null) { const s = 0.85; place(G.mbt, mbb, Math.round(W * 0.01), hMid - mbb.h * s / 2, s); }
     // logo: centred, a quarter of the way down the screen
     const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, (W - lb.w * s) / 2, scH * 0.25 - lb.h * s / 2, s); }
     // NOT LIKE US + page menu side by side, the same height, centred on each other
