@@ -773,6 +773,8 @@
   .dw-st.pop svg { animation: dwPop .38s cubic-bezier(.3,1.6,.5,1); }
   @keyframes dwPop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
   @media (hover: hover) { .dw-st:hover svg { stroke: rgba(255,255,255,.7); } .dw-st.on:hover svg { stroke: rgb(var(--acr)); } }
+  /* editing: no screen preview (more of the list fits) */
+  .dw.edit .dw-pv { display: none !important; }
   /* editing: no progress line or dots, just the handles, names and stars */
   .dw.edit .dw-rail .ln, .dw.edit .dw-rail .fl, .dw.edit .dw-s i { display: none; }
   .dw.edit .dw-s.cur { font-weight: 500; } .dw.edit .dw-s.hl { background: none; }
