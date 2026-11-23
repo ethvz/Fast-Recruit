@@ -695,12 +695,12 @@
   .pg-main .pg-step:last-child { border-bottom: 0; margin-bottom: 0; min-height: 100%; }
   /* iPhone upright: the steps run across the top in a row you can swipe, names showing, with the progress line under them */
   @media (max-width: 599px) {
-    .pg-main { flex-direction: column; gap: 10px; }
-    .pg-rail { width: auto; display: flex; flex-direction: row; gap: 4px; overflow-x: auto; overflow-y: hidden; margin: 0 -18px; padding: 0 18px 12px; flex: none; }
+    .pg-main { flex-direction: column; gap: 10px; margin-top: 18px; }
+    .pg-rail { width: auto; display: flex; flex-direction: row; gap: 4px; overflow-x: auto; overflow-y: hidden; margin: 0 -18px; padding: 9px 18px 12px; flex: none; }   /* (room above the dots so the current one's glow isn't cut off) */
     .pg-rail a { flex: none; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 0; padding: 0 10px 0 0; font-size: 11px; white-space: nowrap; }
     .pg-rail a b { margin-left: 0; }
     .pg-rail a.on span { font-size: 12px; }
-    .pg-rail .pg-ln, .pg-rail .pg-fl { left: auto; top: 6px !important; height: 2px !important; width: 0; }
+    .pg-rail .pg-ln, .pg-rail .pg-fl { left: auto; top: 15px !important; height: 2px !important; width: 0; }
     .pg-rail .pg-fl { transition: width .12s linear; }
   }
   .pg-nav { display: flex; gap: 8px; padding-top: 12px; flex: none; }
@@ -2863,7 +2863,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (hz) { fl.style.height = ''; fl.style.width = len + 'px'; fl.style.left = ln.style.left = d0 + 'px'; ln.style.width = (mid(as[as.length - 1]) - d0) + 'px'; }
       else fl.style.height = len + 'px';
       if (i === cur) return; cur = i;
-      if (hz) rail.scrollTo({ left: Math.max(0, as[i].offsetLeft - 18), behavior: 'smooth' });
+      if (hz) rail.scrollTo({ left: Math.max(0, rail.scrollLeft + as[i].getBoundingClientRect().left - rail.getBoundingClientRect().left - 26), behavior: 'smooth' });
       as.forEach((a, k) => { a.classList.toggle('on', k === i); a.classList.toggle('done', k < i); });
       prev.disabled = i === 0; next.disabled = i === els.length - 1;
       next.innerHTML = i < els.length - 1 ? 'Next: ' + esc(labs[i + 1]) : 'Last step'; };
