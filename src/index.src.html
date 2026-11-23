@@ -701,6 +701,16 @@
   .dw-s.soon::after { content: 'Soon'; flex: none; padding: 3px 7px; border-radius: 9px; border: 1px solid rgba(var(--acr),.45); color: rgb(var(--acr)); font: 700 9px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
   .dw-list.sw { animation: dwSw .32s ease; }
 
+  /* landscape backgrounds (see landSec): full screen with a bottom fade, or upright photos on the right half */
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ov { display: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ph { left: 0 !important; top: 0 !important; right: auto !important; width: 100% !important; height: 100% !important; margin: 0 !important; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > :is(.lbg-ph, .lbg-half) img { width: 100% !important; height: 100% !important; object-fit: cover !important; -webkit-mask-image: none !important; mask-image: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > :is(.lbg-ph, .lbg-half)::before { content: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ph::after { content: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-half { left: 50% !important; right: auto !important; top: 0 !important; width: 50% !important; height: 100% !important; margin: 0 !important; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-half::after { content: '' !important; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: linear-gradient(90deg, #000 0%, rgba(0,0,0,.82) 10%, rgba(0,0,0,.4) 26%, rgba(0,0,0,0) 46%) !important; }
+  html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-fade { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,0) 56%, rgba(0,0,0,.5) 78%, rgba(0,0,0,.9) 93%, #000 100%); }
+  html.port .board .lbg-fade { display: none; }
   /* hold-and-drag rearranging (Custom flow): the item lifts, a ghost follows, a line shows where it lands */
   .board nav a.arr-src { opacity: .35; transition: opacity .2s ease; }
   .arr-ghost { position: fixed; z-index: 100003; pointer-events: none; box-sizing: border-box; padding: 8px 14px; border-radius: 14px; background: rgba(20,26,25,.92); border: 1px solid rgba(var(--acr),.6); color: #fff;
@@ -3479,7 +3489,30 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       L.style.setProperty('--hft', (r.top > 1 ? f : 0).toFixed(2) + '%'); L.style.setProperty('--hfb', (innerHeight - r.bottom > 1 ? f : 0).toFixed(2) + '%'); });
   }
   addEventListener('resize', () => setTimeout(homeFade, 120));
+  // ---------------- landscape backgrounds ----------------
+  // Sideways (every screen size): a section's photo fills the whole screen, kept on its focal point, with a fade along the
+  // bottom only (the old fades on the left, top and right are taken away). Upright photos instead fill the right half of the
+  // screen to its edge, fading in from the left. (Portrait screens keep their own layout.)
+  const LBG_HALF = new Set(['opportunity', 'environment', 'swag', 'rookie-scenarios', 'preseason-projections', 'six-streams', 'pay-scales', 'override-calculator', 'positions']);
+  const LBG_SKIP = new Set(['awards', 'nrg', 'marketing', 'products', 'package-costs', 'sales-tools', 'schedule', 'vs-pest-control', 'vs-solar', 'vs-life-insurance']);
+  const LBG_KEEP = new Set(['incentive-trips']);   // (its own sliding destination photos: only the fades change)
+  const LBG_OV = /^(Scrim|Fade to black|Blend to black|Sky shade|Photo fade|Seam)$/;
+  function landSec(sec) {
+    if (!sec || sec.__lbg || !sec.id) return; const id = sec.id.slice(4); if (LBG_SKIP.has(id)) { sec.__lbg = 1; return; }
+    const bg = sec.querySelector(':scope > [data-name^="Background (stays"]'); if (!bg) return;   // (parked off screen: done when it comes back)
+    sec.__lbg = 1; bg.classList.add('lbg');
+    [...bg.children].forEach(c => { if (LBG_OV.test(c.dataset.name || '') || c.classList.contains('pfade')) c.classList.add('lbg-ov'); });
+    const fade = () => { const f = document.createElement('div'); f.className = 'lbg-fade'; bg.appendChild(f); };
+    if (LBG_KEEP.has(id)) { fade(); return; }
+    const hOf = c => parseFloat(((c.getAttribute('style') || '').match(/height:\s*(?:calc\()?([\d.]+)px/) || [])[1]) || 0, wOf = c => parseFloat(((c.getAttribute('style') || '').match(/width:\s*([\d.]+)px/) || [])[1]) || 0;
+    const ph = [...bg.children].find(c => !c.classList.contains('lbg-ov') && (c.tagName === 'IMG' || c.querySelector('img')) && hOf(c) >= 1000 && wOf(c) >= 600 && !/Backdrop$|^Backdrop/.test(c.dataset.name || ''))
+      || [...bg.children].find(c => !c.classList.contains('lbg-ov') && (c.tagName === 'IMG' || c.querySelector('img')) && hOf(c) >= 1000 && wOf(c) >= 600);
+    if (!ph) return;
+    if (LBG_HALF.has(id)) ph.classList.add('lbg-half'); else { ph.classList.add('lbg-ph'); fade(); }
+  }
+  const landBg = layer => { if (layer) layer.querySelectorAll('section[id^="sec-"]').forEach(landSec); };
   function startScreen(layer) {
+    try { landBg(layer); } catch (e) {}
     if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') { homeFade(); setTimeout(homeFade, 300); }
     if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') setTimeout(phHome, 0);
     vStart(layer); requestAnimationFrame(() => vStart(layer));
@@ -3798,7 +3831,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const load = el => {
       if (el.__vout === false) return;
       if (el.__frag) { el.appendChild(el.__frag); el.__frag = null; el.querySelectorAll('.hsc').forEach(h => { if (h.__sl) { h.scrollLeft = h.__sl; h.dispatchEvent(new Event('scroll')); } }); }
-      el.__vout = false; restoreImgs(el);
+      el.__vout = false; restoreImgs(el); try { landSec(el); } catch (e) {}
       vStart(el);
       if (layer.isConnected) { fitSection(el); navSec(layer, el); }
       if (layer._rv) layer._rv(el);
