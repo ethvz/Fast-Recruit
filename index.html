@@ -567,6 +567,7 @@
   .nm-ptitle .n, .qnav button .n { display: none !important; }
   .nm-ptitle .n { font-size: 11px; letter-spacing: .2em; color: rgb(var(--acr)); font-weight: 500; }
   .nm-page.on .nm-ptitle { color: rgb(var(--acr)); }
+  #phdr .ph-prog b.ph { opacity: .35; }
   .nm-sec { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 0 6px 2px; font-size: 16px; line-height: 20px; color: rgba(255,255,255,0.62); }
   .nm-sec::before { content: ''; width: 7px; height: 7px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.35); flex: none; }
   .nm-sec.on { color: #fff; font-weight: 600; }
@@ -1110,6 +1111,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const html = pr.html.replace(/<img\b([^>]*?)\ssrc="(?![^"]*\{\{)/g, '<img$1 data-vsrc="');
     const host = document.createElement('div'); host.className = 'board';
     host.innerHTML = html;
+    host.querySelectorAll('section[id^="sec-"]').forEach(x => { if (x.querySelector('[data-name="Placeholder"]')) { x.dataset.ph = '1'; phAdd(x.id.slice(4)); } });
     const binds = bind(host, loops);
     let raf = 0;
     const render = () => { raf = 0; if (owner.__dead) return; withOwner(owner, () => apply(binds, inst.renderVals ? inst.renderVals() : {})); if (host.__onrender) host.__onrender(); };
@@ -1126,6 +1128,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   // menus (hamburger, header long-press, custom flow) list a page's sections in the page's own order and names. The build keeps
   // proto.json in step (src/sync_sections.py); this repeats it whenever a page loads, in case an older proto.json was served.
+  // sections that still show only a "coming soon" placeholder: faded in every menu, and skipped by scroll snapping and the
+  // next-section arrow (tapping them in a menu still goes there). proto.json flags them (ph); pages built here add any it missed.
+  const PHS = new Set(); let phSt = null;
+  function phAdd(sid) { if (!sid || PHS.has(sid)) return; PHS.add(sid);
+    if (!phSt) { phSt = document.createElement('style'); phSt.id = 'phSecs'; document.head.appendChild(phSt); }
+    phSt.textContent = [...PHS].map(x => '.board nav a[href="#sec-' + x + '"] > span:last-child, .nm-sec[data-sid="' + x + '"]').join(', ') + ' { opacity: .38 !important; }'; }
+  const phFromProto = () => { if (P) Object.values(P.boards).forEach(b => (b.sections || []).forEach(x => { if (x.ph) phAdd(x.sid); })); };
   function syncSecs(fn, d) {
     const B = P && P.boards[fn], m = d && d.script && /this\.sections = (\[.*?\]);/.exec(d.script); if (!B || !B.sections || !m) return;
     const S = JSON.parse(m[1]), by = {}; B.sections.forEach(x => { by[x.sid] = x; });
@@ -2554,7 +2563,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-24c';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24d';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2689,6 +2698,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           const bs = pg.querySelectorAll('b');
           if (bs.length === n) { pg.querySelector('i:not(.f)').style.width = w + 'px'; bs.forEach((b, i) => { b.style.left = (i * step).toFixed(1) + 'px'; }); }   // (same page shape: the line slides to its new length)
           else pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
+          pg.querySelectorAll('b').forEach((b, i) => b.classList.toggle('ph', !!as[i] && PHS.has((as[i].getAttribute('href') || '').replace('#sec-', ''))));
           if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const a = current && current.layer.querySelectorAll('.board nav a')[+b.dataset.i]; if (a) a.click(); }); } }
         // green fill: where the page's own (vertical) fill ends, mapped between the dots on either side
         const fillEl = [...nav.querySelectorAll(':scope > div')].find(d => /box-shadow/.test(d.getAttribute('style') || '')), fy = fillEl ? parseFloat(fillEl.style.top) + parseFloat(fillEl.style.height) : 0;
@@ -2758,7 +2768,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const page = ([fn, label], k) => {
       const B = P.boards[fn]; if (!B || !B.sections || !B.sections.length) return '';
-      const secs = B.sections.slice(1).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '">' + esc(x.name) + '</div>').join('');
+      const secs = B.sections.slice(1).map(x => '<div class="nm-sec' + (x.aid === curAid ? ' on' : '') + '" data-aid="' + x.aid + '" data-sid="' + x.sid + '">' + esc(x.name) + '</div>').join('');
       return '<div class="nm-page' + (fn === cur ? ' on' : '') + '"><div class="nm-ptitle" data-aid="' + B.sections[0].aid + '"><span class="n">' + String(k + 1).padStart(2, '0') + '</span>' + esc(label) + '</div>' + secs + '</div>';
     };
     const hasSecs = fn => { const B = P.boards[fn]; return B && B.sections && B.sections.length > 1; };
@@ -3123,13 +3133,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     let zV = -1;
     let zS = 0;   // (portrait sections can change height as they load: rebuild when the page length changes)
     const build = () => { if (zH === H + (stk ? 0.5 : 0) && Z.length && zV === (sc.__fpermV || 0) && zS === sc.scrollHeight) return; zH = H + (stk ? 0.5 : 0); zV = sc.__fpermV || 0; zS = sc.scrollHeight; Z = []; const VH = stk ? 1024 : H, maxY = sc.scrollHeight - sc.clientHeight, sp = SP();
-      const ss = secs.filter(el => el.isConnected && el.parentNode === (sc.__in || sc)).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow)
+      const ss = secs.filter(el => el.isConnected && el.parentNode === (sc.__in || sc) && !el.dataset.ph).sort((a, b) => a.compareDocumentPosition(b) & 4 ? -1 : 1);   // on-screen order (custom flow); placeholder sections are skipped: the snap goes straight past them
       for (let i = 0; i < ss.length - 1; i++) {
         const t = ss[i].offsetTop - sp, h = ss[i].offsetHeight, nt = ss[i + 1].offsetTop - sp;
         const a = Math.max(t, t + h - VH), b = Math.min(nt, maxY);
-        if (b > a + 2) Z.push([a, b]);
+        if (b > a + 2) Z.push([a, b, VH]);
       } };
-    const zoneAt = y => { build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
+    let phHold = false;   // landed on a placeholder section from a menu tap: stay there until the finger or wheel moves the page
+    // (a page that opens straight onto a placeholder, from a menu or a link, also stays put)
+    const onPh = y => { const sp = SP(); return secs.some(el => el.dataset.ph && el.isConnected && Math.abs(el.offsetTop - sp - y) < 3); };
+    const zoneAt = y => { if (phHold || onPh(y)) return null; build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
     let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false; let lastZ = null, relT = 0;
     const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; sc.style.overflowY = ''; };
     const spring = (to, v0) => {
@@ -3148,18 +3161,18 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       // (scrolling stays locked until the spring lands, so leftover momentum can't push it past the section edge afterwards)
       anim = requestAnimationFrame(step);
     };
-    sc.__springTo = to => { clearTimeout(idleT); lastZ = null; spring(to, 0); };   // the next-section arrow glides with the same spring
+    sc.__springTo = to => { clearTimeout(idleT); lastZ = null; phHold = secs.some(el => el.dataset.ph && el.isConnected && Math.abs(el.offsetTop - SP() - to) < 3); spring(to, 0); };   // the next-section arrow glides with the same spring
     // the side nav's smooth scrollTo glides on the same spring too: a native smooth scroll right after a tap passed through
     // snap zones, and the snap read that as a half-finished swipe and sprang back to where it started
     { const nat = sc.scrollTo.bind(sc);
       sc.scrollTo = (o, y) => { if (o && typeof o === 'object' && o.behavior === 'smooth' && o.top != null && o.left == null) { touching = false; relT = 0; sc.__springTo(Math.max(0, Math.min(o.top, sc.scrollHeight - sc.clientHeight))); } else nat(o, y); }; }
     const decide = (y, v) => {
       const z = zoneAt(y); if (!z) return null;
-      const [a, b] = z, p = (y - a) / (b - a);
+      const [a, b] = z, L = Math.min(b - a, z[2] || (b - a));   // (a quarter of one screen, even when the gap skips placeholder sections)
       // a quick flick changes sections, or dragging about a quarter of the way; anything less springs back
       if (Math.abs(v) > 0.4) return v > 0 ? b : a;
-      if (dir > 0) return p > 0.25 ? b : a;
-      return p < 0.75 ? a : b;
+      if (dir > 0) return y - a > 0.25 * L ? b : a;
+      return b - y > 0.25 * L ? a : b;
     };
     sc.addEventListener('scroll', () => {
       const now = performance.now(), y = sc.scrollTop, dt = now - last.t;
@@ -3209,7 +3222,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     };
     sc.addEventListener('touchend', release, { passive: true });
     sc.addEventListener('touchcancel', release, { passive: true });
-    sc.addEventListener('wheel', () => { if (springing) stopSpring(); }, { passive: true });
+    sc.addEventListener('wheel', () => { phHold = false; if (springing) stopSpring(); }, { passive: true });
+    sc.addEventListener('touchstart', () => { phHold = false; }, { passive: true });
   }
 
   // ---------------- next-section arrow ----------------
@@ -3307,7 +3321,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const target = () => {
       const k = (sc.getBoundingClientRect().height / (sc.offsetHeight || 1)) || 1, top0 = sc.getBoundingClientRect().top, y = sc.scrollTop, maxY = sc.scrollHeight - sc.clientHeight;
       const ss = secs.filter(el => el.isConnected && el.parentNode === (sc.__in || sc)).sort((a, c) => a.compareDocumentPosition(c) & 4 ? -1 : 1);
-      for (const el of ss) { const d = (el.getBoundingClientRect().top - top0) / k; if (d > 4) { const t = Math.min(y + d, maxY); return t > y + 2 ? t : null; } }
+      for (const el of ss) { if (el.dataset.ph) continue; const d = (el.getBoundingClientRect().top - top0) / k; if (d > 4) { const t = Math.min(y + d, maxY); return t > y + 2 ? t : null; } }   // (placeholder sections are skipped)
       return null;
     };
     let raf = 0;
@@ -3670,7 +3684,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   });
 
   fetch('proto.json', { cache: 'no-cache' }).then(r => r.json()).then(async d => {
-    P = d;
+    P = d; phFromProto();
     Object.values(P.boards).forEach(b => (b.videos || []).forEach(v => { if (v.trim) trims[v.id] = v.trim; }));
     fit();
     const home = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home');

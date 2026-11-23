@@ -12,10 +12,14 @@ def sync(proto_path):
         m = re.search(r'this\.sections = (\[.*?\]);', json.load(open(src))['script'])
         if not m: continue
         S = json.loads(m.group(1)); old = {x['sid']: x for x in B.get('sections', [])}
+        # sections still showing only a "coming soon" placeholder are flagged (ph): faded in the menus, skipped when scrolling
+        mk = json.load(open(src))['markup']; cuts = [(x.start(), x.group(1)) for x in re.finditer(r'<section id="sec-([^"]+)"', mk)] + [(len(mk), None)]
+        PH = {sid for (a, sid), (b, _) in zip(cuts, cuts[1:]) if 'data-name="Placeholder"' in mk[a:b]}
         new = []
         for i, s in enumerate(S):
             o = old.get(s['id']); aid = o['aid'] if o else str(uuid.uuid5(NS, fn + '#' + s['id']))
             new.append({'aid': aid, 'name': s['label'], 'sid': s['id'], 'top': s['top'], 'h': s['h']})
+            if s['id'] in PH: new[-1]['ph'] = 1
             a = P['artboards'].get(aid, {'board': fn}); a.update({'board': fn, 'section': i, 'name': s['label']}); P['artboards'][aid] = a
         keep = {x['aid'] for x in new}
         for x in B.get('sections', []):   # sections taken off the page leave the menu (and the links to them) too
