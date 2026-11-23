@@ -581,8 +581,7 @@
   .navmenu .nm-guide.nm-faq, .navmenu .nm-guide.nm-gd { background: transparent; border: 1.5px solid #ffffff; color: #ffffff; }
   /* FAQs is not one of the main pages: its header link is gone (the other four close up), and it opens as a pop-over */
   .board p.hot[data-name="(FAQs)"] { display: none !important; }
-  .board p.hot:is([data-name="(Why Vivint)"], [data-name="(Experience)"], [data-name="(Culture)"], [data-name="(Opportunity)"]) { margin-left: 60px; }
-  .board [data-x="FAQs button"] { cursor: pointer; }
+  .board [data-x="FAQs button"] { cursor: pointer; pointer-events: auto !important; }
   /* the FAQs and recruiting-guide pop-overs: a floating card with four rounded corners (tap outside it to close) */
   .pfaq .pg-body { padding-top: 8px; }
   .fq-i { border-top: 1px solid rgba(255,255,255,.14); }
@@ -672,6 +671,22 @@
   .pg-step [style*="font-size: 14px"], .pg-step [style*="font-size: 14.5px"], .pg-step [style*="font-size: 15px"], .pg-step [style*="font-size: 15.5px"] { font-size: 17px !important; line-height: 23px !important; }
   .pg-step [style*="font-size: 17px"], .pg-step [style*="font-size: 17.5px"], .pg-step [style*="font-size: 18px"] { font-size: 20px !important; line-height: 27px !important; }
   .pg-step .sg { max-height: none !important; overflow: visible !important; padding: 6px 20px 14px !important; box-shadow: none !important; border-radius: 20px !important; }
+  /* the guide: steps down a rail on the left (like a page's section menu), all steps in one scrolling column on the right */
+  .pg-main { flex: 1; min-height: 0; display: flex; gap: 18px; margin-top: 16px; }
+  .pg-rail { position: relative; flex: none; width: 200px; overflow-y: auto; scrollbar-width: none; padding: 2px 0; }
+  .pg-rail::-webkit-scrollbar { display: none; }
+  .pg-rail .pg-ln, .pg-rail .pg-fl { position: absolute; left: 13px; width: 2px; border-radius: 1px; background: rgba(255,255,255,.18); }
+  .pg-rail .pg-fl { background: #05E5AF; box-shadow: 0 0 10px rgba(5,229,175,.65); height: 0; transition: height .12s linear; }
+  .pg-rail a { position: relative; display: flex; align-items: center; gap: 12px; min-height: 40px; color: #fff; text-decoration: none; font: 400 13px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+  .pg-rail a b { flex: none; width: 14px; height: 14px; margin-left: 7px; box-sizing: border-box; border-radius: 50%; background: rgba(11,15,14,.95); border: 2px solid rgba(255,255,255,.5); transition: background .35s ease, border-color .35s ease, box-shadow .35s ease, transform .35s ease; }
+  .pg-rail a span { opacity: .75; transition: opacity .3s ease; }
+  .pg-rail a.done b { background: #05E5AF; border-color: #05E5AF; }
+  .pg-rail a.on b { background: #05E5AF; border-color: #05E5AF; box-shadow: 0 0 0 5px rgba(5,229,175,.18), 0 0 18px rgba(5,229,175,.6); transform: scale(1.15); }
+  .pg-rail a.on span { opacity: 1; font-weight: 600; font-size: 15px; }
+  .pguide .pg-main .pg-body { position: relative; margin: 0; padding: 0 4px 0 0; }
+  .pg-main .pg-step { padding-bottom: 34px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,.1); animation: none; }
+  .pg-main .pg-step:last-child { border-bottom: 0; margin-bottom: 0; min-height: 100%; }
+  @media (max-width: 599px) { .pg-rail { width: 30px; } .pg-rail a span { display: none; } .pg-main { gap: 12px; } }
   .pg-nav { display: flex; gap: 8px; padding-top: 12px; flex: none; }
   .pg-nav button { height: 42px; border-radius: 21px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; }
   .pg-nav .pg-prev { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; flex: none; }
@@ -1890,7 +1905,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const L = list.map(el => parseFloat(el.style.left)), W = list.map(el => parseFloat(el.style.width) || el.offsetWidth);
       const a = L[0] + W[0] / 2 - w[0] / 2, b = L[n - 1] + W[n - 1] / 2 + w[n - 1] / 2, gap = (b - a - w.reduce((x, y) => x + y, 0)) / (n - 1);
       if (!(gap > 12)) return;
-      let x = a;
+      let x = a + (733 - (a + b) / 2);   // (the row is centred on the screen: FAQs left it, so it no longer fills the old span evenly)
       list.forEach((el, i) => {
         const nl = x - gap / 2, d = nl - L[i];
         if (el.dataset.pc) { const o = getComputedStyle(el).transformOrigin.split(' '); el.style.setProperty('transform-origin', (parseFloat(o[0]) - d) + 'px ' + (o[1] || '0px'), 'important'); }   // phones: keep growing from the same spot
@@ -2601,7 +2616,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-24e';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24f';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2783,21 +2798,34 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const g = document.createElement('div'); g.className = 'pguide';
     g.innerHTML = '<div class="pg-scrim"></div><div class="pg-panel"><div class="nm-top"><div><div class="nm-eye">Recruiting guide</div><div class="nm-title">Run the meeting.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close recruiting guide"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
-      + '<div class="pg-steps">' + labs.map((l, i) => '<button type="button" data-i="' + i + '"><i>' + String(i + 1).padStart(2, '0') + '</i>' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</button>').join('') + '</div>'
-      + '<div class="pg-bar"><b></b></div><div class="pg-body"></div><div class="pg-nav"><button type="button" class="pg-prev" aria-label="Previous step"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M13 7H2M6 3L2 7l4 4"/></svg></button><button type="button" class="pg-next"></button></div></div>';
-    const body = g.querySelector('.pg-body'), bar = g.querySelector('.pg-bar b'), sb = [...g.querySelectorAll('.pg-steps button')], prev = g.querySelector('.pg-prev'), next = g.querySelector('.pg-next');
-    let cur = 0;
-    const show = i => { cur = Math.max(0, Math.min(steps.length - 1, i));
-      body.innerHTML = '<div class="pg-step">' + html[cur] + '</div>'; body.scrollTop = 0;
-      sb.forEach((b, k) => { b.classList.toggle('on', k === cur); b.classList.toggle('done', k < cur); });
-      const a = sb[cur], row = a.parentElement; row.scrollTo({ left: a.offsetLeft - (row.clientWidth - a.offsetWidth) / 2, behavior: 'smooth' });
-      bar.style.width = ((cur + 1) / steps.length * 100) + '%';
-      prev.disabled = cur === 0; next.disabled = cur === steps.length - 1;
-      next.innerHTML = cur < steps.length - 1 ? 'Next: ' + labs[cur + 1].replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'Last step'; };
-    g.addEventListener('click', e => { e.stopPropagation(); const t = e.target.closest('button, .pg-scrim'); if (!t) return;
-      if (t.dataset.i != null) show(+t.dataset.i); else if (t === prev) show(cur - 1); else if (t === next) show(cur + 1); else if (t.classList.contains('nm-x') || t.classList.contains('pg-scrim')) closeOverlay(); });
+      + '<div class="pg-main"><nav class="pg-rail" aria-label="Guide steps"><i class="pg-ln"></i><i class="pg-fl"></i>' + labs.map((l, i) => '<a href="#" data-i="' + i + '"><b></b><span>' + l.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span></a>').join('') + '</nav>'
+      + '<div class="pg-body">' + html.map((h, i) => '<div class="pg-step" data-i="' + i + '">' + h + '</div>').join('') + '</div></div>'
+      + '<div class="pg-nav"><button type="button" class="pg-prev" aria-label="Previous step"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M13 7H2M6 3L2 7l4 4"/></svg></button><button type="button" class="pg-next"></button></div></div>';
+    // the steps run down one scrolling column; the rail on the left works like a page's section menu (line, green fill, dots)
+    const body = g.querySelector('.pg-body'), rail = g.querySelector('.pg-rail'), as = [...rail.querySelectorAll('a')], fl = rail.querySelector('.pg-fl'), ln = rail.querySelector('.pg-ln'), prev = g.querySelector('.pg-prev'), next = g.querySelector('.pg-next');
+    const els = [...body.querySelectorAll('.pg-step')];
+    let cur = -1;
+    const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    // where each step starts in the scrolling column (measured on screen: the steps are zoomed, so their offsetTop is in other units)
+    const tops = () => { const b0 = body.getBoundingClientRect().top - body.scrollTop; return els.map(el => el.getBoundingClientRect().top - b0); };
+    const upd = () => {
+      const T = tops(), y = body.scrollTop + 2, maxY = body.scrollHeight - body.clientHeight; let i = 0, f = 0;
+      T.forEach((t, k) => { if (t - T[0] <= y) i = k; });
+      if (maxY > 0 && body.scrollTop >= maxY - 2) { i = els.length - 1; f = 1; }
+      else { const a0 = T[i] - T[0], a1 = T[i + 1] != null ? T[i + 1] - T[0] : a0 + els[i].getBoundingClientRect().height; f = Math.max(0, Math.min(1, (y - a0) / Math.max(1, a1 - a0))); }
+      const d0 = as[0].offsetTop + as[0].offsetHeight / 2, di = as[i].offsetTop + as[i].offsetHeight / 2, dn = as[i + 1] ? as[i + 1].offsetTop + as[i + 1].offsetHeight / 2 : di;
+      fl.style.height = Math.max(0, di + (dn - di) * f - d0) + 'px';
+      if (i === cur) return; cur = i;
+      as.forEach((a, k) => { a.classList.toggle('on', k === i); a.classList.toggle('done', k < i); });
+      prev.disabled = i === 0; next.disabled = i === els.length - 1;
+      next.innerHTML = i < els.length - 1 ? 'Next: ' + esc(labs[i + 1]) : 'Last step'; };
+    const go = i => { i = Math.max(0, Math.min(els.length - 1, i)); const T = tops(); body.scrollTo({ top: T[i] - T[0], behavior: 'smooth' }); };
+    { const d0 = as[0], dl = as[as.length - 1]; requestAnimationFrame(() => { const t = d0.offsetTop + d0.offsetHeight / 2, b = dl.offsetTop + dl.offsetHeight / 2; [ln, fl].forEach(x => x.style.top = t + 'px'); ln.style.height = (b - t) + 'px'; upd(); }); }
+    body.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true });
+    g.addEventListener('click', e => { e.stopPropagation(); const t = e.target.closest('a[data-i], button, .pg-scrim'); if (!t) return; if (t.tagName === 'A') e.preventDefault();
+      if (t.dataset.i != null) go(+t.dataset.i); else if (t === prev) go(cur - 1); else if (t === next) go(cur + 1); else if (t.classList.contains('nm-x') || t.classList.contains('pg-scrim')) closeOverlay(); });
     ['pointerdown', 'touchstart'].forEach(ev => g.addEventListener(ev, e => e.stopPropagation()));
-    document.body.appendChild(g); pguideEl = g; show(0); return true;
+    document.body.appendChild(g); pguideEl = g; upd(); return true;
   }
   function openMenu() {
     if (menuEl || !P) return;
