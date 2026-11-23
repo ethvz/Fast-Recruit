@@ -692,7 +692,16 @@
   .pguide .pg-main .pg-body { position: relative; margin: 0; padding: 0 4px 0 0; }
   .pg-main .pg-step { padding-bottom: 34px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,.1); animation: none; }
   .pg-main .pg-step:last-child { border-bottom: 0; margin-bottom: 0; min-height: 100%; }
-  @media (max-width: 599px) { .pg-rail { width: 30px; } .pg-rail a span { display: none; } .pg-main { gap: 12px; } }
+  /* iPhone upright: the steps run across the top in a row you can swipe, names showing, with the progress line under them */
+  @media (max-width: 599px) {
+    .pg-main { flex-direction: column; gap: 10px; }
+    .pg-rail { width: auto; display: flex; flex-direction: row; gap: 4px; overflow-x: auto; overflow-y: hidden; margin: 0 -18px; padding: 0 18px 12px; flex: none; }
+    .pg-rail a { flex: none; flex-direction: column; align-items: flex-start; gap: 8px; min-height: 0; padding: 0 10px 0 0; font-size: 11px; white-space: nowrap; }
+    .pg-rail a b { margin-left: 0; }
+    .pg-rail a.on span { font-size: 12px; }
+    .pg-rail .pg-ln, .pg-rail .pg-fl { left: auto; top: 6px !important; height: 2px !important; width: 0; }
+    .pg-rail .pg-fl { transition: width .12s linear; }
+  }
   .pg-nav { display: flex; gap: 8px; padding-top: 12px; flex: none; }
   .pg-nav button { height: 42px; border-radius: 21px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; }
   .pg-nav .pg-prev { border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; flex: none; }
@@ -2847,14 +2856,18 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       T.forEach((t, k) => { if (t - T[0] <= y) i = k; });
       if (maxY > 0 && body.scrollTop >= maxY - 2) { i = els.length - 1; f = 1; }
       else { const a0 = T[i] - T[0], a1 = T[i + 1] != null ? T[i + 1] - T[0] : a0 + els[i].getBoundingClientRect().height; f = Math.max(0, Math.min(1, (y - a0) / Math.max(1, a1 - a0))); }
-      const d0 = as[0].offsetTop + as[0].offsetHeight / 2, di = as[i].offsetTop + as[i].offsetHeight / 2, dn = as[i + 1] ? as[i + 1].offsetTop + as[i + 1].offsetHeight / 2 : di;
-      fl.style.height = Math.max(0, di + (dn - di) * f - d0) + 'px';
+      const hz = getComputedStyle(rail).flexDirection === 'row';   // (iPhone upright: the steps run across the top)
+      const mid = a => hz ? a.offsetLeft + 7 : a.offsetTop + a.offsetHeight / 2;
+      const d0 = mid(as[0]), di = mid(as[i]), dn = as[i + 1] ? mid(as[i + 1]) : di, len = Math.max(0, di + (dn - di) * f - d0);
+      if (hz) { fl.style.height = ''; fl.style.width = len + 'px'; fl.style.left = ln.style.left = d0 + 'px'; ln.style.width = (mid(as[as.length - 1]) - d0) + 'px'; }
+      else fl.style.height = len + 'px';
       if (i === cur) return; cur = i;
+      if (hz) rail.scrollTo({ left: Math.max(0, as[i].offsetLeft - 18), behavior: 'smooth' });
       as.forEach((a, k) => { a.classList.toggle('on', k === i); a.classList.toggle('done', k < i); });
       prev.disabled = i === 0; next.disabled = i === els.length - 1;
       next.innerHTML = i < els.length - 1 ? 'Next: ' + esc(labs[i + 1]) : 'Last step'; };
     const go = i => { i = Math.max(0, Math.min(els.length - 1, i)); const T = tops(); body.scrollTo({ top: T[i] - T[0], behavior: 'smooth' }); };
-    { const d0 = as[0], dl = as[as.length - 1]; requestAnimationFrame(() => { const t = d0.offsetTop + d0.offsetHeight / 2, b = dl.offsetTop + dl.offsetHeight / 2; [ln, fl].forEach(x => x.style.top = t + 'px'); ln.style.height = (b - t) + 'px'; upd(); }); }
+    { const d0 = as[0], dl = as[as.length - 1]; requestAnimationFrame(() => { if (getComputedStyle(rail).flexDirection !== 'row') { const t = d0.offsetTop + d0.offsetHeight / 2, b = dl.offsetTop + dl.offsetHeight / 2; [ln, fl].forEach(x => x.style.top = t + 'px'); ln.style.height = (b - t) + 'px'; } upd(); }); }
     body.addEventListener('scroll', () => requestAnimationFrame(upd), { passive: true });
     g.addEventListener('click', e => { e.stopPropagation(); const t = e.target.closest('a[data-i], button, .pg-scrim'); if (!t) return; if (t.tagName === 'A') e.preventDefault();
       if (t.dataset.i != null) go(+t.dataset.i); else if (t === prev) go(cur - 1); else if (t === next) go(cur + 1); else if (t.classList.contains('nm-x') || t.classList.contains('pg-scrim')) closeOverlay(); });
