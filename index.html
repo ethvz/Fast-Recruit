@@ -693,6 +693,13 @@
   .dw-ed { margin-left: auto; height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #fff; font: 700 11.5px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .04em; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
   .dw-ed svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
   .dw.edit .dw-ed { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; }
+  /* Edit only: Select all per page, and Reset (empties the flow) */
+  .dw-all, .dw-reset { display: none; flex: none; height: 26px; padding: 0 11px; border-radius: 13px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); font: 700 11px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .03em; cursor: pointer; white-space: nowrap; transition: background .2s ease, color .2s ease, border-color .2s ease; }
+  .dw.edit .dw-all, .dw.edit .dw-reset { display: inline-flex; align-items: center; }
+  .dw-all.on { border-color: rgba(var(--acr),.5); color: rgb(var(--acr)); }
+  .dw-reset { margin-left: auto; height: 32px; border-radius: 16px; padding: 0 13px; }
+  .dw.edit .dw-reset + .dw-ed { margin-left: 0; }
+  .dw-reset.arm { background: #ff5a4f; border-color: #ff5a4f; color: #fff; }
   .dw-ph { display: flex; align-items: center; }
   .dw-ph .dw-pt { flex: 1; min-width: 0; }
   .dw-row { display: flex; align-items: center; }
@@ -974,7 +981,7 @@
   .fav.on svg path { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); }
   .fav:active { transform: scale(0.88); }
 
-  .ftoast { position: fixed; left: 50%; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 90; translate: -50% 12px; opacity: 0; pointer-events: none;
+  .ftoast { position: fixed; left: 50%; bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 100002; translate: -50% 12px; opacity: 0; pointer-events: none;
     padding: 11px 18px; border-radius: 22px; background: rgba(14,18,17,0.9); border: 1px solid rgba(255,255,255,0.2); color: #fff; font: 600 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif;
     box-shadow: 0 12px 30px rgba(0,0,0,0.45); transition: opacity .2s ease, translate .25s ease; white-space: nowrap; }
   .ftoast.on { opacity: 1; translate: -50% 0; }
@@ -3072,7 +3079,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
       + '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow</button></div>'
       + '<div class="dw-in"><div class="dw-tools"><div class="dw-seg" role="tablist" aria-label="Show"><button type="button" data-f="all">All</button><button type="button" data-f="fav" aria-label="Custom flow only">' + SVG_STAR + '<span class="dw-n"></span></button></div>'
-      + '<button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
+      + '<button type="button" class="dw-reset">Reset</button><button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
       + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
       + '<div class="dw-foot"><button type="button" class="dw-u dw-social" title="Social media" aria-label="Social media">' + DW_ICON.social + '<span>Social media</span></button>'
       + (OFFL.can() ? '<button type="button" class="dw-u dw-dl" title="Save offline" aria-label="Save offline">' + DW_ICON.dl + '<span class="nm-dlt">' + OFFL.label() + '</span></button>' : '')
@@ -3090,7 +3097,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const B = P.boards[fn]; if (!B) return '';
         const secs = B.sections, label = pageName(fn), ci = O.secs[fn].indexOf(((secs.find(x => x.aid === curAid) || {}).sid));
         const ids = O.secs[fn].filter(sid => !fav || isFav(fn, sid)); if (!ids.length) return '';
-        return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><div class="dw-ph"><span class="dw-grip" data-kind="pg" aria-label="Drag to move this page">' + GRIP + '</span><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '">' + (FOOTIC[fn] || '') + '<span>' + esc(label) + '</span></button></div>'
+        return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><div class="dw-ph"><span class="dw-grip" data-kind="pg" aria-label="Drag to move this page">' + GRIP + '</span><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '"><span>' + esc(label) + '</span></button>'
+          + (() => { const allOn = O.secs[fn].every(sid => isFav(fn, sid)); return '<button type="button" class="dw-all' + (allOn ? ' on' : '') + '" data-fn="' + fn + '">' + (allOn ? 'Clear' : 'Select all') + '</button>'; })() + '</div>'
           + '<div class="dw-rail"><b class="ln"></b><b class="fl"></b>' + ids.map(sid => { const x = secs.find(y => y.sid === sid), i = O.secs[fn].indexOf(sid), k = all.length, on = isFav(fn, sid); all.push({ fn, x, n: secs.length, ni: secs.indexOf(x) });
             return '<div class="dw-row" data-sid="' + sid + '"><span class="dw-grip" data-kind="it" aria-label="Drag to move this section">' + GRIP + '</span>'
               + '<button type="button" class="dw-s' + (x.aid === curAid ? ' cur' : '') + (fn === curFn && ci >= 0 && i <= ci ? ' done' : '') + (x.ph ? ' soon' : '') + '" data-aid="' + x.aid + '" data-k="' + k + '"><i></i><span>' + esc(x.name) + '</span></button>'
@@ -3153,6 +3161,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const n = validFavs().length, nn = m.querySelector('.dw-n'); nn.textContent = n || ''; nn.style.display = n ? '' : 'none';
         if (MFILT === 'fav' && !on) { const sy = list.scrollTop; render(); list.scrollTop = sy; if (all.length) show(0); } return; }
       if (t.dataset.f) { if (t.dataset.f !== MFILT) { MFILT = t.dataset.f; try { localStorage.setItem('fr_mfilt', MFILT); } catch (er) {} haptic('select'); render(); list.classList.remove('sw'); void list.offsetWidth; list.classList.add('sw'); start(); } return; }
+      // Edit: a page's sections all in (or all out) of the flow
+      if (t.classList.contains('dw-all')) { const fn = t.dataset.fn, ids = mord().secs[fn] || [], allOn = ids.every(sid => isFav(fn, sid));
+        if (allOn) FAVS = FAVS.filter(k => fnOf(k) !== fn); else ids.forEach(sid => addFav(favKey(fn, sid)));
+        saveFavs(); syncStars(); updateFlowCount(); m.__changed = true; haptic('select');
+        toast(allOn ? 'Removed ' + pageName(fn) + ' from Custom flow' : '★ All of ' + pageName(fn) + ' added to Custom flow');
+        const sy = list.scrollTop; render(); list.scrollTop = sy; return; }
+      // Edit: empty the flow (tap twice: the first tap asks)
+      if (t.classList.contains('dw-reset')) { if (!t.classList.contains('arm')) { t.classList.add('arm'); t.textContent = 'Tap to confirm'; clearTimeout(t.__t); t.__t = setTimeout(() => { t.classList.remove('arm'); t.textContent = 'Reset'; }, 3000); haptic('select'); return; }
+        clearTimeout(t.__t); t.classList.remove('arm'); t.textContent = 'Reset'; FAVS = []; saveFavs(); syncStars(); updateFlowCount(); m.__changed = true; haptic('strong'); toast('Custom flow cleared');
+        const sy = list.scrollTop; render(); list.scrollTop = sy; return; }
       if (t.classList.contains('dw-showall')) { MFILT = 'all'; try { localStorage.setItem('fr_mfilt', MFILT); } catch (er) {} render(); start(); return; }
       if (t.classList.contains('dw-ed')) { const on = !m.classList.contains('edit'); m.classList.toggle('edit', on); t.querySelector('span').textContent = on ? 'Done' : 'Edit'; haptic('select'); requestAnimationFrame(rails); setTimeout(rails, 300); return; }
       if (m.classList.contains('edit') && (t.classList.contains('dw-s') || t.classList.contains('dw-pt'))) return;   // (editing: rows move, they don't open)
