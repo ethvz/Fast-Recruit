@@ -705,6 +705,15 @@
   .dw-list.sw { animation: dwSw .32s ease; }
 
   .board nav a.fdrop { opacity: 0 !important; pointer-events: none; transition: opacity .45s ease; }
+  /* the Custom flow / All Sections link above each page's next button (white words, the page buttons' chevron) */
+  .board .pgflow { display: flex; align-items: center; justify-content: flex-end; gap: 10px; box-sizing: border-box; cursor: pointer; pointer-events: auto !important; font: 600 14px/17px 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff; text-transform: uppercase; white-space: nowrap; text-shadow: 0 1px 12px rgba(0,0,0,.55); }
+  .board .pgflow::before { content: ''; width: 14px; height: 14px; flex: none; background: rgb(var(--acr)); -webkit-mask: var(--navstar) center/contain no-repeat; mask: var(--navstar) center/contain no-repeat; display: none; }
+  .board .pgflow[data-m="flow"]::before { display: block; }
+  .board .pgflow svg { flex: none; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 6px rgba(0,0,0,.5)); }
+  .board .pgflow .pgf-c { width: 11px; height: 18px; margin-left: 6px; } .board .pgflow .pgf-p { width: 14px; height: 14px; display: none; margin-left: 4px; stroke-width: 2.2; }
+  .board .pgflow[data-m="create"] .pgf-c { display: none; } .board .pgflow[data-m="create"] .pgf-p { display: block; }
+  .board .pgflow:active { opacity: .7; }
+  html.pph .board .pgflow { display: none !important; }   /* (upright iPhones have no next button: the menu has this) */
   /* landscape backgrounds (see landSec): full screen with a bottom fade, or upright photos on the right half */
   html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ov { display: none !important; }
   html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ph { left: 0 !important; top: 0 !important; right: auto !important; width: 100% !important; height: 100% !important; margin: 0 !important; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
@@ -1422,7 +1431,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
     // header page titles: a small down arrow that opens that page's section menu
     mk = mk.replace(/(<p id="\w+" class="hot" data-name="\((?!FAQs\))[^)"]+\)"[^>]*>)([^<]+)<\/p>/g, (m, open, t) => open + t + '<span class="hchev" role="button" aria-label="' + t + ' sections"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></p>');
-    // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
+    // pages: the Custom flow / All Sections link just above the next-page button (as on Home); syncPgFlow sets its words
+    mk = mk.replace(/<div data-name="Glass arrow pill" aria-hidden="true" style="position: absolute; left: (1[2-4]\d\d)px; top: (\d+)px;([^"]*)">/, (m, l, t, rest) =>
+      '<div class="pgflow" data-x="Page flow" role="button" tabindex="0" style="position: absolute; left: ' + (+l + 190 - 16 - 300) + 'px; top: ' + (+t - 58) + 'px; width: 300px; height: 50px; z-index: 5;' + (/\{\{pillStyle\}\}/.test(rest) ? ' {{pillStyle}}' : '') + '"><span class="pgf-t"></span><svg class="pgf-c" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg><svg class="pgf-p" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></div>' + m);
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
     mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
       (m, l, rest) => '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" style="position: absolute; left: ' + (+l - 112) + 'px;' + rest + '">FAQS</div>' + m);
@@ -2621,8 +2632,18 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       d.a = current && current.layer.querySelector('.board nav a[href="#sec-' + o.sid + '"]'); if (d.a) d.a.classList.add('fdrop'); }, 3000);
     d.iv = setInterval(() => { if (FDROP !== d) { clearInterval(d.iv); return; } if (!FLOW) { flowUndrop(k); return; } if (!here()) rebuild(); }, 350);
   }
+  // the link above each page's next button: All Sections (in the flow), Custom flow, or Create Custom Flow (nothing starred yet)
+  function syncPgFlow() {
+    const n = validFavs().length, mode = FLOW ? 'all' : n ? 'flow' : 'create';
+    document.querySelectorAll('.pgflow').forEach(b => { if (b.dataset.m === mode) return; b.dataset.m = mode;
+      b.querySelector('.pgf-t').textContent = mode === 'all' ? 'All Sections' : mode === 'flow' ? 'Custom flow' : 'Create Custom Flow';
+      b.setAttribute('aria-label', mode === 'all' ? 'Leave the Custom flow and see all sections' : mode === 'flow' ? 'Start your Custom flow' : 'Create your Custom flow'); });
+  }
+  addEventListener('click', e => { const b = e.target.closest && e.target.closest('.pgflow'); if (!b) return; e.preventDefault(); e.stopPropagation(); haptic('select');
+    const m = b.dataset.m; if (m === 'all') exitFlowHere(); else startFlow(); }, true);
+  addEventListener('keydown', e => { const b = e.target.closest && e.target.closest('.pgflow'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); b.click(); } }, true);
   function updateFlowCount(root) {
-    const n = validFavs().length;
+    const n = validFavs().length; try { syncPgFlow(); } catch (e) {}
     (root || document).querySelectorAll('.cf-n').forEach(x => { x.textContent = n; x.style.display = n ? '' : 'none'; });
     document.documentElement.classList.toggle('cf-empty', !n);   // (no flow yet: the buttons say "Create Custom Flow", with a +)
     document.querySelectorAll('.layer[data-fn="Main.dc.html"]').forEach(fitCF);
@@ -3534,7 +3555,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   const landBg = layer => { if (layer) layer.querySelectorAll('section[id^="sec-"]').forEach(landSec); };
   function startScreen(layer) {
-    try { landBg(layer); } catch (e) {}
+    try { landBg(layer); } catch (e) {} try { syncPgFlow(); } catch (e) {}
     if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') { homeFade(); setTimeout(homeFade, 300); }
     if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') setTimeout(phHome, 0);
     vStart(layer); requestAnimationFrame(() => vStart(layer));
