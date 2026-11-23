@@ -132,7 +132,7 @@
   html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
   html.pland .board :is(.pmid, .ptop) > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
   html.pland .board :is(.pmid, .ptop) > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
-  html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: min(0px, calc(733px - var(--repx, 0.262) * 1.6 * 1.497 * var(--H, 1024px))); top: 0; width: auto !important; height: 100% !important; max-width: none; transform: translate(0, -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen — but never so far right that the photo leaves a black strip on the left (screens that are only just upright, like an iPad in a near-square window) */
+  html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: min(0px, calc(733px - var(--repx, 0.262) * 1.6 * 1.497 * var(--H, 1024px))); top: 0; width: calc(var(--H, 1024px) * 1.497) !important; height: 100% !important; max-width: none; transform: translate(0, -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen — but never so far right that the photo leaves a black strip on the left (screens that are only just upright, like an iPad in a near-square window) */
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
@@ -447,7 +447,7 @@
   /* iPhone upright: the page buttons sit in a frosted white bar along the bottom (Instagram style, no border); five equal
      buttons, icon over a small label; icons are outlines, and the page you're on is filled on a soft grey bubble */
   #pfoot { position: fixed; left: 12px; right: 12px; bottom: calc(var(--sab, 0px) + 10px); z-index: 70; display: none; box-sizing: border-box; padding: 5px; border-radius: 30px;
-    grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; background: rgba(250,250,250,.86);
+    grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);   /* (one equal column per page button, however many pages there are) */ gap: 2px; background: rgba(250,250,250,.86);
     -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8); box-shadow: 0 8px 28px rgba(0,0,0,.22);
     transform-origin: 50% 100%; transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s ease; }
   html.pph #pfoot.on { display: grid; }
@@ -610,6 +610,7 @@
   /* menu: Custom flow sits just left of Recruiting Guide in the top row */
   .nm-quick .nm-guide.nm-flow { margin: 0 0 0 auto; }
   .nm-quick .nm-flow + .nm-guide { margin-left: 0; }
+  .nm-quick .nm-guide + .nm-guide { margin-left: 0; }   /* (Guide and FAQs sit together) */
   .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: rgb(var(--acr)); margin-left: -2px; }
   /* iPhone portrait: the all-pages menu and the recruiting guide are drawn at screen size outside the scaled frame
      (the full-size copies were huge layers and crashed iOS); both are drawers about 3/4 of the screen wide */
@@ -632,14 +633,13 @@
   html.pph .pm .nm-cols { flex: 1; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 1em; row-gap: .3em; margin-top: 1.2em; align-content: space-between; }
   html.pph .pm .nm-page { margin-bottom: .6em; }
   html.pph .pm .nm-cols { grid-template-rows: auto auto 1fr; }
-  html.pph .pm .nm-quick { flex-wrap: nowrap; gap: 5px; }
+  html.pph .pm .nm-quick { flex-wrap: wrap; gap: 6px; }   /* (Home, Guide, FAQs, Custom flow: a second line when they don't all fit) */
   html.pph .pm .nm-quick .nm-page { margin: 0; display: flex; }   /* (the column spacing under each page left Home sitting higher than Guide and Custom flow) */
   html.pph .pm .nm-quick .nm-ptitle { box-sizing: border-box; display: flex; align-items: center; line-height: 1; font-size: 12px !important; font-weight: 700; letter-spacing: 0; padding: 0 14px !important; }
   html.pph .pm .nm-quick .nm-ptitle { height: 34px; font-size: 14px; padding: 0 12px; border-radius: 17px; flex: none; }
   html.pph .pm .nm-quick .nm-guide { height: 34px; font-size: 12px; padding: 0 10px; border-radius: 17px; gap: 6px; flex: none; }
   html.pph .pm .nm-bottom .nm-guide { font-size: 12px; line-height: 1.15; padding: 6px 10px; height: auto; min-height: 38px; border-radius: 19px; white-space: normal; text-align: left; }
   html.pph .pm .nm-cols > .nm-page:nth-child(4) { grid-column: 2; grid-row: 2 / 4; }   /* Opportunity runs down the right */
-  html.pph .pm .nm-cols > .nm-page:nth-child(5) { grid-column: 1; grid-row: 3; }   /* FAQs under Lifestyle */
   html.pph .pm .nm-cols .nm-ptitle { font-size: 1.25em; line-height: 1.2; padding-bottom: .35em; margin-bottom: .25em; }
   html.pph .pm .nm-sec { font-size: .92em; line-height: 1.15; padding: .34em 0 .34em 1px; gap: .5em; }
   html.pph .pm .nm-sec::before { width: 6px; height: 6px; }
@@ -1898,6 +1898,29 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   // header page links: same gap between every title (the design gives each a 150px box, so short titles like FAQs
   // sat further away than long ones like Opportunity). Keeps the row's overall width; tap areas cover the gaps.
+  // header page links never run into the FAQs pill (phones held sideways: wide links, little room): the row slides left
+  // into the space after the logo, and if that isn't enough its gaps close up
+  function hdrRoom(layer) {
+    if (!layer || !layer.isConnected) return;
+    const links = [...layer.querySelectorAll('.board p.hot[data-name^="("]')].filter(e => e.offsetWidth && getComputedStyle(e).display !== 'none');
+    links.forEach(e => { if (e.dataset.l0) e.style.left = e.dataset.l0; });
+    const groups = new Map(); links.forEach(e => { const p = e.parentElement; if (!groups.has(p)) groups.set(p, []); groups.get(p).push(e); });
+    groups.forEach((L, par) => {
+      const pill = [...par.parentElement.querySelectorAll('[data-x="FAQs button"]')].find(x => x.getBoundingClientRect().width > 0) || [...layer.querySelectorAll('[data-x="FAQs button"]')].find(x => { const r = x.getBoundingClientRect(), r0 = L[0].getBoundingClientRect(); return r.width > 0 && Math.abs(r.top - r0.top) < 60; });
+      if (!pill || L.length < 2) return;
+      L.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
+      const txt = e => { const g = document.createRange(); g.selectNodeContents(e); return g.getBoundingClientRect(); };
+      const first = txt(L[0]), last = txt(L[L.length - 1]), pl = pill.getBoundingClientRect().left, k = L[0].getBoundingClientRect().width / L[0].offsetWidth || 1;
+      const need = last.right - (pl - 16); if (need <= 0) return;
+      const logo = [...layer.querySelectorAll('.board img[data-name^="Vivint Logo"], .board img[data-name^="Logo (header"]')].map(x => x.getBoundingClientRect()).filter(r => r.width && Math.abs(r.top - first.top) < 60);
+      const avail = Math.max(0, first.left - ((logo.length ? Math.max(...logo.map(r => r.right)) : 0) + 16));
+      const sh = Math.min(need, avail), extra = need - sh, n = L.length;
+      // (screen px per unit of 'left', measured: these links are scaled from their own origin)
+      const e0 = L[0], l0 = parseFloat(e0.style.left), x0 = e0.getBoundingClientRect().left; e0.style.left = (l0 + 100) + 'px'; const u = (e0.getBoundingClientRect().left - x0) / 100 || k; e0.style.left = l0 + 'px';
+      L.forEach((e, i) => { if (!e.dataset.l0) e.dataset.l0 = e.style.left; e.style.left = (parseFloat(e.dataset.l0) - (sh + extra * i / (n - 1)) / u).toFixed(1) + 'px'; });
+    });
+  }
+  addEventListener('resize', () => setTimeout(() => { try { hdrRoom(current && current.layer); } catch (e) {} }, 400));
   function evenHeader(layer) {
     if (layer.__eh) return;
     const groups = new Map();
@@ -2020,6 +2043,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       try { phdrSync(); } catch (e) {}
       { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
+      setTimeout(() => { try { hdrRoom(layer); } catch (e) {} }, 60);
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
       startScreen(layer);
