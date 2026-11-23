@@ -631,10 +631,11 @@
   /* the grab bar: says the drawer slides shut */
   .dw-grab { position: absolute; right: 7px; top: 50%; width: 4px; height: 46px; margin-top: -23px; border-radius: 2px; background: rgba(255,255,255,.32); pointer-events: none; }
   /* the hamburger turned into an X, right where the hamburger was */
-  .dw-x { position: fixed; z-index: 100001; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; color: #fff; }
+  .dw-x { position: absolute; z-index: 3; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; color: #fff; }
   .dw-x i { position: absolute; left: 50%; top: 50%; width: 22px; height: 2px; margin: -1px 0 0 -11px; border-radius: 1px; background: currentColor; transition: transform .38s cubic-bezier(.3,.9,.2,1), opacity .2s ease; }
   .dw-x i:nth-child(1) { transform: translateY(-7px); } .dw-x i:nth-child(3) { transform: translateY(7px); }
-  .dw.on + .dw-x i:nth-child(1) { transform: rotate(45deg); } .dw.on + .dw-x i:nth-child(2) { opacity: 0; transform: scaleX(.2); } .dw.on + .dw-x i:nth-child(3) { transform: rotate(-45deg); }
+  .dw.on .dw-x i:nth-child(1) { transform: rotate(45deg); } .dw.on .dw-x i:nth-child(2) { opacity: 0; transform: scaleX(.2); } .dw.on .dw-x i:nth-child(3) { transform: rotate(-45deg); }
+  .dw-x { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); }
   .dw-x:active { scale: .9; }
   /* top row: Home and Custom flow, beside the X */
   .dw-head { position: absolute; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
@@ -705,6 +706,7 @@
   .dw.sm .dw-chip span { font-size: 10px; letter-spacing: -.01em; }
   .dw.sm .dw-pill { height: 32px; padding: 0 11px; font-size: 12px; }
   .dw.short .dw-chips .dw-chip { height: 40px; flex-direction: row; gap: 6px; } .dw.short .dw-chip svg { width: 17px; height: 17px; } .dw.short .dw-chip .vh { width: 16px; height: 17px; }
+  .dw.short .dw-foot { grid-auto-flow: column; grid-template-columns: none; }
   .dw.short .dw-main { margin-top: 10px; } .dw.short .dw-foot { margin-top: 8px; padding-top: 8px; } .dw.short .dw-u { height: 32px; flex-direction: row; font-size: 11px; }
   .dw.short .dw-pt { font-size: 18px; }
   .dw.short .dw-s { min-height: 30px; font-size: 13.5px; }
@@ -2302,7 +2304,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const FAVK = 'fr_favs';
   // your Custom flow is kept in three places (local storage, a database and a year-long cookie) so it's still there the next time
   // the app opens, even if the phone clears one of them; whichever copy survives is copied back to the others
-  const favParse = v => { try { const a = JSON.parse(v); return Array.isArray(a) && a.every(x => typeof x === 'string') ? a : null; } catch (e) { return null; } };
+  const favParse = v => { try { const a = JSON.parse(v); return Array.isArray(a) && a.every(x => typeof x === 'string') ? [...new Set(a.map(x => x.replace(/^Culture\.dc\.html#/, 'Experience.dc.html#')))] : null; } catch (e) { return null; } };   // (Lifestyle's sections moved into Experience)
   const favCookie = () => { try { const m = document.cookie.match(/(?:^|; )fr_favs=([^;]*)/); return m ? favParse(decodeURIComponent(m[1])) : null; } catch (e) { return null; } };
   const favIDB = (val) => new Promise(res => { try { const rq = indexedDB.open('fast-recruit', 1); rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
       rq.onsuccess = () => { try { const db = rq.result, tx = db.transaction('kv', val == null ? 'readonly' : 'readwrite'), st = tx.objectStore('kv');
@@ -2401,7 +2403,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       ['Weekly cost', { h: ['Room', 'Rent', 'Utilities', 'Cleaning (once)'], r: [['Shared room', '$200', '$35', '$75'], ['Own room', '$375', '$45', '$75'], ['Married/family · 1 bed', '$400', '$50', '$125'], ['Married/family · 2 bed', '$425', '$50', '$125'], ['Married/family · 3 bed', '$450', '$50', '$125']] }],
       ['When you pay', ['Rent starts on your confirmed start date or the day you arrive, whichever is first, and ends on your confirmed end date or the day you leave, whichever is last.', 'Rent and utilities come out of weekly upfront pay; cleaning and one-time fees come out of backend pay.']]
     ],
-    'Culture.dc.html#competitions': [
+    'Experience.dc.html#competitions': [
       ['Office rewards', ['Dinner goals: hit the office\'s weekly goal and each rep gets $20 for dinner (paid to the Area Director).', 'Incentive money: managers get $50 per rep per month in summer to spend on incentives.', 'Summer program offices only.']]
     ],
     'Opportunity.dc.html#rookie-scenarios': [
@@ -2778,7 +2780,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       + '<button type="button" data-d="1" aria-label="Next page"' + (next ? '' : ' disabled') + '><span>' + (next ? esc2(pageName(next.fn)) : '') + '</span>' + CHEV(1) + '</button>'
       + '<button type="button" class="fb-x" data-d="x" aria-label="Exit custom flow">' + XIC + '</button>';
   }
-  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity']];   // (FAQs opens as a pop-over, from its own pill)
+  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Opportunity.dc.html', 'Opportunity']];   // (FAQs opens as a pop-over, from its own pill; Lifestyle's sections are part of Experience)
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   // ---- Feedback, crash reports and What's New (menu buttons) ----
   // Feedback and crash reports are emailed to Ethan through Web3Forms (web3forms.com). Anything that can't send right away
@@ -2971,7 +2973,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (phdr.__for === L) return; phdr.__for = L;
     const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
     { const sc = scrollerOf(L); if (sc && !sc.__pf) { sc.__pf = 1; let t = 0; sc.addEventListener('scroll', () => { pfoot.classList.add('sm'); clearTimeout(t); t = setTimeout(() => pfoot.classList.remove('sm'), 260); }, { passive: true }); } }
-    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Lifestyle', 'Culture.dc.html'], ['Opportunity', 'Opportunity.dc.html']];
+    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Opportunity', 'Opportunity.dc.html']];
     PAGES.forEach(([t, fn]) => {
       const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
       const top = Object.keys(P.artboards).find(k => P.artboards[k].board === fn && P.artboards[k].section == null) || ((P.boards[fn] && P.boards[fn].sections || [])[0] || {}).aid;
@@ -3047,13 +3049,6 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     fb: '<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
     wn: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>'
   };
-  // where the hamburger is on screen right now (the iPhone header's, or the page's own)
-  function burgerRect() {
-    const ok = r => r.width > 4 && r.bottom > 0 && r.top < innerHeight * 0.4 && r.left >= -2 && r.left < innerWidth * 0.4;
-    const cands = [document.querySelector('#phdr .ph-menu'), current && current.layer && current.layer.querySelector('.board [data-x="Menu button"]')].filter(Boolean);
-    for (const e of cands) { const r = e.getBoundingClientRect(); if (ok(r) && getComputedStyle(e).visibility !== 'hidden') return r; }
-    const L = current && current.layer ? current.layer.getBoundingClientRect() : { left: 0, top: 0 }; return { left: L.left + 12, top: L.top + 12, width: 40, height: 40, right: L.left + 52, bottom: L.top + 52 };
-  }
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl, x = menuX; menuEl = null; menuX = null; clearInterval(m.__iv);
     if (instant) { m.remove(); if (x) x.remove(); uiSync(); return; }
@@ -3087,11 +3082,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const w = port ? (W < 600 ? W - 2 * g - Math.max(36, W * 0.1) : Math.min(660, W * 0.8)) : Math.min(1040, Math.max(Math.min(W - 2 * g - 60, 640), W * 0.68));
       m.classList.toggle('port', port); m.classList.toggle('sm', small); m.classList.toggle('short', H < 500);
       Object.assign(pn.style, { left: left0 + g + 'px', top: top0 + g + 'px', width: Math.round(w) + 'px', height: (H - 2 * g) + 'px' });
-      const b = burgerRect(), d = Math.max(40, Math.min(48, Math.max(b.width, b.height)));
-      Object.assign(X.style, { left: (b.left + b.width / 2 - d / 2) + 'px', top: (b.top + b.height / 2 - d / 2) + 'px', width: d + 'px', height: d + 'px' });
-      const pl = left0 + g, pt = top0 + g, cy = b.top + b.height / 2 - pt, hh = small ? 32 : 36;
-      Object.assign(head.style, { left: Math.max(56, b.left + b.width / 2 + d / 2 - pl + 10) + 'px', right: '18px', top: Math.max(10, cy - hh / 2) + 'px', height: hh + 'px' });
-      inn.style.top = Math.round(Math.max(cy + hh / 2, 10 + hh) + (H < 500 ? 10 : 16)) + 'px';
+      // the X: inside the drawer's top-left corner (where the hamburger was, as near as the card allows); the head row beside it
+      const d = small ? 38 : 42, pad = H < 500 ? 12 : small ? 14 : 18, hh = small ? 32 : 36, cy = pad + d / 2;
+      Object.assign(X.style, { left: pad + 'px', top: pad + 'px', width: d + 'px', height: d + 'px' });
+      Object.assign(head.style, { left: (pad + d + 10) + 'px', right: pad + 'px', top: (cy - hh / 2) + 'px', height: hh + 'px' });
+      inn.style.top = Math.round(pad + d + (H < 500 ? 10 : 16)) + 'px';
       // the preview under the list (upright) must leave the list room for a few rows
       pv.style.maxHeight = ''; if (port) { const room = inn.clientHeight; if (room) pv.style.width = Math.min(100, Math.max(55, (room * 0.34 * 16 / 9) / Math.max(1, list.clientWidth || inn.clientWidth - 40) * 100)) + '%'; }
       else pv.style.width = '';
@@ -3141,7 +3136,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (t.dataset.aid) goTo(t.dataset.aid);
     });
     X.addEventListener('click', e => { e.stopPropagation(); closeMenu(); });
-    ['pointerdown', 'touchstart'].forEach(ev => { m.addEventListener(ev, e => e.stopPropagation()); X.addEventListener(ev, e => e.stopPropagation()); });
+    ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
     // slide it shut: drag the drawer to the left (anywhere on it, or on the dimmed page)
     let drag = null;
     m.addEventListener('pointerdown', e => { if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return; drag = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, moved: false, id: e.pointerId }; });
@@ -3153,7 +3148,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if ((d.dx || 0) < -Math.min(80, pn.offsetWidth * 0.28) || v < -0.4) { haptic('select'); closeMenu(); } else { m.classList.remove('drag'); pn.style.removeProperty('--tx'); }
     };
     m.addEventListener('pointerup', end); m.addEventListener('pointercancel', end);
-    document.body.appendChild(m); document.body.appendChild(X); menuEl = m; menuX = X; m.__lay = lay;
+    pn.appendChild(X); document.body.appendChild(m); menuEl = m; menuX = null; m.__lay = lay;
     lay(); pick(sel, false); uiSync();
     if (!fromEdge) requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('on')));
     return m;
@@ -4075,7 +4070,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }, { passive: false, capture: true });
 
   // ---------------- swipe between the main pages ----------------
-  const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html'];   // (FAQs is a pop-over, not a page in the row)
+  const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Opportunity.dc.html'];   // (FAQs is a pop-over, not a page in the row)
   const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], [data-vscroll], [data-name="Income rows"], input:not(.hapsw), textarea, select';
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
   window.__lyGo = (fn, sid) => { const a = aidOf(fn, sid) || firstAid(fn); if (a) go(a); };   // art board: reopen at the last edit
