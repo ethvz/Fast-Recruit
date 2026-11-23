@@ -576,10 +576,11 @@
 
   /* header pills, every page, size and orientation: Onboard now is solid Vivint green with black text; Guide and FAQs are
      clear with a white outline and white text */
+  .layer[data-fn="Main.dc.html"] .board [data-x="Onboard button"] { background: #DFFF1A !important; }   /* (Home: NOT LIKE US yellow) */
   .board [data-x="Onboard button"] { background: #05E5AF !important; border-color: transparent !important; color: #000000 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   .board :is([data-x="Guide button"], [data-x="FAQs button"]) { background: transparent !important; border: 1.5px solid #ffffff !important; color: #ffffff !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   #phdr .ph-p { background: transparent !important; border: 1px solid #ffffff !important; color: #ffffff !important; }
-  #phdr .ph-p.g { background: #05E5AF !important; border-color: #05E5AF !important; color: #000000 !important; }
+  #phdr .ph-p.g { background: rgb(var(--acr, 5,229,175)) !important; border-color: rgb(var(--acr, 5,229,175)) !important; color: #000000 !important; }
   .navmenu .nm-guide.nm-faq, .navmenu .nm-guide.nm-gd { background: transparent; border: 1.5px solid #ffffff; color: #ffffff; }
   /* FAQs is not one of the main pages: its header link is gone (the other four close up), and it opens as a pop-over */
   .board p.hot[data-name="(FAQs)"] { display: none !important; }
@@ -1935,6 +1936,21 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     });
   }
   addEventListener('resize', () => setTimeout(() => { try { hdrRoom(current && current.layer); } catch (e) {} }, 400));
+  // iPads (any way up): NOT LIKE US sits as far from the right edge as the page menu is from the left
+  function homeRight(layer) {
+    if (!layer || !layer.isConnected || layer.dataset.fn !== 'Main.dc.html') return;
+    if (!(SIM ? !SIM.phone : (TOUCHDEV && !PHONE))) return;
+    const B = layer.querySelector('.board'), T = ['Not', 'Like', 'Us'].map(n => B.querySelector('[data-name="' + n + '"]')).filter(Boolean), dot = B.querySelector('[data-name="Home dot"]');
+    if (T.length < 3 || !dot) return;
+    T.forEach(e => { if (e.dataset.l0) e.style.left = e.dataset.l0; });
+    const lr = layer.getBoundingClientRect(), gl = e => { const g = document.createRange(); g.selectNodeContents(e); return g.getBoundingClientRect(); };
+    const margin = dot.getBoundingClientRect().left - lr.left, right = Math.max(...T.map(e => gl(e).right)), dx = (lr.right - margin) - right;
+    if (Math.abs(dx) < 1 || !(margin > 0)) return;
+    const e0 = T[0], l0 = parseFloat(e0.style.left), x0 = e0.getBoundingClientRect().left; e0.style.left = (l0 + 100) + 'px'; const u = (e0.getBoundingClientRect().left - x0) / 100; e0.style.left = l0 + 'px';
+    if (!(u > 0)) return;
+    T.forEach(e => { if (!e.dataset.l0) e.dataset.l0 = e.style.left; e.style.left = (parseFloat(e.dataset.l0) + dx / u).toFixed(1) + 'px'; });
+  }
+  addEventListener('resize', () => setTimeout(() => { try { homeRight(current && current.layer); } catch (e) {} }, 450));
   function evenHeader(layer) {
     if (layer.__eh) return;
     const groups = new Map();
@@ -2057,7 +2073,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       try { phdrSync(); } catch (e) {}
       { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
-      setTimeout(() => { try { hdrRoom(layer); } catch (e) {} }, 60);
+      setTimeout(() => { try { hdrRoom(layer); } catch (e) {} try { homeRight(layer); } catch (e) {} }, 60);
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
       startScreen(layer);
@@ -3053,7 +3069,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // page menu on the left, NOT LIKE US on the right: side by side, the same height, centred on each other
     const tb = box(G.title), mv = box([q('Home dot'), ...labs].filter(Boolean)), mb = box(G.menu);
     if (tb && mv && mb) {
-      const th = tb.h * 0.9, mw = Math.max(...labs.map(e => txt(e).r)) - mv.x, avail = W - 2 * M - Math.round(W * 0.04);
+      // (the title's letters, not its line boxes: each 178px line has ~28% empty space above and below the capitals)
+      const lh = vis.get(G.title[0]) ? vis.get(G.title[0]).h : tb.h / 3, th = tb.h - 0.28 * lh, mw = Math.max(...labs.map(e => txt(e).r)) - mv.x, avail = W - 2 * M - Math.round(W * 0.04);
       const st = avail / (tb.w + mw * th / mv.h), sm = st * th / mv.h, cy = lr.top + lr.height * 0.555;
       place(G.menu, mv, M, cy - mv.h * sm / 2, sm);
       place(G.title, tb, W - M - tb.w * st, cy - tb.h * st / 2, st);
