@@ -129,9 +129,10 @@
   .board img.hot[data-name="Vivint Logo"] { touch-action: none !important; -webkit-touch-callout: none; -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
   .board img.hot[data-name="Vivint Logo"] { top: 26px !important; padding: 12px 14px 12px 6px !important; margin: -12px 0 0 -6px !important; box-sizing: content-box !important; cursor: pointer; pointer-events: auto !important; }
   /* landing photo on a wide phone screen: full bleed, framed so Eli sits between the headline and the menu */
-  html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: var(--MXL, 0px) !important; }
+  /* Home: logo and page menu on the left, NOT LIKE US on the right */
+  html.pland .board :is(.pmid, .ptop) > :is([data-name="Vivint Logo"], [data-name="Landing menu"]) { margin-left: var(--MXL, 0px) !important; }
+  html.pland .board :is(.pmid, .ptop) > :is([data-name="Not"], [data-name="Like"], [data-name="Us"]) { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
   html.pland .board :is(.pmid, .ptop) > [data-name="In memory"] { scale: var(--CS); transform-origin: 50% 100%; }
-  html.pland .board :is(.pmid, .ptop) > [data-name="Landing menu"] { margin-left: calc(var(--X2, 0px) - var(--MXR, 0px)) !important; }
   html.port:not(.pland) .layer[data-fn="Main.dc.html"] .board img[data-land] { position: absolute; left: min(0px, calc(733px - var(--repx, 0.262) * 1.6 * 1.497 * var(--H, 1024px))); top: 0; width: calc(var(--H, 1024px) * 1.497) !important; height: 100% !important; max-width: none; transform: translate(0, -12%) scale(1.6) !important; transform-origin: 0 0 !important; }   /* upright: the rep centred on the screen — but never so far right that the photo leaves a black strip on the left (screens that are only just upright, like an iPad in a near-square window) */
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
@@ -3048,15 +3049,15 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const hb = box(G.hdr); let hMid = null;
     if (hb) { const s = Math.min(0.85, (W - Math.round(W * 0.03) - 56) / hb.w), Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }   // (FAQs, Guide and Onboard now, clear of the menu button)
     const mbb = box(G.mbt); if (mbb && hMid != null) { const s = 0.85; place(G.mbt, mbb, Math.round(W * 0.01), hMid - mbb.h * s / 2, s); }
-    // logo: centred, a quarter of the way down the screen
-    const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, (W - lb.w * s) / 2, scH * 0.25 - lb.h * s / 2, s); }
-    // NOT LIKE US + page menu side by side, the same height, centred on each other
+    // logo: on the left (lined up with the page menu), a quarter of the way down the screen
+    const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, M, scH * 0.25 - lb.h * s / 2, s); }
+    // page menu on the left, NOT LIKE US on the right: side by side, the same height, centred on each other
     const tb = box(G.title), mv = box([q('Home dot'), ...labs].filter(Boolean)), mb = box(G.menu);
     if (tb && mv && mb) {
       const th = tb.h * 0.9, mw = Math.max(...labs.map(e => txt(e).r)) - mv.x, avail = W - 2 * M - Math.round(W * 0.04);
       const st = avail / (tb.w + mw * th / mv.h), sm = st * th / mv.h, cy = lr.top + lr.height * 0.555;
-      place(G.title, tb, M, cy - tb.h * st / 2, st);
-      place(G.menu, mv, W - M - mw * sm, cy - mv.h * sm / 2, sm);
+      place(G.menu, mv, M, cy - mv.h * sm / 2, sm);
+      place(G.title, tb, W - M - tb.w * st, cy - tb.h * st / 2, st);
     }
     // Custom flow + Begin: bigger, bottom right
     const cf = G.cta.filter(e => e.getAttribute('data-x') === 'Custom flow'), beg = G.cta.filter(e => cf.indexOf(e) < 0);
