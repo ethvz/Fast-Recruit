@@ -138,6 +138,7 @@
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 300px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open the onboarding tool"] { scale: var(--CS); transform-origin: 188px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open FAQs"] { scale: var(--CS); transform-origin: 412px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
   html.pland .board .pbx-side::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
@@ -188,7 +189,7 @@
   #frame, .layer, .board { width: var(--FW, 1466px) !important; }
   .board .fx-full { width: var(--FW, 1466px) !important; }
   /* ---- portrait v2 header: logo + menu stay put, the page links scroll sideways ---- */
-  html.pph .layer:not([data-fn="Main.dc.html"]) .board :is([data-name="Header"], [data-name="Header bar"], [data-x="Menu button"], img[data-name^="Vivint Logo"], img[data-name^="Logo (header"], button[aria-label$="section menu"], [aria-label="Open the recruiting guide"], [aria-label="Open the onboarding tool"]) { display: none !important; }
+  html.pph .layer:not([data-fn="Main.dc.html"]) .board :is([data-name="Header"], [data-name="Header bar"], [data-x="Menu button"], img[data-name^="Vivint Logo"], img[data-name^="Logo (header"], button[aria-label$="section menu"], [aria-label="Open the recruiting guide"], [aria-label="Open FAQs"], [aria-label="Open the onboarding tool"]) { display: none !important; }
   #phdr { position: fixed; left: 0; right: 0; top: 0; z-index: 70; display: none; box-sizing: border-box; align-items: center; height: calc(var(--sat, 0px) + 58px); padding: var(--sat, 0px) 0 0;
     background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.75) 60%, rgba(0,0,0,0) 100%);
     transition: opacity .45s ease, transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
@@ -211,6 +212,7 @@
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open menu"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 0 0; }
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 300px 0; }
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 188px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open FAQs"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 412px 0; }
   /* iPhone upright Home: the photo fades to black at the top and bottom, so it meets the black status-bar and home-bar strips without a hard edge */
   html.pph .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"]::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.55) 4%, rgba(0,0,0,0) 13%, rgba(0,0,0,0) 80%, rgba(0,0,0,.6) 93%, #000 100%); }
   html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
@@ -437,7 +439,9 @@
   /* section buttons (Sales rules, star, Custom flow edit/exit) larger upright; on iPhones the size of the sections button */
   html.pstack:not(.pph) .favw { scale: 1.5; }
   html.pph .favw { scale: calc(var(--isc, 1) * 38 / 36) !important; top: calc(var(--isc, 1) * 64px) !important; }
-  #phdr .ph-scroll { justify-content: flex-end; }
+  #phdr .ph-scroll { justify-content: flex-start; }
+  #phdr .ph-scroll > :first-child { margin-left: auto; }   /* (right-aligned without pushing the first pill off the left edge when space is tight) */
+  #phdr .ph-p { padding: 0 9px; letter-spacing: .05em; margin-left: 0; font-size: 10px; height: 28px; line-height: 26px; }
   /* iPhone portrait: the page buttons live in a glass pill along the bottom; it shrinks while you scroll and comes back when you land */
   html.pph .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"], html.pph .layer:not([data-fn="Main.dc.html"]) .board .pdown { display: none !important; }
   /* iPhone upright: the page buttons sit in a frosted white bar along the bottom (Instagram style, no border); five equal
@@ -568,6 +572,32 @@
   .nm-ptitle .n { font-size: 11px; letter-spacing: .2em; color: rgb(var(--acr)); font-weight: 500; }
   .nm-page.on .nm-ptitle { color: rgb(var(--acr)); }
   #phdr .ph-prog b.ph { opacity: .35; }
+
+  /* header pills, every page, size and orientation: Onboard now is solid Vivint green with black text; Guide and FAQs are
+     clear with a white outline and white text */
+  .board [data-x="Onboard button"] { background: #05E5AF !important; border-color: transparent !important; color: #000000 !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .board :is([data-x="Guide button"], [data-x="FAQs button"]) { background: transparent !important; border: 1.5px solid #ffffff !important; color: #ffffff !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  #phdr .ph-p { background: transparent !important; border: 1px solid #ffffff !important; color: #ffffff !important; }
+  #phdr .ph-p.g { background: #05E5AF !important; border-color: #05E5AF !important; color: #000000 !important; }
+  .navmenu .nm-guide.nm-faq, .navmenu .nm-guide.nm-gd { background: transparent; border: 1.5px solid #ffffff; color: #ffffff; }
+  /* FAQs is not one of the main pages: its header link is gone (the other four close up), and it opens as a pop-over */
+  .board p.hot[data-name="(FAQs)"] { display: none !important; }
+  .board p.hot:is([data-name="(Why Vivint)"], [data-name="(Experience)"], [data-name="(Culture)"], [data-name="(Opportunity)"]) { margin-left: 60px; }
+  .board [data-x="FAQs button"] { cursor: pointer; }
+  /* the FAQs and recruiting-guide pop-overs: a floating card with four rounded corners (tap outside it to close) */
+  .pfaq .pg-body { padding-top: 8px; }
+  .fq-i { border-top: 1px solid rgba(255,255,255,.14); }
+  .fq-i:last-child { border-bottom: 1px solid rgba(255,255,255,.14); }
+  .fq-q { width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 0; margin: 0; background: none; border: 0; color: #fff; text-align: left; cursor: pointer; font: 500 19px/1.25 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: -.02em; }
+  .fq-q span { flex: 1; transition: color .3s ease; }
+  .fq-q i { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; transition: transform .35s ease, background .3s ease, border-color .3s ease; }
+  .fq-i.on .fq-q span { color: #05E5AF; }
+  .fq-i.on .fq-q i { transform: rotate(45deg); background: #05E5AF; border-color: #05E5AF; }
+  .fq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s cubic-bezier(.2,.8,.2,1); }
+  .fq-i.on .fq-a { grid-template-rows: 1fr; }
+  .fq-a > div { overflow: hidden; min-height: 0; }
+  .fq-a > div > div { zoom: .64; padding: 0 0 22px; }
+  @media (min-width: 600px) { .fq-q { font-size: 22px; padding: 20px 0; } .fq-a > div > div { zoom: .9; } }
   .nm-sec { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 0 6px 2px; font-size: 16px; line-height: 20px; color: rgba(255,255,255,0.62); }
   .nm-sec::before { content: ''; width: 7px; height: 7px; border-radius: 4px; border: 1.5px solid rgba(255,255,255,0.35); flex: none; }
   .nm-sec.on { color: #fff; font-weight: 600; }
@@ -633,6 +663,11 @@
   .pg-bar b { display: block; height: 100%; border-radius: 1px; background: #05E5AF; transition: width .4s cubic-bezier(.2,.8,.2,1); }
   .pg-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; margin: 0 -18px; padding: 16px 18px 8px; }
   .pg-step { zoom: 0.74; animation: nmFade .3s ease; }
+  @media (min-width: 600px) {
+    .pguide .pg-panel { left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important; margin: auto; width: min(780px, 92vw) !important; height: min(86vh, 900px); padding: 26px 28px 20px !important; }
+    .pguide .pg-step { zoom: 0.9; }
+    .pguide .nm-title { font-size: 26px !important; }
+  }
   .pg-step [style*="font-size: 52px"] { font-size: 36px !important; line-height: 39px !important; }
   .pg-step [style*="font-size: 12.5px"] { font-size: 14.5px !important; }
   .pg-step [style*="font-size: 14px"], .pg-step [style*="font-size: 14.5px"], .pg-step [style*="font-size: 15px"], .pg-step [style*="font-size: 15.5px"] { font-size: 17px !important; line-height: 23px !important; }
@@ -1105,6 +1140,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // photo than a phone held sideways. Use the same smaller copies there; full-size photos on several loaded sections at once
     // were the heaviest part of Why Vivint › Package Costs when it crashed on an upright iPad in the Claude app.
     if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
+    // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
+    mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
+      (m, l, rest) => '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" style="position: absolute; left: ' + (+l - 112) + 'px;' + rest + '">FAQS</div>' + m);
     if (isLite()) mk = flat3d(mk);
     const pr = prep(mk), loops = pr.loops;
     // images wait until their section is near the screen (see setupVirtual)
@@ -1281,7 +1319,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const leaf = (el, x0, y0, low) => {
         const l = num(el, 'left'), t = num(el, 'top'), w = num(el, 'width') || 0;
         const x = x0 + (l || 0), y = y0 + (t || 0);
-        const rp = x + w > 1356 || el.getAttribute('aria-label') === 'Open the recruiting guide';
+        const rp = x + w > 1356 || /^Open (the recruiting guide|FAQs)$/.test(el.getAttribute('aria-label') || '');
         const ax = x < 110 ? -x : rp ? 1466 - x : 733 - x, ay = low ? 1024 - y : -y;
         const id = b + '-' + (n++); el.setAttribute('data-pc', id);
         const isLink = el.tagName === 'P' && /^\(/.test(el.dataset.name || '');   // header page links: a second row when upright
@@ -1772,7 +1810,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (l <= 0 && w != null && h != null && h >= 1000 && !el.getAttribute('data-dct-style')) { el.style.width = 'calc(' + w + 'px + var(--X2, 0px))'; return; }   // full-height side strip
     const r = l + (w || 0);
     if (l < 110) return;                    // pinned left (logo, menu, back pill)
-    if (r > 1356 || el.getAttribute('aria-label') === 'Open the recruiting guide') { el.classList.add('fx-r'); return; }   // (Guide pill sits beside Onboard)   // pinned right (help, next pill, right-hand photos/panels)
+    if (r > 1356 || /^Open (the recruiting guide|FAQs)$/.test(el.getAttribute('aria-label') || '')) { el.classList.add('fx-r'); return; }   // (Guide pill sits beside Onboard)   // pinned right (help, next pill, right-hand photos/panels)
     el.classList.add('fx-c');
   }
   function portraitize(host, inst) {
@@ -1910,6 +1948,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   async function go(aid, tr, dur, ease, restore) {
     let t = P.artboards[aid];
     if (!t) return;
+    if (!FLOW && t.board === 'FAQs.dc.html') { if (!current) { const h = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (h) await go(h, 'none', 0); } openFaq(); return; }   // FAQs pops up over the page you're on
     let fresh = false, fSeg = null;
     if (FLOW) {
       const S = segs(), sx = secList(t.board)[t.section || 0];
@@ -2018,7 +2057,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       layer.style.left = ((pos && pos.x) || 0) + 'px'; layer.style.top = ((pos && pos.y) || 0) + 'px';
       frame.appendChild(layer);
       overlay = { board: t.board, layer };
-      if (pphOn() && aid === GUIDE_AID && openPGuide(layer)) { layer.style.visibility = 'hidden'; layer.style.pointerEvents = 'none'; return; }
+      if (aid === GUIDE_AID && openPGuide(layer)) { layer.style.visibility = 'hidden'; layer.style.pointerEvents = 'none'; return; }
       await animate(layer, null, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       startScreen(layer);
     } finally { busy = false; FR.set('nav', 'idle'); uiSync(); }
@@ -2066,7 +2105,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const XIC = '<svg width="13" height="13" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.9" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg>';
   const GRIP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
   const esc2 = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
-  const pageName = fn => (MENU.find(m => m[0] === fn) || [0, ''])[1];
+  const pageName = fn => fn === 'FAQs.dc.html' ? 'FAQs' : (MENU.find(m => m[0] === fn) || [0, ''])[1];
   const secList = fn => (P.boards[fn] && P.boards[fn].sections) || [];
   const secIdx = (fn, sid) => secList(fn).findIndex(x => x.sid === sid);
   const secOf = k => { const h = k.indexOf('#'), fn = k.slice(0, h), sid = k.slice(h + 1), i = secIdx(fn, sid); return i < 0 ? null : { fn, sid, i, x: secList(fn)[i] }; };
@@ -2514,7 +2553,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       + '<button type="button" data-d="1" aria-label="Next page"' + (next ? '' : ' disabled') + '><span>' + (next ? esc2(pageName(next.fn)) : '') + '</span>' + CHEV(1) + '</button>'
       + '<button type="button" class="fb-x" data-d="x" aria-label="Exit custom flow">' + XIC + '</button>';
   }
-  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity'], ['FAQs.dc.html', 'FAQs']];
+  const MENU = [['Main.dc.html', 'Home'], ['Why-Vivint.dc.html', 'Why Vivint'], ['Experience.dc.html', 'Experience'], ['Culture.dc.html', 'Lifestyle'], ['Opportunity.dc.html', 'Opportunity']];   // (FAQs opens as a pop-over, from its own pill)
   const GUIDE_AID = 'f982be56-1f57-4211-aed1-03c8ea0a0da7';
   let menuEl = null;
   // ---- Feedback, crash reports and What's New (menu buttons) ----
@@ -2563,7 +2602,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-24d';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24e';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2708,7 +2747,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (phdr.__for === L) return; phdr.__for = L;
     const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
     { const sc = scrollerOf(L); if (sc && !sc.__pf) { sc.__pf = 1; let t = 0; sc.addEventListener('scroll', () => { pfoot.classList.add('sm'); clearTimeout(t); t = setTimeout(() => pfoot.classList.remove('sm'), 260); }, { passive: true }); } }
-    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Lifestyle', 'Culture.dc.html'], ['Opportunity', 'Opportunity.dc.html'], ['FAQs', 'FAQs.dc.html']];
+    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Lifestyle', 'Culture.dc.html'], ['Opportunity', 'Opportunity.dc.html']];
     PAGES.forEach(([t, fn]) => {
       const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
       const top = Object.keys(P.artboards).find(k => P.artboards[k].board === fn && P.artboards[k].section == null) || ((P.boards[fn] && P.boards[fn].sections || [])[0] || {}).aid;
@@ -2721,7 +2760,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.addEventListener('click', () => { if (held) { held = false; return; } if (current && current.board === fn) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; }
         const list = hot ? (L._ia[hot.id] || []).filter(x => x.t === 'tap') : []; if (list.length) run(list[0], L, hot); else if (top) go(top, 'dissolve', 0.3, 'ease-out'); });
       row.appendChild(b); });
-    [['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
+    [['Open FAQs', 'FAQs', ''], ['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
       const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; b.textContent = t; b.addEventListener('click', () => o.click()); hrow.appendChild(b); });
   }
   function closeMenu(instant) {
@@ -2776,7 +2815,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const inCols = fn => hasSecs(fn) || (pphOn() && fn !== 'Main.dc.html');
     const quick = MENU.map((x, k) => inCols(x[0]) ? '' : page(x, k)).join(''), cols = MENU.map((x, k) => inCols(x[0]) ? page(x, k) : '').join('');
     const flowB = '<button type="button" class="nm-guide nm-flow"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button>',
-      guideB = '<button type="button" class="nm-guide"><span style="width:6px;height:6px;border-radius:3px;background:rgb(var(--acr));flex:none"></span>' + (pphOn() ? 'Guide' : 'Recruiting Guide') + '</button>';
+      guideB = '<button type="button" class="nm-guide nm-gd">' + (pphOn() ? 'Guide' : 'Recruiting Guide') + '</button><button type="button" class="nm-guide nm-faq">FAQs</button>';
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
       + '<div class="nm-quick">' + quick + (pphOn() ? guideB + flowB : flowB + guideB) + '</div>'
@@ -2790,6 +2829,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (t.classList.contains('nm-dl')) { OFFL.start(); return; }
       if (t.classList.contains('nm-fb')) { closeMenu(true); FB.feedback(); return; }
       if (t.classList.contains('nm-wn')) { closeMenu(true); FB.news(); return; }
+      if (t.classList.contains('nm-faq')) { closeMenu(true); openFaq(); return; }
       if (t.classList.contains('nm-guide')) { closeMenu(true); openOverlay(GUIDE_AID, 'none'); return; }
       if (t.dataset.aid) { const aid = t.dataset.aid; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); return; }
       closeMenu();
@@ -2797,6 +2837,29 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
     closeQnav(); closeSheet(); if (pphOn()) { m.classList.add('pm'); document.body.appendChild(m); pmFit(m); } else frame.appendChild(m); menuEl = m; uiSync();
   }
+  // FAQs pop-over: the questions from the FAQs page, as an accordion in a floating card over the page you're on
+  let faqEl = null;
+  function closeFaq(instant) { const g = faqEl; if (!g) return; faqEl = null; if (instant) g.remove(); else { g.classList.add('out'); setTimeout(() => g.remove(), 240); } }
+  async function openFaq() {
+    if (faqEl) return; closeMenu(true); if (overlay) closeOverlay(true);
+    const g = document.createElement('div'); g.className = 'pguide pfaq'; faqEl = g;
+    g.innerHTML = '<div class="pg-scrim"></div><div class="pg-panel"><div class="nm-top"><div><div class="nm-eye">FAQs</div><div class="nm-title">Questions? We’ve got answers.</div></div>'
+      + '<button type="button" class="nm-x" aria-label="Close FAQs"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div><div class="pg-body"></div></div>';
+    g.addEventListener('click', e => { e.stopPropagation(); const t = e.target.closest('.fq-q, .nm-x, .pg-scrim'); if (!t) return;
+      if (t.classList.contains('fq-q')) { const it = t.parentElement, on = !it.classList.contains('on'); it.classList.toggle('on', on); t.setAttribute('aria-expanded', on); return; }
+      closeFaq(); });
+    ['pointerdown', 'touchstart'].forEach(ev => g.addEventListener(ev, e => e.stopPropagation()));
+    document.body.appendChild(g);
+    try {
+      const j = await loadBoard('FAQs.dc.html'), tmp = document.createElement('div');
+      tmp.innerHTML = j.markup.replace(/\{\{[^}]*\}\}/g, '');
+      const qs = [...tmp.querySelectorAll('button[aria-expanded]')].map(b => { const ans = b.nextElementSibling, inner = ans && ans.querySelector('div > div');
+        return { q: (b.querySelector('span') || b).textContent.trim(), a: inner ? inner.innerHTML : '' }; }).filter(x => x.q);
+      g.querySelector('.pg-body').innerHTML = qs.map(x => '<div class="fq-i"><button type="button" class="fq-q" aria-expanded="false"><span>' + x.q.replace(/</g, '&lt;') + '</span><i><svg width="14" height="14" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3V17M3 10H17" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></i></button><div class="fq-a"><div><div>' + x.a + '</div></div></div></div>').join('');
+    } catch (e) { g.querySelector('.pg-body').textContent = 'The FAQs couldn’t load. Check your connection and try again.'; }
+  }
+  viewport.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-x="FAQs button"]'); if (b) { e.preventDefault(); e.stopPropagation(); openFaq(); } }, true);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && (faqEl || pguideEl)) { e.stopImmediatePropagation(); if (faqEl) closeFaq(); else closeOverlay(); } }, true);
   viewport.addEventListener('click', e => {
     const b = e.target.closest && e.target.closest('[data-x="Menu button"]');
     if (b) { e.preventDefault(); e.stopPropagation(); openMenu(); }
@@ -2886,7 +2949,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // the pieces (only named ones can be targeted)
     const pill = q('Glass arrow pill'), labs = [...B.querySelectorAll('[data-name^="("]')];
     const G = { logo: [q('Vivint Logo')], title: ['Not', 'Like', 'Us'].map(q), menu: [q('Landing menu'), q('Home dot'), ...labs],
-      hdr: ['Open the recruiting guide', 'Open the onboarding tool'].map(l => B.querySelector('.ptop > [aria-label="' + l + '"]')), mbt: [B.querySelector('.ptop > [aria-label="Open menu"]')],
+      hdr: ['Open FAQs', 'Open the recruiting guide', 'Open the onboarding tool'].map(l => B.querySelector('.ptop > [aria-label="' + l + '"]')), mbt: [B.querySelector('.ptop > [aria-label="Open menu"]')],
       cta: [B.querySelector('[data-x="Custom flow"]'), ...['Glass arrow pill', 'Begin', 'Group 6502', 'Group 6504 hotspot'].map(q)], mem: [q('In memory')] };
     if (pill && pill.nextElementSibling && pill.nextElementSibling.getAttribute('data-name')) G.cta.push(pill.nextElementSibling);
     Object.keys(G).forEach(n => G[n] = G[n].filter(e => e && (e.getAttribute('data-name') || e.getAttribute('data-x'))));
@@ -2908,7 +2971,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const place = (els, g, X, Y, s) => els.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const v = vis.get(e); if (v && v.w) put(e, X + (v.x - g.x) * s, Y + (v.y - g.y) * s, v.w * s); });
     // header: Guide + Onboard tucked into the top-right corner, a little smaller; the menu button level with them
     const hb = box(G.hdr); let hMid = null;
-    if (hb) { const s = 0.85, Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }
+    if (hb) { const s = Math.min(0.85, (W - Math.round(W * 0.03) - 56) / hb.w), Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }   // (FAQs, Guide and Onboard now, clear of the menu button)
     const mbb = box(G.mbt); if (mbb && hMid != null) { const s = 0.85; place(G.mbt, mbb, Math.round(W * 0.01), hMid - mbb.h * s / 2, s); }
     // logo: centred, a quarter of the way down the screen
     const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, (W - lb.w * s) / 2, scH * 0.25 - lb.h * s / 2, s); }
@@ -3593,7 +3656,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }, { passive: false, capture: true });
 
   // ---------------- swipe between the main pages ----------------
-  const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html', 'FAQs.dc.html'];
+  const ORDER = ['Main.dc.html', 'Why-Vivint.dc.html', 'Experience.dc.html', 'Culture.dc.html', 'Opportunity.dc.html'];   // (FAQs is a pop-over, not a page in the row)
   const NOSWIPE = '.hsc, [data-name="Commercial player"], [data-name$="carousel"], .tlw, .sg, [data-name="History wheel"], [data-name="Award logos"], [data-vscroll], [data-name="Income rows"], input:not(.hapsw), textarea, select';
   const firstAid = fn => { const ks = Object.keys(P.artboards).filter(k => P.artboards[k].board === fn); return ks.find(k => !P.artboards[k].section) || ks[0]; };
   window.__lyGo = (fn, sid) => { const a = aidOf(fn, sid) || firstAid(fn); if (a) go(a); };   // art board: reopen at the last edit
