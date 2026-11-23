@@ -60,9 +60,11 @@
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > svg:not([data-name^="Ellipse"]) :is(path, line, polyline) { fill: #16191a !important; stroke-opacity: 1; }
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > svg[data-name^="Ellipse"] { display: none !important; }
   /* the home page's theme is yellow: its page pill follows it */
-  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: rgba(223,255,26,0.8) !important; background: rgba(223,255,26,0.16) !important; }
-  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] + svg + p { color: #DFFF1A !important; }
-  .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #DFFF1A; }
+  /* Home's Begin: the same frosted white button as the back / next buttons on the other pages (same spot, same size) */
+  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: transparent !important; background: rgba(250,250,250,.86) !important; -webkit-backdrop-filter: blur(22px) saturate(1.8) !important; backdrop-filter: blur(22px) saturate(1.8) !important; box-shadow: 0 8px 24px rgba(0,0,0,.25) !important; }
+  .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"] { color: #16191a !important; }
+  .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #16191a !important; }
+  .layer[data-fn="Main.dc.html"] .board svg[data-name="Ellipse 749"] { display: none !important; }
   /* "next section" button: a pulsing down arrow centred between the page arrows, on every section that has one below it.
      It replaces the title screen's own arrow so every section has the same one. Solid tint (no live blur) so its pulse stays cheap. */
   .board a[aria-label^="Scroll to"] > svg[data-name="Footer"] { display: none !important; }
@@ -136,9 +138,9 @@
   html.pland .board img[data-land] { transform: translate(0, -16%) scale(1.77) !important; transform-origin: 0 0 !important; }
   /* landing page (single screen): menu button and Guide/Onboard pills get the same phone size and edge margins as the other pages */
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open menu"] { scale: var(--CS); transform-origin: 0 0; translate: var(--MXL, 0px) var(--MY, 0px); }
-  html.pland .board :is(.pmid, .ptop) > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 300px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open the recruiting guide"] { scale: var(--CS); transform-origin: 236px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
   html.pland .board :is(.pmid, .ptop) > [aria-label="Open the onboarding tool"] { scale: var(--CS); transform-origin: 188px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
-  html.pland .board :is(.pmid, .ptop) > [aria-label="Open FAQs"] { scale: var(--CS); transform-origin: 412px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
+  html.pland .board :is(.pmid, .ptop) > [aria-label="Open FAQs"] { scale: var(--CS); transform-origin: 284px 0; translate: calc(-1 * var(--MXR, 0px)) var(--MY, 0px); }
   html.pland .board .pbx-side::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(90deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.7) 30%, rgba(0,0,0,.4) 55%, rgba(0,0,0,.12) 80%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 65%, rgba(0,0,0,.85) 100%); }
   .pcont { position: absolute; left: var(--X, 0px); top: calc(var(--E, 0px) / 2); width: 1466px; transition: translate .55s cubic-bezier(.3, .9, .3, 1), scale .55s cubic-bezier(.3, .9, .3, 1); }
@@ -210,9 +212,9 @@
   /* iPhone portrait: the section star + extra buttons sit top right, level with the section-menu button */
   /* iPhone upright Home: its own header (menu, Guide, Onboard) at phone size */
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open menu"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 0 0; }
-  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 300px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the recruiting guide"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 236px 0; }
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 188px 0; }
-  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open FAQs"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 412px 0; }
+  html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open FAQs"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 284px 0; }
   /* iPhone upright Home: the photo fades to black at the top and bottom, so it meets the black status-bar and home-bar strips without a hard edge */
   html.pph .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"]::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.55) 4%, rgba(0,0,0,0) 13%, rgba(0,0,0,0) 80%, rgba(0,0,0,.6) 93%, #000 100%); }
   html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
@@ -625,7 +627,16 @@
   .navmenu .nm-guide.nm-faq, .navmenu .nm-guide.nm-gd { background: transparent; border: 1.5px solid #ffffff; color: #ffffff; }
   /* FAQs is not one of the main pages: its header link is gone (the other four close up), and it opens as a pop-over */
   .board p.hot[data-name="(FAQs)"] { display: none !important; }
+  .layer[data-fn="Main.dc.html"] .board > div > [data-name^="Photo"], .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"] { -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 var(--hft, 0%), #000 calc(100% - var(--hfb, 0%)), transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 var(--hft, 0%), #000 calc(100% - var(--hfb, 0%)), transparent 100%); }
   .board [data-x="FAQs button"] { cursor: pointer; pointer-events: auto !important; }
+  /* FAQs and Guide: round, icon only */
+  .board :is([data-x="Guide button"], [data-x="FAQs button"]) .hic { display: block; width: 19px; height: 19px; flex: none; }
+  #phdr .ph-p.ic { width: 30px; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+  html.pph #phdr .ph-p.ic { width: 28px; }
+  #phdr .ph-p.ic .hic { width: 16px; height: 16px; }
+  .board [data-x="Guide button"], .board [data-x="FAQs button"] { transition: background-color .18s ease, transform .18s ease; }
+  .board :is([data-x="Guide button"], [data-x="FAQs button"]):hover { background: rgba(255,255,255,.14) !important; }
+  .board :is([data-x="Guide button"], [data-x="FAQs button"]):active { transform: scale(.92); }
   /* the FAQs and recruiting-guide pop-overs: a floating card with four rounded corners (tap outside it to close) */
   .pfaq .pg-body { padding-top: 8px; }
   /* FAQs title: bigger, with room under it so it reads apart from the questions */
@@ -1215,8 +1226,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // header page titles: a small down arrow that opens that page's section menu
     mk = mk.replace(/(<p id="\w+" class="hot" data-name="\((?!FAQs\))[^)"]+\)"[^>]*>)([^<]+)<\/p>/g, (m, open, t) => open + t + '<span class="hchev" role="button" aria-label="' + t + ' sections"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></p>');
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
-    mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
-      (m, l, rest) => '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" style="position: absolute; left: ' + (+l - 112) + 'px;' + rest + '">FAQS</div>' + m);
+    // FAQs and Guide: round icon buttons (FAQs is a copy of the Guide button, just to its left); the Guide circle keeps the
+    // old pill's right edge, so the gap to Onboard now is unchanged
+    mk = mk.replace(/(<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: )(\d+)px;([^"]*?)width: (\d+)px;([^"]*)">GUIDE<\/div>/g,
+      (m, a, l, r1, w, r2) => { const gl = +l + +w - 36, st = r1 + 'width: 36px;' + r2.replace(/border-radius: [\d.]+px/, 'border-radius: 50%') + '; padding: 0; gap: 0; letter-spacing: 0; text-indent: 0';
+        return '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" title="FAQs" style="position: absolute; left: ' + (gl - 48) + 'px;' + st + '">' + ICO_FAQ + '</div>'
+          + a.replace('left: ', 'left: ') + gl + 'px;' + st + '" title="Recruiting guide">' + ICO_GUIDE + '</div>'; });
     if (isLite()) mk = flat3d(mk);
     const pr = prep(mk), loops = pr.loops;
     // images wait until their section is near the screen (see setupVirtual)
@@ -2202,6 +2217,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       rq.onsuccess = () => { try { const db = rq.result, tx = db.transaction('kv', val == null ? 'readonly' : 'readwrite'), st = tx.objectStore('kv');
         if (val == null) { const g = st.get(FAVK); g.onsuccess = () => res(favParse(g.result)); g.onerror = () => res(null); } else { st.put(val, FAVK); tx.oncomplete = () => res(true); tx.onerror = () => res(null); } } catch (e) { res(null); } };
       rq.onerror = () => res(null); } catch (e) { res(null); } });
+  const ICO_FAQ = '<svg class="hic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.1 9.2a3 3 0 0 1 5.8 1c0 2-3 2.6-3 4.3"/><circle cx="11.9" cy="18" r=".6" fill="currentColor"/></svg>';
+  const ICO_GUIDE = '<svg class="hic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.3 5.2 7.8 4.7 4.5 4.9v12.6c3.3-.2 5.8.3 7.5 1.6 1.7-1.3 4.2-1.8 7.5-1.6V4.9c-3.3-.2-5.8.3-7.5 1.6z"/><path d="M12 6.5v12.6"/></svg>';
   let FAVS = (() => { let a = null; try { a = favParse(localStorage.getItem(FAVK)); } catch (e) {} return a || favCookie() || []; })();
   const favKey = (fn, id) => fn + '#' + id, isFav = (fn, id) => FAVS.indexOf(favKey(fn, id)) >= 0;
   const saveFavs = () => { const v = JSON.stringify(FAVS);
@@ -2877,8 +2894,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.addEventListener('click', () => { if (held) { held = false; return; } if (current && current.board === fn) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; }
         const list = hot ? (L._ia[hot.id] || []).filter(x => x.t === 'tap') : []; if (list.length) run(list[0], L, hot); else if (top) go(top, 'dissolve', 0.3, 'ease-out'); });
       row.appendChild(b); });
-    [['Open FAQs', 'FAQs', ''], ['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; b.textContent = t; b.addEventListener('click', () => o.click()); hrow.appendChild(b); });
+    [['Open FAQs', 'FAQs', ' ic', ICO_FAQ], ['Open the recruiting guide', 'Guide', ' ic', ICO_GUIDE], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c, ic]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'ph-p' + c; if (ic) { b.innerHTML = ic; b.setAttribute('aria-label', t); } else b.textContent = t; b.addEventListener('click', () => o.click()); hrow.appendChild(b); });
   }
   function closeMenu(instant) {
     if (!menuEl) return; const m = menuEl; menuEl = null;
@@ -3130,7 +3147,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const X = M - (memR.x - r0.x) * f, Y = mid - memT.h * s / 2 - (memR.y - r0.y) * f; put(im, X, Y, r0.w * f); }
     phHomeSt.textContent = css;
   }
+  // Home: where the screen leaves black bars above / below the page (iPads, iPhones, the installed web app), the photo
+  // fades into them instead of stopping at a hard line
+  function homeFade() {
+    document.querySelectorAll('.layer[data-fn="Main.dc.html"]').forEach(L => { const r = L.getBoundingClientRect(); if (!r.height) return;
+      const f = Math.max(16, Math.min(44, r.height * 0.035)) / r.height * 100;
+      L.style.setProperty('--hft', (r.top > 1 ? f : 0).toFixed(2) + '%'); L.style.setProperty('--hfb', (innerHeight - r.bottom > 1 ? f : 0).toFixed(2) + '%'); });
+  }
+  addEventListener('resize', () => setTimeout(homeFade, 120));
   function startScreen(layer) {
+    if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') { homeFade(); setTimeout(homeFade, 300); }
     if (layer && layer.dataset && layer.dataset.fn === 'Main.dc.html') setTimeout(phHome, 0);
     vStart(layer); requestAnimationFrame(() => vStart(layer));
     startVideos(layer);
