@@ -713,6 +713,10 @@
   .dw.edit .dw-grip { width: 24px; opacity: 1; margin-right: 4px; }
   .dw-grip svg { width: 16px; height: 16px; flex: none; }
   .dw-rail .ln, .dw-rail .fl { transition: left .25s ease, height .4s ease; }
+  /* room on the left for the current section's glowing dot (the list clips at its edges) */
+  .dw-list { padding-left: 10px; margin-left: -10px; padding-right: 4px; margin-right: -4px; }
+  /* editing: sections sit further in than their page's title */
+  .dw.edit .dw-rail { padding-left: 24px; }
   .dw-list.pgdrag .dw-rail { display: none; }
   .dw-list.pgdrag .dw-grp { padding-bottom: 4px; }
   .dw-row.drag, .dw-grp.drag { position: relative; z-index: 5; background: rgba(40,48,46,.96); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
