@@ -2786,7 +2786,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function openEdit() { closeSheet(); if (menuEl) closeMenu(true); openMenu(false, { filter: 'fav', edit: true }); }
   // every section in the app, grouped by page — tick several, add them all at once (they join the end of the flow)
   // no sections in the flow yet: the menu, every section showing, to star some
-  function openAdd() { closeSheet(); if (menuEl) closeMenu(true); openMenu(false, { filter: 'all' }); toast('Tap ☆ on any section to add it to your Custom flow'); }
+  function openAdd() { closeSheet(); if (menuEl) closeMenu(true); openMenu(false, { filter: 'all', edit: true }); toast('Tap ☆ on sections, or Select all, to build your Custom flow'); }
   function openJump() {
     const items = flowItems(); let last = -1, body = '';
     const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
@@ -3203,6 +3203,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (m.classList.contains('edit') && (t.classList.contains('dw-s') || t.classList.contains('dw-pt'))) return;   // (editing: rows move, they don't open)
       if (t.classList.contains('dw-pv')) { if (all[k]) goTo(all[k].x.aid); return; }
       if (t.classList.contains('dw-home')) { const a = firstAid('Main.dc.html'); if (a) goTo(a); else closeMenu(); return; }
+      if (t.classList.contains('dw-create')) { MFILT = 'all'; m.classList.add('edit'); m.querySelector('.dw-ed span').textContent = 'Done'; render(); haptic('select'); toast('Tap ☆ on sections, or Select all, to build your Custom flow'); setTimeout(rails, 300); return; }
       if (t.classList.contains('dw-allsec')) { m.__changed = false; closeMenu(true); exitFlowHere(); return; }
       if (t.classList.contains('dw-flow')) { m.__changed = false; closeMenu(true); startFlow(); return; }
       if (t.classList.contains('dw-social')) { savePos(); location.href = 'social.html'; return; }
@@ -3431,7 +3432,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (cb && pb && cb0) { const s = 1.35 * cb0.h / cb.h, X = W - M - cb.w * s, Y = lr.bottom - Math.round(W * 0.045) - cb.h * s;
       beg.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const r = raw.get(e); if (r && r.w) put(e, X + (r.x - cb.x) * s, Y + (r.y - cb.y) * s, r.w * s); });
       mid = Y + ((pb.y + pb.b) / 2 - cb.y) * s; pl = X + (pb.x - cb.x) * s;
-      if (fb) { const s2 = 1.6; place(cf, fb, W - M + 4 - fb.w * s2, Y - 8 - fb.h * s2, s2); } }
+      // All sections above it, its words ending where the Custom Flow words end
+      if (fb) { const s2 = 1.6, pe = beg.find(e => e.getAttribute('data-name') === 'Begin'), prr = pe && raw.get(pe), tn = cf[0] && [...cf[0].childNodes].find(x => x.nodeType === 3);
+        let xa = W - M + 4 - fb.w * s2;
+        const ar = cf[0] && raw.get(cf[0]);
+        if (prr && tn && ar && ar.w) { const g = document.createRange(); g.selectNodeContents(tn); const tr = g.getBoundingClientRect(), fr = (tr.right - ar.x) / ar.w; /* (measured as laid out, untransformed) */ xa = X + (prr.r - cb.x) * s - fr * fb.w * s2; }
+        place(cf, fb, xa, Y - 8 - fb.h * s2, s2); } }
     // In loving memory: bottom left, level with Begin, as big as fits beside it
     const im = G.mem[0];
     if (im && mid != null && memT && memR && memT.w) { const r0 = raw.get(im), s = Math.min(1.5, (pl - 14 - M) / memT.w), f = (memT.w * s) / memR.w;
