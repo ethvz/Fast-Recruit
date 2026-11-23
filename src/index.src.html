@@ -64,6 +64,10 @@
   .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: transparent !important; background: #DFFF1A !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: 0 0 0 6px rgba(223,255,26,.16), 0 0 34px rgba(223,255,26,.5), 0 10px 26px rgba(0,0,0,.3) !important; animation: cfGlow 2.8s ease-in-out infinite; }
   @keyframes cfGlow { 0%, 100% { box-shadow: 0 0 0 5px rgba(223,255,26,.14), 0 0 26px rgba(223,255,26,.42), 0 10px 26px rgba(0,0,0,.3); } 50% { box-shadow: 0 0 0 9px rgba(223,255,26,.08), 0 0 44px rgba(223,255,26,.6), 0 10px 26px rgba(0,0,0,.3); } }
   html.still .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { animation: none; }
+  html.cf-empty .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] { visibility: hidden; }
+  html.cf-empty .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"]::before { display: none; }
+  html.cf-empty .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"]::after { content: ''; position: absolute; right: 17px; top: 50%; width: 16px; height: 16px; margin-top: -8px;
+    background: linear-gradient(#000, #000) center / 16px 2.6px no-repeat, linear-gradient(#000, #000) center / 2.6px 16px no-repeat; border-radius: 2px; }
   .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"]::before { content: ''; display: inline-block; width: 15px; height: 15px; margin-right: 7px; vertical-align: -1px; background: #000; -webkit-mask: var(--navstar) center/contain no-repeat; mask: var(--navstar) center/contain no-repeat; }
   .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"] { color: #16191a !important; }
   .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #16191a !important; }
@@ -709,6 +713,8 @@
   .dw.edit .dw-grip { width: 24px; opacity: 1; margin-right: 4px; }
   .dw-grip svg { width: 16px; height: 16px; flex: none; }
   .dw-rail .ln, .dw-rail .fl { transition: left .25s ease, height .4s ease; }
+  .dw-list.pgdrag .dw-rail { display: none; }
+  .dw-list.pgdrag .dw-grp { padding-bottom: 4px; }
   .dw-row.drag, .dw-grp.drag { position: relative; z-index: 5; background: rgba(40,48,46,.96); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
   .dw-row.drag .dw-grip, .dw-grp.drag .dw-ph .dw-grip { cursor: grabbing; }
   /* the star on every section: grey outline when it isn't in your Custom flow, filled green when it is */
@@ -2562,6 +2568,24 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function updateFlowCount(root) {
     const n = validFavs().length;
     (root || document).querySelectorAll('.cf-n').forEach(x => { x.textContent = n; x.style.display = n ? '' : 'none'; });
+    document.documentElement.classList.toggle('cf-empty', !n);   // (no flow yet: the buttons say "Create Custom Flow", with a +)
+    document.querySelectorAll('.layer[data-fn="Main.dc.html"]').forEach(fitCF);
+  }
+  // Home's Custom Flow button: its label (and count) decide its width; it grows to the left from a fixed right edge,
+  // so the words never spill past the pill
+  function fitCF(L) {
+    const B = L && L.querySelector('.board'), p = B && B.querySelector('p[data-name="Begin"]'), pill = B && B.querySelector('[data-name="Glass arrow pill"]'), hot = B && B.querySelector('[data-name="Group 6504 hotspot"]');
+    if (!p || !pill || !L.isConnected) return;
+    const empty = !validFavs().length, tn = [...p.childNodes].find(x => x.nodeType === 3);
+    if (tn) tn.textContent = empty ? 'Create Custom Flow' : 'Custom Flow';
+    // (measured from the words themselves: some layouts pin this label's width)
+    const r = p.getBoundingClientRect(), k = r.width / (p.offsetWidth || 1); if (!(k > 0)) return;
+    const g = document.createRange(); g.selectNodeContents(p); const tw = g.getBoundingClientRect().width / k;
+    const w = Math.ceil(tw + (empty ? 0 : 30)) + 2, R = 1372, PR = 1435; if (w < 20) return;
+    p.style.left = (R - w) + 'px'; p.style.width = w + 'px';
+    const left = R - w - 26; pill.style.left = left + 'px'; pill.style.width = (PR - left) + 'px';
+    if (hot) { hot.style.left = (left - 2) + 'px'; hot.style.width = (PR - left + 4) + 'px'; }
+    if (L.isConnected && pphOn()) setTimeout(phHome, 0);
   }
   function setupFlowBtn(layer) {
     // Home: the big button is Custom Flow (hold it to edit the flow); "All sections" walks every page from the start
@@ -3078,7 +3102,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     m.innerHTML = '<div class="dw-scrim"></div><div class="dw-panel"><div class="dw-head">'
       + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
       + (FLOW ? '<button type="button" class="dw-pill dw-flow dw-allsec">All Sections' + DW_ICON.go + '</button></div>'   // (in the flow: back to every page, staying where you are)
-              : '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + DW_ICON.go + '</button></div>')
+              : validFavs().length ? '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + DW_ICON.go + '</button></div>'
+              : '<button type="button" class="dw-pill dw-flow dw-create">Create Custom Flow<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></button></div>')
       + '<div class="dw-in"><div class="dw-tools"><div class="dw-seg" role="tablist" aria-label="Show"><button type="button" data-f="all">All</button><button type="button" data-f="fav" aria-label="Custom flow only">' + SVG_STAR + '<span class="dw-n"></span></button></div>'
       + '<button type="button" class="dw-reset">Reset</button><button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
       + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
@@ -3189,14 +3214,19 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     let mv = null;
     const sibOf = (el, dir) => { let n = dir > 0 ? el.nextElementSibling : el.previousElementSibling; while (n && !n.classList.contains(el.classList.contains('dw-grp') ? 'dw-grp' : 'dw-row')) n = dir > 0 ? n.nextElementSibling : n.previousElementSibling; return n; };
     list.addEventListener('pointerdown', e => { const gp = e.target.closest('.dw-grip'); if (!gp || !m.classList.contains('edit')) return; e.preventDefault(); e.stopPropagation();
-      const el = gp.dataset.kind === 'pg' ? gp.closest('.dw-grp') : gp.closest('.dw-row'); mv = { el, y0: e.clientY, id: e.pointerId, moved: false }; el.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} haptic('select'); });
+      const el = gp.dataset.kind === 'pg' ? gp.closest('.dw-grp') : gp.closest('.dw-row'); mv = { el, y0: e.clientY, id: e.pointerId, moved: false };
+      // moving a page: the sections fold away so the pages are easy to see and move; the page you hold stays under your finger
+      if (gp.dataset.kind === 'pg') { const t0 = el.getBoundingClientRect().top; list.classList.add('pgdrag'); const t1 = el.getBoundingClientRect().top; list.scrollTop += t1 - t0; mv.y0 += el.getBoundingClientRect().top - t0; }
+      el.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} haptic('select'); });
     const mvMove = e => { if (!mv || e.pointerId !== mv.id) return; e.stopPropagation(); const el = mv.el, par = el.parentElement; let dy = e.clientY - mv.y0;
       const nx = sibOf(el, 1), pvv = sibOf(el, -1);
       if (nx && dy > nx.offsetHeight / 2) { par.insertBefore(nx, el); mv.y0 += nx.offsetHeight; dy -= nx.offsetHeight; mv.moved = true; haptic('select'); }
       else if (pvv && dy < -pvv.offsetHeight / 2) { par.insertBefore(el, pvv); mv.y0 -= pvv.offsetHeight; dy += pvv.offsetHeight; mv.moved = true; haptic('select'); }
       el.style.transform = 'translateY(' + dy + 'px)';
       const lr = list.getBoundingClientRect(); if (e.clientY < lr.top + 36) list.scrollTop -= 8; else if (e.clientY > lr.bottom - 36) list.scrollTop += 8; };
-    const drop = e => { if (!mv || (e && e.pointerId !== mv.id)) return; const d = mv; mv = null; d.el.style.transform = ''; d.el.classList.remove('drag'); if (!d.moved) return;
+    const drop = e => { if (!mv || (e && e.pointerId !== mv.id)) return; const d = mv; mv = null; d.el.style.transform = ''; d.el.classList.remove('drag');
+      if (list.classList.contains('pgdrag')) { const t0 = d.el.getBoundingClientRect().top; list.classList.remove('pgdrag'); list.scrollTop += d.el.getBoundingClientRect().top - t0; requestAnimationFrame(rails); }
+      if (!d.moved) return;
       // the shown ones take the shown ones' places in your saved order (hidden ones, when filtering, stay put)
       const O = mord(), slot = (arr, shown) => { const set = new Set(shown); let j = 0; return arr.map(x => set.has(x) ? shown[j++] : x); };
       if (d.el.classList.contains('dw-grp')) O.pages = slot(O.pages, [...list.querySelectorAll('.dw-grp')].map(g => g.dataset.fn));
@@ -3340,6 +3370,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // board puts things, then moved with a style sheet (re-renders rewrite inline styles, not this sheet).
   let phHomeSt = null;
   function phHome() {
+    { const L0 = frame.querySelector('.layer[data-fn="Main.dc.html"]'); if (L0 && !L0.__cf) { L0.__cf = 1; fitCF(L0); return; } }   // (size the Custom Flow button first)
     if (!phHomeSt) { phHomeSt = document.createElement('style'); phHomeSt.id = 'phHome'; document.head.appendChild(phHomeSt); }
     const L = frame.querySelector('.layer[data-fn="Main.dc.html"]');
     if (!pphOn() || !L) { phHomeSt.textContent = ''; return; }
@@ -3391,9 +3422,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // Custom flow + Begin: bigger, bottom right
     const cf = G.cta.filter(e => e.getAttribute('data-x') === 'All sections'), beg = G.cta.filter(e => cf.indexOf(e) < 0);
-    const cb = box(beg), pb = box([pill].filter(Boolean)), fb = box(cf); let mid = null, pl = W - M;
-    if (cb && pb) { const s = 1.35, X = W - M - cb.w * s, Y = lr.bottom - Math.round(W * 0.045) - cb.h * s;
-      place(beg, cb, X, Y, s); mid = Y + ((pb.y + pb.b) / 2 - cb.y) * s; pl = X + (pb.x - cb.x) * s;
+    // (laid out from the pieces' own untransformed boxes: the Custom Flow button is resized to fit its label, and the phone
+    //  layer's per-piece scaling would otherwise pull the label and the pill apart)
+    const rbox = els => { const rs = els.map(e => raw.get(e)).filter(r => r && (r.w || r.h)); if (!rs.length) return null;
+      const x = Math.min(...rs.map(r => r.x)), y = Math.min(...rs.map(r => r.y)), r = Math.max(...rs.map(r => r.r)), b = Math.max(...rs.map(r => r.b)); return { x, y, r, b, w: r - x, h: b - y }; };
+    const cb0 = box(beg), cb = rbox(beg), pb = rbox([pill].filter(Boolean)), fb = box(cf); let mid = null, pl = W - M;
+    if (cb && pb && cb0) { const s = 1.35 * cb0.h / cb.h, X = W - M - cb.w * s, Y = lr.bottom - Math.round(W * 0.045) - cb.h * s;
+      beg.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const r = raw.get(e); if (r && r.w) put(e, X + (r.x - cb.x) * s, Y + (r.y - cb.y) * s, r.w * s); });
+      mid = Y + ((pb.y + pb.b) / 2 - cb.y) * s; pl = X + (pb.x - cb.x) * s;
       if (fb) { const s2 = 1.6; place(cf, fb, W - M + 4 - fb.w * s2, Y - 8 - fb.h * s2, s2); } }
     // In loving memory: bottom left, level with Begin, as big as fits beside it
     const im = G.mem[0];
