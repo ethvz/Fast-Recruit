@@ -663,9 +663,12 @@
   .dw-pill { height: 36px; box-sizing: border-box; padding: 0 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: #fff; font: 600 13px/1 'Vivint Sans', Helvetica, Arial, sans-serif; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; white-space: nowrap; flex: none; transition: background .2s ease, transform .15s ease; }
   .dw-pill svg { width: 15px; height: 15px; flex: none; }
   .dw-pill.on { border-color: rgba(var(--acr),.7); background: rgba(var(--acr),.14); }
-  .dw-pill.dw-flow { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; box-shadow: 0 0 18px rgba(var(--acr),.35); }
-  .dw-pill.dw-flow svg path { fill: #000 !important; stroke: #000; }
-  .dw-pill.dw-flow svg:last-child { width: 12px; height: 12px; margin-left: 1px; } .dw-pill.dw-flow svg:last-child path { fill: none !important; stroke: #000; stroke-width: 1.8; }
+  /* All Sections / Custom flow: plain white words, with the page buttons' chevron */
+  .dw-pill.dw-flow { background: none; border-color: transparent; color: #fff; padding: 0 2px 0 8px; gap: 8px; font-size: 13.5px; box-shadow: none; }
+  .dw-pill.dw-flow svg path { fill: #fff !important; stroke: #fff; }
+  .dw-pill.dw-flow .dw-chev { width: 9px; height: 15px; margin-left: 2px; } .dw-pill.dw-flow .dw-chev path { fill: none !important; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .dw-pill.dw-flow svg.dw-plus path { fill: none !important; }
+  @media (hover: hover) { .dw-pill.dw-flow:hover { background: rgba(255,255,255,.08); } }
   .dw-pill:active, .dw-chip:active, .dw-u:active { transform: scale(.94); }
   @media (hover: hover) { .dw-pill:hover { background: rgba(255,255,255,.13); } }
   .dw-in { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 0 22px 16px; box-sizing: border-box; }
@@ -3159,9 +3162,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const m = document.createElement('div'); m.className = 'dw' + (opts.edit ? ' edit' : ''); m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Menu');
     m.innerHTML = '<div class="dw-scrim"></div><div class="dw-panel"><div class="dw-head">'
       + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
-      + (FLOW ? '<button type="button" class="dw-pill dw-flow dw-allsec">All Sections' + DW_ICON.go + '</button></div>'   // (in the flow: back to every page, staying where you are)
-              : validFavs().length ? '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + DW_ICON.go + '</button></div>'
-              : '<button type="button" class="dw-pill dw-flow dw-create">Create Custom Flow<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></button></div>')
+      + (FLOW ? '<button type="button" class="dw-pill dw-flow dw-allsec">All Sections' + '<svg class="dw-chev" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg>' + '</button></div>'   // (in the flow: back to every page, staying where you are)
+              : validFavs().length ? '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + '<svg class="dw-chev" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg>' + '</button></div>'
+              : '<button type="button" class="dw-pill dw-flow dw-create">Create Custom Flow<svg class="dw-plus" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></button></div>')
       + '<div class="dw-in"><div class="dw-tools"><div class="dw-seg" role="tablist" aria-label="Show"><button type="button" data-f="all">All</button><button type="button" data-f="fav" aria-label="Custom flow only">' + SVG_STAR + '<span class="dw-n"></span></button></div>'
       + '<button type="button" class="dw-reset">Reset</button><button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
       + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
