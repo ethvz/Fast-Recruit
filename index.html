@@ -702,6 +702,7 @@
   .dw-s.soon::after { content: 'Soon'; flex: none; padding: 3px 7px; border-radius: 9px; border: 1px solid rgba(var(--acr),.45); color: rgb(var(--acr)); font: 700 9px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
   .dw-list.sw { animation: dwSw .32s ease; }
 
+  .board nav a.fdrop { opacity: 0 !important; pointer-events: none; transition: opacity .45s ease; }
   /* landscape backgrounds (see landSec): full screen with a bottom fade, or upright photos on the right half */
   html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ov { display: none !important; }
   html:not(.port):not(.lbg-no) .board section[id^="sec-"] .lbg > .lbg-ph { left: 0 !important; top: 0 !important; right: auto !important; width: 100% !important; height: 100% !important; margin: 0 !important; transform: none !important; -webkit-mask-image: none !important; mask-image: none !important; }
@@ -2602,7 +2603,21 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     syncStars(); updateFlowCount();
     const n = validFavs().length;
     toast(on ? '★ Added to Custom flow · ' + n + (n === 1 ? ' section' : ' sections') : 'Removed from Custom flow' + (n ? ' · ' + n + ' left' : ''));
-    if (FLOW) { buildFlowNav(current && current.layer); drawFlowBar(); }
+    if (FLOW) { buildFlowNav(current && current.layer); drawFlowBar(); if (on) flowUndrop(k); else flowDrop(k); }
+  }
+  // in the Custom flow, a section you unstar stays on screen for now: it leaves the side menu after 3 seconds (or as soon as
+  // you move to another section), and the flow is rebuilt once you're on a section that's still in it
+  let FDROP = null;
+  function flowUndrop(k) { if (FDROP && FDROP.k === k) { clearTimeout(FDROP.t); clearInterval(FDROP.iv); if (FDROP.a) FDROP.a.classList.remove('fdrop'); FDROP = null; } }
+  function flowDrop(k) {
+    if (FDROP) { const o = FDROP; clearTimeout(o.t); clearInterval(o.iv); FDROP = null; }
+    const o = secOf(k), aid = o && o.x.aid; if (!aid) { flowRefresh(); return; }
+    const here = () => currentAid() === aid, rebuild = () => { const d = FDROP; if (!d) return; clearTimeout(d.t); clearInterval(d.iv); FDROP = null; if (FLOW && !isFav(o.fn, o.sid)) flowRefresh(); };
+    if (!here()) { FDROP = { k }; setTimeout(rebuild, 700); return; }   // (not the one on screen: out right away)
+    const d = FDROP = { k };
+    d.t = setTimeout(() => { if (FDROP !== d) return; if (!here()) { rebuild(); return; }
+      d.a = current && current.layer.querySelector('.board nav a[href="#sec-' + o.sid + '"]'); if (d.a) d.a.classList.add('fdrop'); }, 3000);
+    d.iv = setInterval(() => { if (FDROP !== d) { clearInterval(d.iv); return; } if (!FLOW) { flowUndrop(k); return; } if (!here()) rebuild(); }, 350);
   }
   function updateFlowCount(root) {
     const n = validFavs().length;
@@ -3024,7 +3039,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (src && im.getAttribute('src') !== src) im.setAttribute('src', src); }
     pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
     // sideways progress line beside the section button: centred on the screen; dots and the green fill follow the page's own menu
-    { const pg = phdr.querySelector('.ph-prog'), nav = L.querySelector('.board nav'), as = nav ? [...nav.querySelectorAll('a')] : [];
+    { const pg = phdr.querySelector('.ph-prog'), nav = L.querySelector('.board nav'), as = nav ? [...nav.querySelectorAll('a')].filter(a => getComputedStyle(a).display !== 'none') : [];   // (in the Custom flow only its sections show)
       pg.hidden = !as.length;
       if (as.length) {
         const st = as.map(a => { const d = a.querySelector('span > span'), ds = d ? d.getAttribute('style') || '' : ''; return { f: /background: #05E5AF/i.test(ds), y: parseFloat(a.style.top) + 22 }; });
@@ -3036,7 +3051,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           if (bs.length === n) { pg.querySelector('i:not(.f)').style.width = w + 'px'; bs.forEach((b, i) => { b.style.left = (i * step).toFixed(1) + 'px'; }); }   // (same page shape: the line slides to its new length)
           else pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
           pg.querySelectorAll('b').forEach((b, i) => b.classList.toggle('ph', !!as[i] && PHS.has((as[i].getAttribute('href') || '').replace('#sec-', ''))));
-          if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const a = current && current.layer.querySelectorAll('.board nav a')[+b.dataset.i]; if (a) a.click(); }); } }
+          if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const a = current && [...current.layer.querySelectorAll('.board nav a')].filter(x => getComputedStyle(x).display !== 'none')[+b.dataset.i]; if (a) a.click(); }); } }
         // green fill: where the page's own (vertical) fill ends, mapped between the dots on either side
         const fillEl = [...nav.querySelectorAll(':scope > div')].find(d => /box-shadow/.test(d.getAttribute('style') || '')), fy = fillEl ? parseFloat(fillEl.style.top) + parseFloat(fillEl.style.height) : 0;
         let fx = 0; for (let i = 0; i < n; i++) { if (fy >= st[i].y) fx = i * step; if (i < n - 1 && fy > st[i].y && fy < st[i + 1].y) { fx = (i + (fy - st[i].y) / (st[i + 1].y - st[i].y)) * step; break; } }
@@ -3045,7 +3060,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (phdr.__for === L) return; phdr.__for = L;
     const hrow = phdr.querySelector('.ph-scroll'); hrow.innerHTML = ''; const row = pfoot; row.innerHTML = '';
     { const sc = scrollerOf(L); if (sc && !sc.__pf) { sc.__pf = 1; let t = 0; sc.addEventListener('scroll', () => { pfoot.classList.add('sm'); clearTimeout(t); t = setTimeout(() => pfoot.classList.remove('sm'), 260); }, { passive: true }); } }
-    const PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Opportunity', 'Opportunity.dc.html']];
+    let PAGES = [['Why Vivint', 'Why-Vivint.dc.html'], ['Experience', 'Experience.dc.html'], ['Opportunity', 'Opportunity.dc.html']];
+    const inFlow = FLOW && L.dataset.flow, FS = inFlow ? segs() : [];
+    if (inFlow) { const ord = []; FS.forEach(g => { if (ord.indexOf(g.fn) < 0) ord.push(g.fn); }); PAGES = ord.map(fn => PAGES.find(x => x[1] === fn)).filter(Boolean); }
     PAGES.forEach(([t, fn]) => {
       const hot = [...L.querySelectorAll('.board .hot[data-name^="("]')].find(e => e.id && (L._ia[e.id] || []).some(x => x.t === 'tap' && P.artboards[x.dest] && P.artboards[x.dest].board === fn));
       const top = Object.keys(P.artboards).find(k => P.artboards[k].board === fn && P.artboards[k].section == null) || ((P.boards[fn] && P.boards[fn].sections || [])[0] || {}).aid;
@@ -3055,7 +3072,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       b.addEventListener('pointerdown', () => { held = false; clearTimeout(lp); if (!hot) return; lp = setTimeout(() => { held = true; try { haptic('select'); } catch (e) {} openQnav(L, hot, b); }, 450); });
       ['pointerup', 'pointercancel', 'pointerleave'].forEach(k => b.addEventListener(k, () => clearTimeout(lp)));
       b.addEventListener('contextmenu', e => e.preventDefault());
-      b.addEventListener('click', () => { if (held) { held = false; return; } if (current && current.board === fn) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; }
+      b.addEventListener('click', () => { if (held) { held = false; return; }
+        if (inFlow) { const si = FS.findIndex(g => g.fn === fn); if (si < 0) return; if (si === SEG) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; } jumpTo(si, FS[si].ids[0]); return; }
+        if (current && current.board === fn) { const i = L._inst; if (i && i.goTo) i.goTo(0); return; }
         const list = hot ? (L._ia[hot.id] || []).filter(x => x.t === 'tap') : []; if (list.length) run(list[0], L, hot); else if (top) go(top, 'dissolve', 0.3, 'ease-out'); });
       row.appendChild(b); });
     [['Open FAQs', 'FAQs', ''], ['Open the recruiting guide', 'Guide', ''], ['Open the onboarding tool', 'Onboard now', ' g']].forEach(([lab, t, c, ic]) => { const o = L.querySelector('.board [aria-label="' + lab + '"]'); if (!o) return;
