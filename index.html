@@ -647,6 +647,7 @@
   .dw-pill.on { border-color: rgba(var(--acr),.7); background: rgba(var(--acr),.14); }
   .dw-pill.dw-flow { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; box-shadow: 0 0 18px rgba(var(--acr),.35); }
   .dw-pill.dw-flow svg path { fill: #000 !important; stroke: #000; }
+  .dw-pill.dw-flow svg:last-child { width: 12px; height: 12px; margin-left: 1px; } .dw-pill.dw-flow svg:last-child path { fill: none !important; stroke: #000; stroke-width: 1.8; }
   .dw-pill:active, .dw-chip:active, .dw-u:active { transform: scale(.94); }
   @media (hover: hover) { .dw-pill:hover { background: rgba(255,255,255,.13); } }
   .dw-in { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 0 22px 16px; box-sizing: border-box; }
@@ -3077,7 +3078,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const m = document.createElement('div'); m.className = 'dw' + (opts.edit ? ' edit' : ''); m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Menu');
     m.innerHTML = '<div class="dw-scrim"></div><div class="dw-panel"><div class="dw-head">'
       + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
-      + '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow</button></div>'
+      + (FLOW ? '<button type="button" class="dw-pill dw-flow dw-allsec">All Sections' + DW_ICON.go + '</button></div>'   // (in the flow: back to every page, staying where you are)
+              : '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + DW_ICON.go + '</button></div>')
       + '<div class="dw-in"><div class="dw-tools"><div class="dw-seg" role="tablist" aria-label="Show"><button type="button" data-f="all">All</button><button type="button" data-f="fav" aria-label="Custom flow only">' + SVG_STAR + '<span class="dw-n"></span></button></div>'
       + '<button type="button" class="dw-reset">Reset</button><button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
       + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
@@ -3176,6 +3178,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (m.classList.contains('edit') && (t.classList.contains('dw-s') || t.classList.contains('dw-pt'))) return;   // (editing: rows move, they don't open)
       if (t.classList.contains('dw-pv')) { if (all[k]) goTo(all[k].x.aid); return; }
       if (t.classList.contains('dw-home')) { const a = firstAid('Main.dc.html'); if (a) goTo(a); else closeMenu(); return; }
+      if (t.classList.contains('dw-allsec')) { m.__changed = false; closeMenu(true); exitFlowHere(); return; }
       if (t.classList.contains('dw-flow')) { m.__changed = false; closeMenu(true); startFlow(); return; }
       if (t.classList.contains('dw-social')) { savePos(); location.href = 'social.html'; return; }
       if (t.classList.contains('dw-dl')) { OFFL.start(); return; }
