@@ -617,7 +617,7 @@
   .pmenu .pm-fv.on svg { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); filter: drop-shadow(0 0 4px rgba(var(--acr),.5)); }
   .pmenu .pm-fv.pop svg { animation: dwPop .38s cubic-bezier(.3,1.6,.5,1); }
   @media (hover: hover) { .pmenu .pm-fv:hover svg { stroke: rgba(255,255,255,.75); } .pmenu .pm-fv.on:hover svg { stroke: rgb(var(--acr)); } }
-  .pmenu .pm-list button.soon .pm-fv { margin-left: 6px; }
+  .pmenu .pm-list button.soon::after { order: 1; } .pmenu .pm-list button.soon .pm-fv { order: 2; margin-left: 6px; }
   .pmenu .pm-star { flex: none; width: 13px; height: 13px; margin-left: auto; fill: rgb(var(--acr)); filter: drop-shadow(0 0 4px rgba(var(--acr),.5)); }
   .pmenu .pm-list button.soon .pm-star { margin-left: 6px; }
   .pmenu .pm-pv { position: relative; flex: none; width: 400px; align-self: flex-start; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,.12); }
@@ -2554,8 +2554,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (flow) {
         const ed = document.createElement('button'); ed.type = 'button'; ed.className = 'fav fedit'; ed.setAttribute('aria-label', 'Edit your Custom flow'); ed.innerHTML = PEN;
         noDrag(ed); ed.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); openEdit(); }); w.appendChild(ed);
-        const xb = document.createElement('button'); xb.type = 'button'; xb.className = 'fav fexitb'; xb.setAttribute('aria-label', 'Exit custom flow'); xb.innerHTML = '<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>';
-        noDrag(xb); xb.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); exitFlowHere(); }); w.appendChild(xb);
+        // (in the flow the star replaces the old exit X: it takes this section out of your flow, or puts it back)
+        const fb = document.createElement('button'); fb.type = 'button'; fb.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); fb.dataset.k = favKey(fn, id);
+        fb.setAttribute('aria-label', 'Star this section for your Custom flow'); fb.setAttribute('aria-pressed', isFav(fn, id) ? 'true' : 'false'); fb.innerHTML = STAR;
+        noDrag(fb); fb.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleFav(fn, id); }); if (!isTitle(fn, secIdx(fn, id))) w.appendChild(fb);
       }
       if (flow) { pinFav(sec, w); return; }   // in the flow, sections are removed from the edit menu only
       const b = document.createElement('button'); b.type = 'button'; b.className = 'fav fstar' + (isFav(fn, id) ? ' on' : ''); b.dataset.k = favKey(fn, id);
