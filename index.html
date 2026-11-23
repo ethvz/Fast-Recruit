@@ -585,6 +585,11 @@
   .board [data-x="FAQs button"] { cursor: pointer; pointer-events: auto !important; }
   /* the FAQs and recruiting-guide pop-overs: a floating card with four rounded corners (tap outside it to close) */
   .pfaq .pg-body { padding-top: 8px; }
+  /* FAQs title: bigger, with room under it so it reads apart from the questions */
+  .pguide.pfaq .nm-title { font-size: 34px !important; line-height: 1.08; letter-spacing: -.03em; font-weight: 500; }
+  .pguide.pfaq .nm-eye { font-size: 13px; }
+  .pguide.pfaq .nm-top { padding-bottom: 26px; margin-bottom: 6px; }
+  @media (min-width: 600px) { .pguide.pfaq .nm-title { font-size: 46px !important; } .pguide.pfaq .nm-top { padding-bottom: 34px; } }
   .fq-i { border-top: 1px solid rgba(255,255,255,.14); }
   .fq-i:last-child { border-bottom: 1px solid rgba(255,255,255,.14); }
   .fq-q { width: 100%; display: flex; align-items: center; gap: 14px; padding: 18px 0; margin: 0; background: none; border: 0; color: #fff; text-align: left; cursor: pointer; font: 500 19px/1.25 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: -.02em; }
