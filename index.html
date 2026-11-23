@@ -667,11 +667,11 @@
   .dw-pt { display: flex; align-items: center; gap: 10px; width: 100%; padding: 4px 0 10px; border: 0; background: none; color: #fff; cursor: pointer; text-align: left; font: 500 25px/1.1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: -.03em; }
   .dw-pt em { font-style: normal; display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 0 11px; height: 28px; border-radius: 14px; background: rgb(var(--acr)); color: #000; font: 700 11px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; flex: none; }
   .dw-pt em svg { width: 12px; height: 12px; }
-  .dw-rail { position: relative; display: flex; flex-direction: column; padding-bottom: 18px; }
+  .dw-rail { position: relative; display: flex; flex-direction: column; padding-bottom: 10px; }
   .dw-rail .ln, .dw-rail .fl { position: absolute; left: 6px; width: 2px; margin-left: -1px; border-radius: 1px; background: rgba(255,255,255,.18); }
   .dw-rail .fl { background: rgb(var(--acr)); box-shadow: 0 0 10px rgba(var(--acr),.6); transition: height .4s ease; }
-  .dw-s { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 40px; padding: 0 12px 0 0; box-sizing: border-box; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,.8); cursor: pointer; text-align: left; font: 500 16px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; transition: background .2s ease, color .2s ease; }
-  .dw-s i { position: relative; z-index: 1; flex: none; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.5); background: #0b0f0e; transition: transform .25s ease, box-shadow .25s ease; }
+  .dw-s { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 32px; padding: 0 12px 0 0; box-sizing: border-box; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,.8); cursor: pointer; text-align: left; font: 500 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; transition: background .2s ease, color .2s ease; }
+  .dw-s i { position: relative; z-index: 1; flex: none; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.5); background: #0b0f0e; transition: transform .25s ease, box-shadow .25s ease; }
   .dw-s.done i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
   .dw-s.cur { color: #fff; font-weight: 700; }
   .dw-s.cur i { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(var(--acr),.2), 0 0 14px rgba(var(--acr),.6); }
@@ -705,27 +705,30 @@
   .dw-row.drag, .dw-grp.drag { position: relative; z-index: 5; background: rgba(40,48,46,.96); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
   .dw-row.drag .dw-grip, .dw-grp.drag .dw-ph .dw-grip { cursor: grabbing; }
   /* the star on every section: grey outline when it isn't in your Custom flow, filled green when it is */
-  .dw-st { flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 17px; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-  .dw-st svg { width: 17px; height: 17px; fill: none; stroke: rgba(255,255,255,.3); stroke-width: 1.7; stroke-linejoin: round; transition: fill .2s ease, stroke .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1); }
+  .dw-st { flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 17px; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .dw-st svg { width: 15px; height: 15px; fill: none; stroke: rgba(255,255,255,.3); stroke-width: 1.7; stroke-linejoin: round; transition: fill .2s ease, stroke .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1); }
   .dw-st.on svg { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); filter: drop-shadow(0 0 5px rgba(var(--acr),.55)); }
   .dw-st.pop svg { animation: dwPop .38s cubic-bezier(.3,1.6,.5,1); }
   @keyframes dwPop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
   @media (hover: hover) { .dw-st:hover svg { stroke: rgba(255,255,255,.7); } .dw-st.on:hover svg { stroke: rgb(var(--acr)); } }
-  .dw.edit .dw-st { display: none; }
+  /* editing: no progress line or dots, just the handles, names and stars */
+  .dw.edit .dw-rail .ln, .dw.edit .dw-rail .fl, .dw.edit .dw-s i { display: none; }
+  .dw.edit .dw-s.cur { font-weight: 500; } .dw.edit .dw-s.hl { background: none; }
   .dw-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 34px 16px; color: rgba(255,255,255,.7); font: 500 14px/1.35 'Vivint Sans', Helvetica, Arial, sans-serif; }
   .dw-empty svg { width: 30px; height: 30px; fill: none; stroke: rgb(var(--acr)); stroke-width: 1.5; stroke-linejoin: round; }
   .dw-empty b { color: #fff; font-size: 16px; }
   .dw-empty button { margin-top: 6px; height: 34px; padding: 0 16px; border-radius: 17px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font: 700 12px/1 'Vivint Sans', Helvetica, Arial, sans-serif; cursor: pointer; }
   .dw.short .dw-tools { margin-bottom: 6px; }
   /* one list: each page's name, then its sections on their own progress line */
-  .dw-grp + .dw-grp { margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
-  .dw-pt { font-size: 21px; padding: 6px 0 10px; }
+  .dw-grp + .dw-grp { margin-top: 4px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); }
+  .dw-pt { font-size: 17px; padding: 5px 0 6px; gap: 8px; }
+  .dw-pt > svg, .dw-pt > .vh { transform: scale(.85); }
   .dw-pt > svg, .dw-pt > .vh { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; color: rgba(255,255,255,.75); }
   .dw-pt > svg .f { fill: none; } .dw-pt > .vh { width: 20px; height: 21.5px; background: currentColor; }
   .dw-grp.here .dw-pt > :is(svg, .vh) { color: rgb(var(--acr)); } .dw-grp.here .dw-pt > svg .f { fill: currentColor; }
   .dw-pt > span { flex: 1; min-width: 0; }
   .dw-pv { align-self: center !important; aspect-ratio: auto; }
-  .dw.sm .dw-pt { font-size: 18px; } .dw.short .dw-pt { font-size: 16px; padding: 4px 0 6px; }
+  .dw.sm .dw-pt { font-size: 16px; } .dw.short .dw-pt { font-size: 15px; padding: 3px 0 4px; }
   @keyframes dwSw { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
   /* the screen preview */
   .dw-pv { flex: none; position: relative; align-self: flex-start; width: 46%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,.16); cursor: pointer; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
@@ -747,7 +750,7 @@
   /* small screens: tighter */
   .dw.sm .dw-in { padding: 0 14px 12px; }
   .dw.sm .dw-pt { font-size: 20px; padding-bottom: 6px; }
-  .dw.sm .dw-s { min-height: 34px; font-size: 14.5px; gap: 12px; }
+  .dw.sm .dw-s { min-height: 30px; font-size: 13.5px; gap: 11px; }
   .dw.sm .dw-chip { height: 48px; font-size: 10.5px; } .dw.sm .dw-chip svg { width: 20px; height: 20px; }
   .dw.sm .dw-u { height: 36px; font-size: 12px; padding: 0 6px; }
   .dw.sm .dw-chip { padding: 0 1px; }
@@ -757,7 +760,7 @@
   .dw.short .dw-foot { grid-template-columns: repeat(4, minmax(0, 1fr)); } .dw.short .dw-u span { display: none; }
   .dw.short .dw-main { margin-top: 10px; } .dw.short .dw-foot { margin-top: 8px; padding-top: 8px; } .dw.short .dw-u { height: 32px; flex-direction: row; font-size: 11px; }
   .dw.short .dw-pt { font-size: 18px; }
-  .dw.short .dw-s { min-height: 30px; font-size: 13.5px; }
+  .dw.short .dw-s { min-height: 26px; font-size: 12.5px; }
   /* header pills, every page, size and orientation: Onboard now is solid Vivint green with black text; Guide and FAQs are
      clear with a white outline and white text */
   .layer[data-fn="Main.dc.html"] .board [data-x="Onboard button"] { background: #DFFF1A !important; }   /* (Home: NOT LIKE US yellow) */
@@ -3087,7 +3090,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         const B = P.boards[fn]; if (!B) return '';
         const secs = B.sections, label = pageName(fn), ci = O.secs[fn].indexOf(((secs.find(x => x.aid === curAid) || {}).sid));
         const ids = O.secs[fn].filter(sid => !fav || isFav(fn, sid)); if (!ids.length) return '';
-        return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><div class="dw-ph"><span class="dw-grip" data-kind="pg" aria-label="Drag to move this page">' + GRIP + '</span><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '">' + (FOOTIC[fn] || '') + '<span>' + esc(label) + '</span><em>' + (fn === curFn ? 'Top' : 'Go') + DW_ICON.go + '</em></button></div>'
+        return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><div class="dw-ph"><span class="dw-grip" data-kind="pg" aria-label="Drag to move this page">' + GRIP + '</span><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '">' + (FOOTIC[fn] || '') + '<span>' + esc(label) + '</span></button></div>'
           + '<div class="dw-rail"><b class="ln"></b><b class="fl"></b>' + ids.map(sid => { const x = secs.find(y => y.sid === sid), i = O.secs[fn].indexOf(sid), k = all.length, on = isFav(fn, sid); all.push({ fn, x, n: secs.length, ni: secs.indexOf(x) });
             return '<div class="dw-row" data-sid="' + sid + '"><span class="dw-grip" data-kind="it" aria-label="Drag to move this section">' + GRIP + '</span>'
               + '<button type="button" class="dw-s' + (x.aid === curAid ? ' cur' : '') + (fn === curFn && ci >= 0 && i <= ci ? ' done' : '') + (x.ph ? ' soon' : '') + '" data-aid="' + x.aid + '" data-k="' + k + '"><i></i><span>' + esc(x.name) + '</span></button>'
@@ -3120,7 +3123,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     };
     const rails = () => grps.forEach(gp => { const r = gp.querySelector('.dw-rail'), bs = [...r.querySelectorAll('.dw-s')]; if (!bs.length) return;
       const y = b => b.offsetTop + b.offsetHeight / 2, t0 = y(bs[0]), t1 = y(bs[bs.length - 1]), ci = bs.findIndex(b => b.classList.contains('cur'));
-      const dx = bs[0].querySelector('i').offsetLeft + 6;
+      const dx = bs[0].querySelector('i').offsetLeft + 5;
       r.querySelector('.ln').style.cssText = 'left:' + dx + 'px;top:' + t0 + 'px;height:' + (t1 - t0) + 'px';
       r.querySelector('.fl').style.cssText = 'left:' + dx + 'px;top:' + t0 + 'px;height:' + (ci > 0 ? y(bs[ci]) - t0 : 0) + 'px'; });
     // preview: one picture strip per page (a frame per section, page order); frames made as they're needed
@@ -3442,6 +3445,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const closeQnav = () => { if (!qnav) return; const q = qnav; qnav = null; uiSync(); q.classList.remove('on'); setTimeout(() => q.remove(), 220);
     const ins = qnavInst; qnavInst = null; if (ins && ins.hdrKick) ins.hdrKick(); };   // header's idle timer starts again once the menu closes
   function openQnav(layer, el, anchor) {
+    if (!anchor && el.tagName === 'P' && el.querySelector('.hchev')) { closeQnav(); const ok = openPmenu(layer, el, false); if (ok) haptic('strong'); return ok; }   // header titles: the section menu with previews
     const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest];
     if (!ab || !P.boards[ab.board]) return false;
     const secs = P.boards[ab.board].sections || []; if (secs.length < 2) return false;
