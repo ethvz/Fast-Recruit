@@ -573,6 +573,38 @@
   .nm-ptitle .n { font-size: 11px; letter-spacing: .2em; color: rgb(var(--acr)); font-weight: 500; }
   .nm-page.on .nm-ptitle { color: rgb(var(--acr)); }
   #phdr .ph-prog b.ph { opacity: .35; }
+
+  /* header page titles: down arrow + a section menu that grows out of the title, with a preview screen on the right */
+  .board .hchev { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin: 0 -4px 0 3px; vertical-align: middle; pointer-events: auto !important; cursor: pointer; opacity: .7; transition: opacity .2s ease, transform .3s ease; position: relative; top: -1px; }
+  .board .hchev::before { content: ''; position: absolute; inset: -12px -8px; }
+  .board .hchev svg { width: 10px; height: 6px; pointer-events: none; }
+  .board p.hot.pm-open .hchev { opacity: 1; transform: rotate(180deg); }
+  .pmenu { position: fixed; z-index: 410; display: flex; gap: 14px; padding: 14px; box-sizing: border-box; border-radius: 22px; background: rgba(10,14,13,.94); border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 24px 60px rgba(0,0,0,.55); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; color: #fff;
+    clip-path: inset(0 calc(50% - var(--ax, 50%) + 50% - 40px) 100% calc(var(--ax, 50%) - 40px) round 18px); opacity: 0;
+    transition: clip-path .42s cubic-bezier(.2,.8,.2,1), opacity .2s ease; }
+  .pmenu.on { clip-path: inset(0 0 0 0 round 22px); opacity: 1; }
+  .pmenu::before { content: ''; position: absolute; left: var(--ax, 50%); top: -6px; width: 12px; height: 12px; margin-left: -6px; transform: rotate(45deg); background: rgba(10,14,13,.94); border-left: 1px solid rgba(255,255,255,.12); border-top: 1px solid rgba(255,255,255,.12); }
+  .pmenu .pm-list { flex: none; width: 236px; max-height: 100%; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 1px; }
+  .pmenu .pm-list::-webkit-scrollbar { display: none; }
+  .pmenu .pm-h { padding: 4px 10px 8px; font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: rgb(var(--acr)); }
+  .pmenu .pm-list button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 34px; padding: 6px 10px; border: 0; border-radius: 10px; background: transparent; color: rgba(255,255,255,.82); font: 500 14px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; text-align: left; cursor: pointer; transition: background .2s ease, color .2s ease;
+    opacity: 0; transform: translateY(-6px); }
+  .pmenu.on .pm-list button { opacity: 1; transform: none; transition: background .2s ease, color .2s ease, opacity .3s ease calc(var(--i) * 25ms + 80ms), transform .35s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 25ms + 80ms); }
+  .pmenu .pm-list button i { flex: none; width: 6px; height: 6px; border-radius: 3px; background: rgba(255,255,255,.3); transition: background .2s ease, box-shadow .2s ease; }
+  .pmenu .pm-list button.hl, .pmenu .pm-list button:hover { background: rgba(var(--acr),.12); color: #fff; }
+  .pmenu .pm-list button.hl i { background: rgb(var(--acr)); box-shadow: 0 0 8px rgba(var(--acr),.7); }
+  .pmenu .pm-list button.cur { color: rgb(var(--acr)); font-weight: 600; }
+  .pmenu .pm-list button.soon { opacity: .45 !important; }
+  .pmenu .pm-list button.soon::after { content: 'Soon'; margin-left: auto; padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--acr)); border: 1px solid rgba(var(--acr),.5); }
+  .pmenu .pm-pv { position: relative; flex: none; width: 400px; align-self: flex-start; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,.12); }
+  .pmenu .pm-pv img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.06); transition: opacity .6s ease, transform 3.2s ease-out; }
+  .pmenu .pm-pv img.on { opacity: 1; transform: scale(1); }
+  .pmenu .pm-pv .pm-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 12px 9px; font-size: 12px; font-weight: 600; letter-spacing: .02em; background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.75)); }
+  .pmenu .pm-pv .pm-bar { position: absolute; left: 0; top: 0; height: 2px; background: rgb(var(--acr)); width: 0; }
+  .pmenu .pm-pv .pm-bar.run { width: 100%; transition: width var(--pd, 2.4s) linear; }
+  @media (max-width: 700px), (max-height: 430px) { .pmenu .pm-pv { width: 260px; } }
+  @media (max-width: 560px) { .pmenu .pm-pv { display: none; } }
   .board button[data-soon] { opacity: .45; }   /* (Path to Progression levels still to be written) */
 
   /* header pills, every page, size and orientation: Onboard now is solid Vivint green with black text; Guide and FAQs are
@@ -1172,6 +1204,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     // photo than a phone held sideways. Use the same smaller copies there; full-size photos on several loaded sections at once
     // were the heaviest part of Why Vivint › Package Costs when it crashed on an upright iPad in the Claude app.
     if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
+    // header page titles: a small down arrow that opens that page's section menu
+    mk = mk.replace(/(<p id="\w+" class="hot" data-name="\((?!FAQs\))[^)"]+\)"[^>]*>)([^<]+)<\/p>/g, (m, open, t) => open + t + '<span class="hchev" role="button" aria-label="' + t + ' sections"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></p>');
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
     mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
       (m, l, rest) => '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" style="position: absolute; left: ' + (+l - 112) + 'px;' + rest + '">FAQS</div>' + m);
@@ -3182,6 +3216,67 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   document.addEventListener('pointerdown', e => { if (qnav && !qnav.contains(e.target)) { const keep = e.target.closest && e.target.closest('.hot[data-name^="("]'); if (!keep) closeQnav(); } }, true);
   addEventListener('resize', closeQnav); addEventListener('hashchange', closeQnav);
+  // ---------------- page menus from the header titles ----------------
+  // The arrow beside a header page title (or hovering the title with a mouse) opens that page's sections, growing down out
+  // of the title. A preview screen on the right plays through the page's sections; pointing at a section shows that one.
+  let pmenu = null, pmT = 0, pmFor = null;
+  function closePmenu(instant) { clearTimeout(pmT); const m = pmenu; if (!m) return; pmenu = null; if (pmFor) pmFor.classList.remove('pm-open'); pmFor = null; clearInterval(m.__iv);
+    if (instant) m.remove(); else { m.classList.remove('on'); setTimeout(() => m.remove(), 300); } uiSync(); }
+  function pageOfTitle(layer, el) { const list = (layer._ia[el.id] || []).filter(x => x.t === 'tap'), dest = list[0] && list[0].dest, ab = dest && P.artboards[dest]; return ab && P.boards[ab.board] ? ab.board : null; }
+  function openPmenu(layer, el, hover) {
+    const fn = pageOfTitle(layer, el); if (!fn) return false;
+    if (pmenu && pmFor === el) return true;
+    closePmenu(true); closeQnav();
+    const secs = (P.boards[fn].sections || []); if (secs.length < 2) return false;
+    const base = fn.replace('.dc.html', ''), cur = current && current.board === fn ? currentAid() : null;
+    const m = document.createElement('div'); m.className = 'pmenu'; m.setAttribute('role', 'menu');
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const items = secs.slice(1);
+    m.innerHTML = '<div class="pm-list"><div class="pm-h">' + esc((el.firstChild && el.firstChild.textContent || '').trim()) + '</div>'
+      + items.map((x, i) => '<button type="button" role="menuitem" style="--i:' + i + '" data-k="' + i + '" class="' + (x.aid === cur ? 'cur' : '') + (x.ph ? ' soon' : '') + '"><i></i><span>' + esc(x.name) + '</span></button>').join('') + '</div>'
+      + '<div class="pm-pv"><div class="pm-bar"></div><div class="pm-cap"></div></div>';
+    const pv = m.querySelector('.pm-pv'), cap = m.querySelector('.pm-cap'), bar = m.querySelector('.pm-bar'), bs = [...m.querySelectorAll('.pm-list button')];
+    const imgs = items.map(x => { const im = new Image(); im.alt = ''; im.decoding = 'async'; im.dataset.src = 'pv_' + base + '_' + x.sid + '.webp'; pv.insertBefore(im, cap); return im; });
+    let k = -1, held = false;
+    const show = i => { if (i === k) return; k = i; const im = imgs[i]; if (!im.src) im.src = im.dataset.src; imgs.forEach((x, j) => x.classList.toggle('on', j === i));
+      const nx = imgs[(i + 1) % imgs.length]; if (nx && !nx.src) nx.src = nx.dataset.src;
+      bs.forEach((b, j) => b.classList.toggle('hl', j === i)); cap.textContent = items[i].name;
+      bar.classList.remove('run'); void bar.offsetWidth; if (!held) bar.classList.add('run'); };
+    const play = () => { clearInterval(m.__iv); m.__iv = setInterval(() => { if (!held) show((k + 1) % items.length); }, 2400); };
+    bs.forEach((b, i) => {
+      b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; held = true; show(i); bar.classList.remove('run'); });
+      b.addEventListener('click', e => { e.stopPropagation(); const a = items[i].aid; closePmenu(true); if (overlay) closeOverlay(true); go(a, 'dissolve', 0.3, 'ease-out'); });
+    });
+    m.querySelector('.pm-list').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { held = false; play(); bar.classList.add('run'); } });
+    ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
+    document.body.appendChild(m);
+    // placed under the title, its little pointer lined up with the title's centre
+    const r = el.getBoundingClientRect(), g = document.createRange(); g.selectNodeContents(el); const tr = g.getBoundingClientRect();
+    const cx = tr.left + tr.width / 2, w = m.offsetWidth, vw = innerWidth, vh = innerHeight, top = Math.min(r.bottom, tr.bottom + 16) + 4;
+    const left = Math.max(10, Math.min(vw - w - 10, cx - w / 2));
+    m.style.left = left + 'px'; m.style.top = top + 'px'; m.style.maxHeight = Math.max(180, vh - top - 12) + 'px';
+    m.querySelector('.pm-list').style.maxHeight = (Math.max(180, vh - top - 12) - 28) + 'px';
+    m.style.setProperty('--ax', (cx - left) + 'px');
+    pmenu = m; pmFor = el; el.classList.add('pm-open'); uiSync();
+    const ci = Math.max(0, items.findIndex(x => x.aid === cur));
+    requestAnimationFrame(() => { m.classList.add('on'); show(ci); play(); });
+    if (hover) { const lv = () => { clearTimeout(pmT); pmT = setTimeout(() => { if (pmenu === m && !m.matches(':hover') && !el.matches(':hover')) closePmenu(); }, 260); };
+      m.addEventListener('pointerleave', lv); el.addEventListener('pointerleave', lv, { once: false }); m.addEventListener('pointerenter', () => clearTimeout(pmT)); }
+    return true;
+  }
+  // the arrow: a tap opens (or closes) the menu instead of going to the page
+  const onChev = e => { const c = e.target.closest && e.target.closest('.board .hchev'); if (!c) return null; return c; };
+  addEventListener('click', e => { const c = onChev(e); if (!c) return; e.preventDefault(); e.stopPropagation(); const el = c.closest('p.hot'), layer = c.closest('.layer');
+    if (pmenu && pmFor === el) closePmenu(); else openPmenu(layer, el, false); }, true);
+  ['pointerdown', 'pointerup', 'mousedown', 'mouseup'].forEach(ev => addEventListener(ev, e => { if (onChev(e)) e.stopPropagation(); }, true));
+  // a mouse resting on a page title opens its menu
+  addEventListener('pointerover', e => { if (e.pointerType !== 'mouse' || !matchMedia('(hover: hover)').matches) return;
+    const el = e.target.closest && e.target.closest('.board p.hot[data-name^="("]'); if (!el || !el.querySelector('.hchev')) return;
+    const layer = el.closest('.layer'); if (!layer || layer !== (current && current.layer)) return;
+    clearTimeout(pmT); if (pmenu && pmFor === el) return; pmT = setTimeout(() => { if (el.matches(':hover')) openPmenu(layer, el, true); }, 160); }, true);
+  document.addEventListener('pointerdown', e => { if (pmenu && !pmenu.contains(e.target) && !onChev(e)) closePmenu(); }, true);
+  addEventListener('resize', () => closePmenu(true)); addEventListener('hashchange', () => closePmenu(true));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && pmenu) { e.stopImmediatePropagation(); closePmenu(); } }, true);
   // ---------------- load only the sections near the screen ----------------
   // Long pages are split into sections; sections more than ~1.5 screens away are unloaded
   // (their DOM is parked and their images released) and reloaded just before they scroll in.
@@ -3677,7 +3772,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (document.querySelector('#a2hs:not(.closing)')) return 'popup';
     if (document.body.classList.contains('ly-on')) return 'sheet';   // art board (Edit layout) is open: no page swipes or arrow paging while editing
     if (document.querySelector('.fsheet:not(.closing)')) return 'sheet';
-    if (qnav) return 'quickmenu';
+    if (qnav || pmenu || faqEl) return 'quickmenu';
     if (menuEl) return 'menu';
     if (overlay) return 'overlay';
     return 'none';
