@@ -775,7 +775,7 @@
   @keyframes dwPop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
   @media (hover: hover) { .dw-st:hover svg { stroke: rgba(255,255,255,.7); } .dw-st.on:hover svg { stroke: rgb(var(--acr)); } }
   /* editing: no screen preview (more of the list fits) */
-  .dw.edit .dw-pv { display: none !important; }
+  .dw.edit .dw-pv, html.phone .dw .dw-pv { display: none !important; }
   /* editing: no progress line or dots, just the handles, names and stars */
   .dw.edit .dw-rail .ln, .dw.edit .dw-rail .fl, .dw.edit .dw-s i { display: none; }
   .dw.edit .dw-s.cur { font-weight: 500; } .dw.edit .dw-s.hl { background: none; }
@@ -3251,7 +3251,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const frame = j => { if (frames.has(j)) return frames.get(j); const a = all[j], im = document.createElement('div'); im.className = 'fr';
       im.style.backgroundImage = 'url("pv_' + a.fn.replace('.dc.html', '') + '.webp")'; im.style.backgroundSize = '100% ' + (a.n * 100) + '%'; im.style.backgroundPosition = '0 ' + (a.n > 1 ? (a.ni / (a.n - 1) * 100) : 0) + '%';
       pv.insertBefore(im, bar); frames.set(j, im); return im; };
-    const show = j => { if (!all.length) return; j = (j + all.length) % all.length; k = j; const f = frame(j); frames.forEach(x => x.classList.toggle('on', x === f));
+    const NOPV = document.documentElement.classList.contains('phone');   // (iPhones: no screen preview in the menu: more room for the list, no picture strips loaded)
+    const show = j => { if (!all.length || NOPV) return; j = (j + all.length) % all.length; k = j; const f = frame(j); frames.forEach(x => x.classList.toggle('on', x === f));
       rows.forEach((b, i) => b.classList.toggle('hl', i === j)); cap.textContent = all[j].x.name;
       bar.classList.remove('run'); void bar.offsetWidth; if (!held) bar.classList.add('run'); };
     // (it plays through the page across the middle of the list as you scroll)
