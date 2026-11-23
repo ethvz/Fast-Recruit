@@ -3064,7 +3064,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (src && im.getAttribute('src') !== src) im.setAttribute('src', src); }
     pfoot.classList.toggle('idle', L.classList.contains('fav-idle'));
     // sideways progress line beside the section button: centred on the screen; dots and the green fill follow the page's own menu
-    { const pg = phdr.querySelector('.ph-prog'), nav = L.querySelector('.board nav'), as = nav ? [...nav.querySelectorAll('a')].filter(a => getComputedStyle(a).display !== 'none') : [];   // (in the Custom flow only its sections show)
+    // (in the Custom flow only its sections show: read from the flow's own list, not from styles: this runs on every scroll frame)
+    const keepA = a => !L._keep || L._keep.has((a.getAttribute('href') || '').slice(5));
+    { const pg = phdr.querySelector('.ph-prog'), nav = L.querySelector('.board nav'), as = nav ? [...nav.querySelectorAll('a')].filter(keepA) : [];
       pg.hidden = !as.length;
       if (as.length) {
         const st = as.map(a => { const d = a.querySelector('span > span'), ds = d ? d.getAttribute('style') || '' : ''; return { f: /background: #05E5AF/i.test(ds), y: parseFloat(a.style.top) + 22 }; });
@@ -3076,7 +3078,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           if (bs.length === n) { pg.querySelector('i:not(.f)').style.width = w + 'px'; bs.forEach((b, i) => { b.style.left = (i * step).toFixed(1) + 'px'; }); }   // (same page shape: the line slides to its new length)
           else pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
           pg.querySelectorAll('b').forEach((b, i) => b.classList.toggle('ph', !!as[i] && PHS.has((as[i].getAttribute('href') || '').replace('#sec-', ''))));
-          if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const a = current && [...current.layer.querySelectorAll('.board nav a')].filter(x => getComputedStyle(x).display !== 'none')[+b.dataset.i]; if (a) a.click(); }); } }
+          if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const CL = current && current.layer, a = CL && [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5)))[+b.dataset.i]; if (a) a.click(); }); } }
         // green fill: where the page's own (vertical) fill ends, mapped between the dots on either side
         const fillEl = [...nav.querySelectorAll(':scope > div')].find(d => /box-shadow/.test(d.getAttribute('style') || '')), fy = fillEl ? parseFloat(fillEl.style.top) + parseFloat(fillEl.style.height) : 0;
         let fx = 0; for (let i = 0; i < n; i++) { if (fy >= st[i].y) fx = i * step; if (i < n - 1 && fy > st[i].y && fy < st[i + 1].y) { fx = (i + (fy - st[i].y) / (st[i + 1].y - st[i].y)) * step; break; } }
