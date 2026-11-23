@@ -62,7 +62,10 @@
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > svg[data-name^="Ellipse"] { display: none !important; }
   /* the home page's theme is yellow: its page pill follows it */
   /* Home's Begin: the same frosted white button as the back / next buttons on the other pages (same spot, same size) */
-  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: transparent !important; background: rgba(250,250,250,.86) !important; -webkit-backdrop-filter: blur(22px) saturate(1.8) !important; backdrop-filter: blur(22px) saturate(1.8) !important; box-shadow: 0 8px 24px rgba(0,0,0,.25) !important; }
+  .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: transparent !important; background: #DFFF1A !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: 0 0 0 6px rgba(223,255,26,.16), 0 0 34px rgba(223,255,26,.5), 0 10px 26px rgba(0,0,0,.3) !important; animation: cfGlow 2.8s ease-in-out infinite; }
+  @keyframes cfGlow { 0%, 100% { box-shadow: 0 0 0 5px rgba(223,255,26,.14), 0 0 26px rgba(223,255,26,.42), 0 10px 26px rgba(0,0,0,.3); } 50% { box-shadow: 0 0 0 9px rgba(223,255,26,.08), 0 0 44px rgba(223,255,26,.6), 0 10px 26px rgba(0,0,0,.3); } }
+  html.still .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { animation: none; }
+  .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"]::before { content: ''; display: inline-block; width: 15px; height: 15px; margin-right: 7px; vertical-align: -1px; background: #000; -webkit-mask: var(--navstar) center/contain no-repeat; mask: var(--navstar) center/contain no-repeat; }
   .layer[data-fn="Main.dc.html"] .board p[data-name="Begin"] { color: #16191a !important; }
   .layer[data-fn="Main.dc.html"] .board svg[data-name="Group 6502"] path { fill: #16191a !important; }
   .layer[data-fn="Main.dc.html"] .board svg[data-name="Ellipse 749"] { display: none !important; }
@@ -151,7 +154,7 @@
   html.lite .board [style*="filter: saturate"], html.lite .board [style*="filter: grayscale"] { filter: none !important; }
   /* background photos show in their own colour everywhere (the black-and-white filter is off) */
   .board [style*="grayscale("] { filter: none !important; -webkit-filter: none !important; }
-  html.pland .board [style*="box-shadow"]:not([data-name="Glass arrow pill"]):not([data-x="Guide button"]):not([data-x="Custom flow"]):not([data-x^="Save "]) { box-shadow: none !important; }
+  html.pland .board [style*="box-shadow"]:not([data-name="Glass arrow pill"]):not([data-x="Guide button"]):not([data-x="All sections"]):not([data-x^="Save "]) { box-shadow: none !important; }
   /* phones held sideways: section photos scroll with the page instead of staying pinned. A pinned photo makes the iPhone
      keep every piece of the page above it as its own full-screen picture in memory, which is what crashed Why Vivint */
   html.pland .board section[id^="sec-"] > div[data-name^="Background"] { position: absolute !important; top: 0 !important; left: 0; z-index: -1 !important; }
@@ -508,7 +511,7 @@
   .board .fx-r { margin-left: var(--X2, 0px) !important; }
   .board [data-name^="Background (stays"] { width: var(--FW, 1466px) !important; }
   /* phones: glass panels become solid tinted panels (no live blur) */
-  html.lite .board [style*="backdrop-filter"]:not([data-name="Glass arrow pill"]):not([data-x="Guide button"]):not([data-x="Custom flow"]):not([data-x^="Save "]) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  html.lite .board [style*="backdrop-filter"]:not([data-name="Glass arrow pill"]):not([data-x="Guide button"]):not([data-x="All sections"]):not([data-x^="Save "]) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   /* the pill buttons keep their Liquid Glass on phones too: they're small, so the blur behind them costs little memory */
   html.lite .board [style*="will-change"] { will-change: auto !important; }
   html.lite .board *, html.lite .board *::before, html.lite .board *::after { animation: none !important; }
@@ -642,6 +645,8 @@
   .dw-pill { height: 36px; box-sizing: border-box; padding: 0 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.06); color: #fff; font: 600 13px/1 'Vivint Sans', Helvetica, Arial, sans-serif; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; white-space: nowrap; flex: none; transition: background .2s ease, transform .15s ease; }
   .dw-pill svg { width: 15px; height: 15px; flex: none; }
   .dw-pill.on { border-color: rgba(var(--acr),.7); background: rgba(var(--acr),.14); }
+  .dw-pill.dw-flow { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; box-shadow: 0 0 18px rgba(var(--acr),.35); }
+  .dw-pill.dw-flow svg path { fill: #000 !important; stroke: #000; }
   .dw-pill:active, .dw-chip:active, .dw-u:active { transform: scale(.94); }
   @media (hover: hover) { .dw-pill:hover { background: rgba(255,255,255,.13); } }
   .dw-in { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 0 22px 16px; box-sizing: border-box; }
@@ -677,9 +682,44 @@
   .dw-s.soon { color: rgba(255,255,255,.4); }
   .dw-s.soon::after { content: 'Soon'; flex: none; padding: 3px 7px; border-radius: 9px; border: 1px solid rgba(var(--acr),.45); color: rgb(var(--acr)); font: 700 9px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
   .dw-list.sw { animation: dwSw .32s ease; }
+
+  /* menu tools: show all / just the Custom flow, and Edit (drag to reorder) */
+  .dw-tools { flex: none; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .dw-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 16px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+  .dw-seg button { height: 26px; min-width: 40px; padding: 0 11px; border: 0; border-radius: 13px; background: none; color: rgba(255,255,255,.7); font: 700 11.5px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .04em; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: background .25s ease, color .25s ease; }
+  .dw-seg button svg { width: 13px; height: 13px; fill: rgb(var(--acr)); }
+  .dw-seg button.on { background: rgba(255,255,255,.16); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.18); }
+  .dw-seg .dw-n { font-size: 11px; }
+  .dw-ed { margin-left: auto; height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #fff; font: 700 11.5px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .04em; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .dw-ed svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; stroke-linecap: round; }
+  .dw.edit .dw-ed { background: rgb(var(--acr)); border-color: rgb(var(--acr)); color: #000; }
+  .dw-ph { display: flex; align-items: center; }
+  .dw-ph .dw-pt { flex: 1; min-width: 0; }
+  .dw-row { display: flex; align-items: center; }
+  .dw-row .dw-s { flex: 1; min-width: 0; }
+  /* six dots: only while editing */
+  .dw-grip { flex: none; width: 0; height: 30px; overflow: hidden; opacity: 0; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; transition: width .25s ease, opacity .2s ease; }
+  .dw.edit .dw-grip { width: 24px; opacity: 1; margin-right: 4px; }
+  .dw-grip svg { width: 16px; height: 16px; flex: none; }
+  .dw-rail .ln, .dw-rail .fl { transition: left .25s ease, height .4s ease; }
+  .dw-row.drag, .dw-grp.drag { position: relative; z-index: 5; background: rgba(40,48,46,.96); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+  .dw-row.drag .dw-grip, .dw-grp.drag .dw-ph .dw-grip { cursor: grabbing; }
+  /* the star on every section: grey outline when it isn't in your Custom flow, filled green when it is */
+  .dw-st { flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 17px; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .dw-st svg { width: 17px; height: 17px; fill: none; stroke: rgba(255,255,255,.3); stroke-width: 1.7; stroke-linejoin: round; transition: fill .2s ease, stroke .2s ease, transform .3s cubic-bezier(.3,1.6,.5,1); }
+  .dw-st.on svg { fill: rgb(var(--acr)); stroke: rgb(var(--acr)); filter: drop-shadow(0 0 5px rgba(var(--acr),.55)); }
+  .dw-st.pop svg { animation: dwPop .38s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes dwPop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  @media (hover: hover) { .dw-st:hover svg { stroke: rgba(255,255,255,.7); } .dw-st.on:hover svg { stroke: rgb(var(--acr)); } }
+  .dw.edit .dw-st { display: none; }
+  .dw-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 34px 16px; color: rgba(255,255,255,.7); font: 500 14px/1.35 'Vivint Sans', Helvetica, Arial, sans-serif; }
+  .dw-empty svg { width: 30px; height: 30px; fill: none; stroke: rgb(var(--acr)); stroke-width: 1.5; stroke-linejoin: round; }
+  .dw-empty b { color: #fff; font-size: 16px; }
+  .dw-empty button { margin-top: 6px; height: 34px; padding: 0 16px; border-radius: 17px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; font: 700 12px/1 'Vivint Sans', Helvetica, Arial, sans-serif; cursor: pointer; }
+  .dw.short .dw-tools { margin-bottom: 6px; }
   /* one list: each page's name, then its sections on their own progress line */
   .dw-grp + .dw-grp { margin-top: 6px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
-  .dw-pt { position: sticky; top: 0; z-index: 2; font-size: 21px; padding: 6px 0 12px; background: linear-gradient(180deg, #0c1211 82%, rgba(12,18,17,0)); }
+  .dw-pt { font-size: 21px; padding: 6px 0 10px; }
   .dw-pt > svg, .dw-pt > .vh { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; color: rgba(255,255,255,.75); }
   .dw-pt > svg .f { fill: none; } .dw-pt > .vh { width: 20px; height: 21.5px; background: currentColor; }
   .dw-grp.here .dw-pt > :is(svg, .vh) { color: rgb(var(--acr)); } .dw-grp.here .dw-pt > svg .f { fill: currentColor; }
@@ -729,15 +769,6 @@
   /* FAQs is not one of the main pages: its header link is gone (the other four close up), and it opens as a pop-over */
   .board p.hot[data-name="(FAQs)"] { display: none !important; }
   .layer[data-fn="Main.dc.html"] .board > div > [data-name^="Photo"], .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"] { -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 var(--hft, 0%), #000 calc(100% - var(--hfb, 0%)), transparent 100%); mask-image: linear-gradient(180deg, transparent 0, #000 var(--hft, 0%), #000 calc(100% - var(--hfb, 0%)), transparent 100%); }
-  html.pland .board p.hot[data-name^="("] { letter-spacing: .03em !important; }
-  /* header page toggle: liquid glass */
-  .board .hseg ~ p.hot[data-name^="("], .board p.hot[data-name^="("]:has(~ .hseg) { z-index: 2; }
-  .board .hseg { position: absolute; z-index: 1; pointer-events: none; box-sizing: border-box; background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)); border: 1px solid rgba(255,255,255,.2);
-    -webkit-backdrop-filter: blur(20px) saturate(1.9); backdrop-filter: blur(20px) saturate(1.9); box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -1px 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.28); }
-  .board .hseg i { position: absolute; display: block; box-sizing: border-box; background: linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,.12)); border: 1px solid rgba(255,255,255,.34);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 6px rgba(255,255,255,.08), 0 4px 14px rgba(0,0,0,.3), 0 0 18px rgba(5,229,175,.18);
-    transition: left .55s cubic-bezier(.3,1.25,.45,1), width .55s cubic-bezier(.3,1.25,.45,1), opacity .3s ease; }
-  html.lite .board .hseg { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(30,34,33,.72); }
   .board [data-x="FAQs button"] { cursor: pointer; pointer-events: auto !important; }
   /* FAQs and Guide: round, icon only */
   .board :is([data-x="Guide button"], [data-x="FAQs button"]) .hic { display: block; width: 19px; height: 19px; flex: none; }
@@ -962,7 +993,7 @@
   .fbar .fb-mid span { display: block; margin-top: 3px; font-size: 14px; font-weight: 600; white-space: nowrap; }
   .fbar svg { display: block; flex: none; }
   @media (max-width: 560px) { .fbar button:not(.fb-mid) span { display: none; } .fbar button:not(.fb-mid) { padding: 0; width: 42px; justify-content: center; } .fbar .fb-mid { padding: 0 8px; } }
-  [data-x="Custom flow"] { cursor: pointer; }
+  [data-x="All sections"] { cursor: pointer; }
   .fav.fedit svg { width: 15px; height: 15px; }
   /* the flow's section rail (board coordinates, sits where the page's side menu was) */
   .fnav { position: absolute; left: 30px; top: 96px; width: 238px; max-height: 800px; overflow: hidden auto; z-index: 46; pointer-events: auto; scrollbar-width: none; font-family: 'Vivint Sans', Helvetica, Arial, sans-serif; }
@@ -1030,7 +1061,7 @@
   .fj-it { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 10px; border: 0; border-radius: 12px; background: none; color: rgba(255,255,255,0.75); font: 500 15px/1.2 'Vivint Sans', Helvetica, Arial, sans-serif; text-align: left; cursor: pointer; }
   .fj-it i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.55); }
   .fj-it.on { color: #fff; font-weight: 600; background: rgba(255,255,255,0.06); } .fj-it.on i { background: rgb(var(--acr)); border-color: rgb(var(--acr)); }
-  [data-x="Custom flow"] .cf-n { min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: #DFFF1A; color: #000; font-size: 13px; line-height: 22px; text-align: center; }
+  .board p[data-name="Begin"] .cf-n { display: inline-block; vertical-align: 1px; margin-left: 8px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; background: #000; color: #DFFF1A; font-size: 13px; line-height: 22px; text-align: center; }
 </style>
 <script>
 // Phones: skip the live glass blur (it's what runs the Claude app out of memory, especially when zoomed in).
@@ -1335,8 +1366,6 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
     // header page titles: a small down arrow that opens that page's section menu
     mk = mk.replace(/(<p id="\w+" class="hot" data-name="\((?!FAQs\))[^)"]+\)"[^>]*>)([^<]+)<\/p>/g, (m, open, t) => open + t + '<span class="hchev" role="button" aria-label="' + t + ' sections"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></p>');
-    // the header's page links sit on a liquid-glass toggle (track + sliding thumb), placed by segSync
-    mk = mk.replace(/(<p id="\w+" class="hot" data-name="\(Why Vivint\)")/g, '<div class="hseg" aria-hidden="true"><i></i></div>$1');
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
     mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
@@ -2093,43 +2122,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       L.sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
       const txt = e => { const g = document.createRange(); g.selectNodeContents(e); return g.getBoundingClientRect(); };
       const first = txt(L[0]), last = txt(L[L.length - 1]), pl = pill.getBoundingClientRect().left, k = L[0].getBoundingClientRect().width / L[0].offsetWidth || 1;
-      const need = last.right + 30 * k - (pl - 14); if (need <= 0) return;   // (30 units: the toggle's padding past the text)
+      const need = last.right - (pl - 16); if (need <= 0) return;
       const logo = [...layer.querySelectorAll('.board img[data-name^="Vivint Logo"], .board img[data-name^="Logo (header"]')].map(x => x.getBoundingClientRect()).filter(r => r.width && Math.abs(r.top - first.top) < 60);
-      const avail = Math.max(0, first.left - 30 * k - ((logo.length ? Math.max(...logo.map(r => r.right)) : 0) + 14));
+      const avail = Math.max(0, first.left - ((logo.length ? Math.max(...logo.map(r => r.right)) : 0) + 16));
       const sh = Math.min(need, avail), extra = need - sh, n = L.length;
       // (screen px per unit of 'left', measured: these links are scaled from their own origin)
       const e0 = L[0], l0 = parseFloat(e0.style.left), x0 = e0.getBoundingClientRect().left; e0.style.left = (l0 + 100) + 'px'; const u = (e0.getBoundingClientRect().left - x0) / 100 || k; e0.style.left = l0 + 'px';
       L.forEach((e, i) => { if (!e.dataset.l0) e.dataset.l0 = e.style.left; e.style.left = (parseFloat(e.dataset.l0) - (sh + extra * i / (n - 1)) / u).toFixed(1) + 'px'; });
     });
   }
-  addEventListener('resize', () => setTimeout(() => { try { hdrRoom(current && current.layer); } catch (e) {} try { segSync(current && current.layer); } catch (e) {} }, 400));
-  // the liquid-glass page toggle: a track behind the header's page links and a thumb under the page you're on. Measured from
-  // where the links really are on screen (phones scale each link from its own spot), then placed in the header's own units.
-  // Going to another page, the new page's thumb starts under the page you came from and slides across.
-  let segLast = null;
-  function segSync(layer) {
-    if (!layer || !layer.isConnected) return;
-    layer.querySelectorAll('.board .hseg').forEach(sg => {
-      const par = sg.parentElement, L = [...par.querySelectorAll(':scope > p.hot[data-name^="("]')].filter(e => e.offsetWidth && getComputedStyle(e).display !== 'none');
-      if (L.length < 2) { sg.style.display = 'none'; return; }
-      sg.style.display = '';
-      // (the links' parent can be a display: contents wrapper: measure in the box they're placed in)
-      const box = L[0].offsetParent; if (!box || !box.offsetWidth) return;
-      const pr = box.getBoundingClientRect(), k = pr.width / box.offsetWidth; if (!(k > 0)) return;
-      const M = L.map(e => { const g = document.createRange(); g.selectNodeContents(e); const t = g.getBoundingClientRect(), r = e.getBoundingClientRect();
-        return { e, cx: t.left + t.width / 2, tw: t.width, cy: r.top + r.height / 2, kl: r.width / e.offsetWidth, on: getComputedStyle(e).color === 'rgb(5, 229, 175)' }; }).sort((a, b) => a.cx - b.cx);
-      if (M.some(x => !(x.tw > 0))) return;
-      const kl = M[0].kl, padX = 17 * kl, th = 34 * kl, ins = 4 * kl, gapC = Math.min(...M.slice(1).map((x, i) => x.cx - M[i].cx)), tw = Math.min(Math.max(...M.map(x => x.tw)) + 2 * padX, gapC - 2 * kl), cy = M[0].cy;   // (never wider than the spacing, so neighbours don't collide)
-      const sl = M[0].cx - tw / 2 - ins, sr = M[M.length - 1].cx + tw / 2 + ins, st = cy - th / 2 - ins;
-      Object.assign(sg.style, { left: ((sl - pr.left) / k) + 'px', top: ((st - pr.top) / k) + 'px', width: ((sr - sl) / k) + 'px', height: ((th + 2 * ins) / k) + 'px', borderRadius: ((th / 2 + ins) / k) + 'px' });
-      const th0 = sg.firstChild, pos = x => ({ left: ((x.cx - tw / 2 - sl) / k) + 'px', top: (ins / k) + 'px', width: (tw / k) + 'px', height: (th / k) + 'px', borderRadius: (th / 2 / k) + 'px' });
-      const cur = M.find(x => x.on); th0.style.opacity = cur ? '1' : '0'; if (!cur) return;
-      const name = cur.e.getAttribute('data-name'), from = !sg.__set && segLast && segLast !== name && M.find(x => x.e.getAttribute('data-name') === segLast);
-      if (from) { th0.style.transition = 'none'; Object.assign(th0.style, pos(from)); void th0.offsetWidth; th0.style.transition = ''; requestAnimationFrame(() => Object.assign(th0.style, pos(cur))); }
-      else Object.assign(th0.style, pos(cur));
-      sg.__set = 1; if (layer === (current && current.layer)) segLast = name;
-    });
-  }
+  addEventListener('resize', () => setTimeout(() => { try { hdrRoom(current && current.layer); } catch (e) {} }, 400));
   // iPads (any way up): NOT LIKE US sits as far from the right edge as the page menu is from the left
   function homeRight(layer) {
     if (!layer || !layer.isConnected || layer.dataset.fn !== 'Main.dc.html') return;
@@ -2156,12 +2158,13 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const k = list[0].getBoundingClientRect().width / list[0].offsetWidth; if (!(k > 0)) return;
       const w = list.map(el => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width / k; });
       const L = list.map(el => parseFloat(el.style.left)), W = list.map(el => parseFloat(el.style.width) || el.offsetWidth);
-      // equal cells (one per page, as wide as the longest name plus padding), the row centred on the screen: the toggle's segments
-      const cell = Math.max(...w) + 44; let x = 733 - n * cell / 2;
+      const a = L[0] + W[0] / 2 - w[0] / 2, b = L[n - 1] + W[n - 1] / 2 + w[n - 1] / 2, gap = (b - a - w.reduce((x, y) => x + y, 0)) / (n - 1);
+      if (!(gap > 12)) return;
+      let x = a + (733 - (a + b) / 2);   // (the row is centred on the screen: FAQs left it, so it no longer fills the old span evenly)
       list.forEach((el, i) => {
-        const nl = x, d = nl - L[i];
+        const nl = x - gap / 2, d = nl - L[i];
         if (el.dataset.pc) { const o = getComputedStyle(el).transformOrigin.split(' '); el.style.setProperty('transform-origin', (parseFloat(o[0]) - d) + 'px ' + (o[1] || '0px'), 'important'); }   // phones: keep growing from the same spot
-        el.style.left = nl + 'px'; el.style.width = cell + 'px'; x += cell;
+        el.style.left = nl + 'px'; el.style.width = (w[i] + gap) + 'px'; x += w[i] + gap;
       });
       done++;
     });
@@ -2266,7 +2269,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       try { phdrSync(); } catch (e) {}
       { const AC = { 'Main.dc.html': '223,255,26' };   /* Home in NOT LIKE US yellow; every other page green */ document.documentElement.style.setProperty('--acr', AC[t.board] || '5,229,175'); }
       try { evenHeader(layer); } catch (e) {}
-      setTimeout(() => { try { hdrRoom(layer); } catch (e) {} try { segSync(layer); } catch (e) {} try { homeRight(layer); } catch (e) {} }, 60);
+      setTimeout(() => { try { hdrRoom(layer); } catch (e) {} try { homeRight(layer); } catch (e) {} }, 60);
       await animate(layer, old, tr, (dur || 0.3) * 1000, EASE[ease] || EASE['ease-out']);
       if (old) destroyLayer(old);
       startScreen(layer);
@@ -2398,13 +2401,27 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const rank = k => { const o = secOf(k); return o ? ORDER.indexOf(o.fn) * 1000 + o.i : 1e9; };
   const fnOf = k => k.slice(0, k.indexOf('#'));
   // keep each page's sections together (pages in order of first appearance, sections in their saved order)
-  function groupFavs() { FAVS = FAVS.filter(k => { const o = secOf(k); return !(o && isTitle(o.fn, o.i)); }); const pages = []; FAVS.forEach(k => { const f = fnOf(k); if (pages.indexOf(f) < 0) pages.push(f); }); FAVS = pages.flatMap(f => FAVS.filter(k => fnOf(k) === f)); }
-  function addFav(k) {
-    if (FAVS.indexOf(k) >= 0) return; groupFavs();
-    const f = fnOf(k), mine = FAVS.filter(x => fnOf(x) === f);
-    if (mine.length) { const r = rank(k), after = mine.find(x => rank(x) > r), j = after ? FAVS.indexOf(after) : FAVS.indexOf(mine[mine.length - 1]) + 1; FAVS.splice(j, 0, k); return; }
-    const pi = ORDER.indexOf(f), nxt = FAVS.find(x => ORDER.indexOf(fnOf(x)) > pi); if (nxt) FAVS.splice(FAVS.indexOf(nxt), 0, k); else FAVS.push(k);
+  // the order you set in the menu (Edit): pages, and the sections within each page. The Custom flow plays in this order.
+  // (first time: taken from the flow as it was saved; pages or sections added to the app later slot in at their natural spot)
+  const MORDK = 'fr_mord';
+  let MORD = (() => { try { const o = JSON.parse(localStorage.getItem(MORDK) || 'null'); return o && Array.isArray(o.pages) && o.secs ? o : null; } catch (e) { return null; } })();
+  const natSecs = fn => secList(fn).filter((x, i) => !isTitle(fn, i)).map(x => x.sid);
+  function mord() {
+    const pn = FLOWPAGES(), m = MORD || { pages: [], secs: {} };
+    if (!MORD) {
+      FAVS.forEach(k => { const f = fnOf(k); if (m.pages.indexOf(f) < 0 && pn.indexOf(f) >= 0) m.pages.push(f); });
+      pn.forEach(fn => { const nat = natSecs(fn), fav = FAVS.filter(k => fnOf(k) === fn).map(k => k.slice(fn.length + 1)).filter(sid => nat.indexOf(sid) >= 0); let j = 0; m.secs[fn] = nat.map(sid => fav.indexOf(sid) >= 0 ? fav[j++] : sid); });
+    }
+    m.pages = m.pages.filter(f => pn.indexOf(f) >= 0); pn.forEach(f => { if (m.pages.indexOf(f) < 0) m.pages.push(f); });
+    m.pages.forEach(fn => { const nat = natSecs(fn), a = (m.secs[fn] || []).filter(sid => nat.indexOf(sid) >= 0);
+      nat.forEach((sid, i) => { if (a.indexOf(sid) >= 0) return; const prev = nat.slice(0, i).reverse().find(x => a.indexOf(x) >= 0); a.splice(prev ? a.indexOf(prev) + 1 : 0, 0, sid); });
+      m.secs[fn] = a; });
+    return (MORD = m);
   }
+  const saveMord = () => { try { localStorage.setItem(MORDK, JSON.stringify(MORD)); } catch (e) {} };
+  const mrank = k => { const m = mord(), f = fnOf(k), pi = m.pages.indexOf(f), si = (m.secs[f] || []).indexOf(k.slice(f.length + 1)); return (pi < 0 ? 999 : pi) * 1000 + (si < 0 ? 999 : si); };
+  function groupFavs() { FAVS = FAVS.filter(k => { const o = secOf(k); return !(o && isTitle(o.fn, o.i)); }); FAVS = FAVS.map((k, i) => [k, mrank(k), i]).sort((a, b) => a[1] - b[1] || a[2] - b[2]).map(x => x[0]); }
+  function addFav(k) { if (FAVS.indexOf(k) >= 0) return; FAVS.push(k); groupFavs(); }
   let toastT = 0;
   function toast(msg) {
     let t = document.querySelector('.ftoast'); if (!t) { t = document.createElement('div'); t.className = 'ftoast'; t.setAttribute('role', 'status'); document.body.appendChild(t); }
@@ -2534,13 +2551,17 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   }
   function updateFlowCount(root) {
     const n = validFavs().length;
-    (root || document).querySelectorAll('[data-x="Custom flow"] .cf-n').forEach(x => { x.textContent = n; x.style.display = n ? '' : 'none'; });
+    (root || document).querySelectorAll('.cf-n').forEach(x => { x.textContent = n; x.style.display = n ? '' : 'none'; });
   }
   function setupFlowBtn(layer) {
-    layer.querySelectorAll('[data-x="Custom flow"]').forEach(b => {
-      noDrag(b); longPress(b, openEdit);   // hold: edit the Custom flow instead of starting it
-      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); startFlow(); });
-      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startFlow(); } });
+    // Home: the big button is Custom Flow (hold it to edit the flow); "All sections" walks every page from the start
+    if (layer._fn === 'Main.dc.html') layer.querySelectorAll('.board [data-name="Group 6504 hotspot"]').forEach(b => {
+      noDrag(b); longPress(b, openEdit); b.setAttribute('role', 'button'); b.setAttribute('aria-label', 'Start your Custom flow');
+      b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); startFlow(); }); });
+    layer.querySelectorAll('[data-x="All sections"]').forEach(b => {
+      const all = () => { const a = firstAid('Why-Vivint.dc.html'); if (a) go(a, 'slide-left', 0.3, 'ease-out'); };
+      noDrag(b); b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); all(); });
+      b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); all(); } });
     });
     updateFlowCount(layer);
   }
@@ -2726,73 +2747,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     document.body.appendChild(sh); requestAnimationFrame(() => sh.classList.add('on')); uiSync();
     return sh;
   }
-  function openEdit() {
-    groupFavs(); const items = validFavs(), pages = [];
-    items.forEach(k => { const f = fnOf(k); let g = pages.find(x => x.fn === f); if (!g) { g = { fn: f, ks: [] }; pages.push(g); } g.ks.push(k); });
-    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Drag to reorder</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
-      + '<div class="fs-list">' + pages.map(g => '<div class="fs-pg" data-fn="' + esc2(g.fn) + '"><div class="fs-pgh"><span class="fs-grip" data-kind="pg" aria-label="Drag to reorder pages">' + GRIP + '</span><b>' + esc2(pageName(g.fn)) + '</b><small>' + g.ks.length + (g.ks.length === 1 ? ' section' : ' sections') + '</small></div>'
-        + g.ks.map(k => { const o = secOf(k); return '<div class="fs-it" data-k="' + esc2(k) + '"><span class="fs-grip" data-kind="it" aria-label="Drag to reorder">' + GRIP + '</span><div class="fs-txt"><span>' + esc2(o.x.name) + '</span></div><button type="button" class="fs-rm" aria-label="Remove from flow">' + XIC + '</button></div>'; }).join('') + '</div>').join('') + '</div>'
-      + (items.length ? '' : '<div class="fs-empty">No sections yet. Add some below.</div>')
-      + '<div class="fs-foot"><button type="button" class="fs-add"><b>+</b>Add sections</button><button type="button" class="fs-done">Done</button></div>');
-    const list = sh.querySelector('.fs-list'); let changed = false, drag = null;
-    const order = () => { FAVS = [...list.querySelectorAll('.fs-it')].map(x => x.dataset.k).concat(FAVS.filter(k => !secOf(k))); };
-    const finish = () => { closeSheet(); if (changed) { order(); saveFavs(); syncStars(); updateFlowCount(); if (FLOW) flowRefresh(); } };
-    sh.querySelector('.fs-scrim').addEventListener('click', finish); sh.querySelector('.fs-x').addEventListener('click', finish); sh.querySelector('.fs-done').addEventListener('click', finish);
-    sh.querySelector('.fs-add').addEventListener('click', () => { if (changed) { order(); saveFavs(); } openAdd(false, changed); });
-    const recount = pg => { const n = pg.querySelectorAll('.fs-it:not(.gone)').length; if (!n) { pg.classList.add('gone'); setTimeout(() => pg.remove(), 180); } else pg.querySelector('.fs-pgh small').textContent = n + (n === 1 ? ' section' : ' sections'); };
-    list.addEventListener('click', e => { const r = e.target.closest('.fs-rm'); if (!r) return; const it = r.closest('.fs-it'), pg = it.closest('.fs-pg'); it.classList.add('gone'); changed = true; setTimeout(() => { it.remove(); recount(pg); }, 180); });
-    // a section moves only among its page's sections; a page (by its header) moves among the pages
-    const sib = (el, dir, cls) => { let n = dir > 0 ? el.nextElementSibling : el.previousElementSibling; while (n && !n.classList.contains(cls)) n = dir > 0 ? n.nextElementSibling : n.previousElementSibling; return n; };
-    list.addEventListener('pointerdown', e => { const gp = e.target.closest('.fs-grip'); if (!gp) return; e.preventDefault();
-      const el = gp.dataset.kind === 'pg' ? gp.closest('.fs-pg') : gp.closest('.fs-it');
-      drag = { el, cls: gp.dataset.kind === 'pg' ? 'fs-pg' : 'fs-it', y0: e.clientY, id: e.pointerId }; el.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} });
-    list.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; const el = drag.el, par = el.parentElement; let dy = e.clientY - drag.y0;
-      const nx = sib(el, 1, drag.cls), pv = sib(el, -1, drag.cls);
-      if (nx && dy > nx.offsetHeight / 2) { par.insertBefore(nx, el); drag.y0 += nx.offsetHeight; dy -= nx.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
-      else if (pv && dy < -pv.offsetHeight / 2) { par.insertBefore(el, pv); drag.y0 -= pv.offsetHeight; dy += pv.offsetHeight; changed = true; try { haptic('select'); } catch (x) {} }
-      el.style.transform = 'translateY(' + dy + 'px)';
-      const lr = list.getBoundingClientRect(); if (e.clientY < lr.top + 30) list.scrollTop -= 8; else if (e.clientY > lr.bottom - 30) list.scrollTop += 8; });
-    const end = () => { if (!drag) return; drag.el.style.transform = ''; drag.el.classList.remove('drag'); drag = null; };
-    list.addEventListener('pointerup', end); list.addEventListener('pointercancel', end);
-  }
+  // editing the Custom flow lives in the menu: starred sections, Edit on (drag to reorder)
+  function openEdit() { closeSheet(); if (menuEl) closeMenu(true); openMenu(false, { filter: 'fav', edit: true }); }
   // every section in the app, grouped by page — tick several, add them all at once (they join the end of the flow)
-  function openAdd(fromHome, reorderedBefore) {
-    let body = '';
-    FLOWPAGES().forEach(fn => {
-      body += '<div class="fa-pg"><span>' + esc2(pageName(fn)) + '</span><button type="button" class="fa-all" data-fn="' + esc2(fn) + '">Select all</button></div>';
-      secList(fn).forEach((x, xi) => { if (isTitle(fn, xi)) return; const k = favKey(fn, x.sid), inF = FAVS.indexOf(k) >= 0;
-        body += '<label class="fa-it' + (inF ? ' in' : '') + '"><input type="checkbox" value="' + esc2(k) + '"' + (inF ? ' checked data-in="1"' : '') + '><i></i><span>' + esc2(x.name) + '</span>' + (inF ? '<em>Added</em>' : '') + '</label>'; });
-    });
-    const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Custom flow</div><div class="fs-t">Add sections</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
-      + '<div class="fs-list fa-list">' + body + '</div>'
-      + '<div class="fs-foot"><button type="button" class="fs-back">' + (fromHome ? 'Cancel' : 'Back') + '</button><button type="button" class="fs-done fa-go" disabled>Add</button></div>');
-    const go_ = sh.querySelector('.fa-go');
-    // tap a section to add it; tap one that's already in your flow to take it out
-    const picked = () => [...sh.querySelectorAll('.fa-list input:checked:not([data-in])')].map(x => x.value);
-    const dropped = () => [...sh.querySelectorAll('.fa-list input[data-in]:not(:checked)')].map(x => x.value);
-    const upd = () => { const n = picked().length, r = dropped().length; go_.disabled = !n && !r;
-      go_.textContent = n && r ? 'Add ' + n + ' · Remove ' + r : r ? 'Remove ' + r : n ? 'Add ' + n : 'Add';
-      sh.querySelectorAll('.fa-list input[data-in]').forEach(x => { const lb = x.closest('.fa-it'), em = lb.querySelector('em'); lb.classList.toggle('out', !x.checked); if (em) em.textContent = x.checked ? 'Added' : 'Removing'; }); };
-    sh.querySelector('.fa-list').addEventListener('change', upd);
-    sh.querySelectorAll('.fa-all').forEach(b => b.addEventListener('click', () => {
-      const boxes = [...sh.querySelectorAll('.fa-list input')].filter(x => x.value.indexOf(b.dataset.fn + '#') === 0), all = boxes.every(x => x.checked);
-      boxes.forEach(x => { x.checked = !all; }); upd(); }));
-    const back = () => { if (fromHome) { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); } else { openEdit(); } };
-    sh.querySelector('.fs-scrim').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
-    sh.querySelector('.fs-x').addEventListener('click', () => { closeSheet(); if (reorderedBefore && FLOW) flowRefresh(); });
-    sh.querySelector('.fs-back').addEventListener('click', back);
-    go_.addEventListener('click', () => {
-      const ks = picked(), rs = dropped(); if (!ks.length && !rs.length) return;
-      FAVS = FAVS.filter(k => rs.indexOf(k) < 0);
-      ks.sort((a, b) => rank(a) - rank(b)).forEach(k => addFav(k)); saveFavs(); syncStars(); updateFlowCount();
-      const sN = n => n + (n === 1 ? ' section' : ' sections');
-      toast(ks.length && rs.length ? '★ Added ' + sN(ks.length) + ', removed ' + rs.length : ks.length ? '★ Added ' + sN(ks.length) + ' to Custom flow' : 'Removed ' + sN(rs.length) + ' from Custom flow');
-      if (!validFavs().length) { closeSheet(); if (FLOW) endFlow(true); return; }
-      if (fromHome && !FLOW) { closeSheet(); startFlow(); }
-      else if (FLOW) { closeSheet(); flowRefresh(); }
-      else openEdit();
-    });
-  }
+  // no sections in the flow yet: the menu, every section showing, to star some
+  function openAdd() { closeSheet(); if (menuEl) closeMenu(true); openMenu(false, { filter: 'all' }); toast('Tap ☆ on any section to add it to your Custom flow'); }
   function openJump() {
     const items = flowItems(); let last = -1, body = '';
     const a = currentAid(), ab = a && P.artboards[a], sx = ab && secList(ab.board)[ab.section || 0];
@@ -3090,30 +3049,28 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     wn: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>'
   };
   function closeMenu(instant) {
-    if (!menuEl) return; const m = menuEl, x = menuX; menuEl = null; menuX = null; clearInterval(m.__iv);
+    if (!menuEl) return; const m = menuEl, x = menuX; menuEl = null; menuX = null; clearInterval(m.__iv); if (m.__off) m.__off();
+    if (m.__changed && FLOW) setTimeout(() => { try { flowRefresh(); } catch (e) {} }, 60);
     if (instant) { m.remove(); if (x) x.remove(); uiSync(); return; }
     m.classList.remove('drag'); m.classList.remove('on'); m.querySelector('.dw-panel').style.removeProperty('--tx');
     setTimeout(() => { m.remove(); if (x) x.remove(); }, 420); uiSync();
   }
-  function openMenu(fromEdge) {
+  // the menu remembers whether it shows every section or just your Custom flow's
+  let MFILT = (() => { try { return localStorage.getItem('fr_mfilt') === 'fav' ? 'fav' : 'all'; } catch (e) { return 'all'; } })();
+  function openMenu(fromEdge, opts) {
     if (menuEl || !P) return null;
+    opts = opts || {}; if (opts.filter) MFILT = opts.filter;
     closeQnav(); closeSheet(); try { closePmenu(true); } catch (e) {}
     const curAid = currentAid(), curFn = current && current.board, esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    const pages = MENU.filter(([fn]) => P.boards[fn] && (P.boards[fn].sections || []).length > 1);
-    const STAR = '<svg class="st" viewBox="0 0 24 24" aria-label="Favorite"><path d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>';
-    // every page's sections in one list, each page's name above its own progress line
-    const all = [];   // { fn, i, x } for every section row, in list order
-    const listHTML = pages.map(([fn, label]) => {
-      const secs = P.boards[fn].sections, items = secs.slice(1), ci = items.findIndex(x => x.aid === curAid);
-      return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '">' + (FOOTIC[fn] || '') + '<span>' + esc(label) + '</span><em>' + (fn === curFn ? 'Top' : 'Go') + DW_ICON.go + '</em></button>'
-        + '<div class="dw-rail"><b class="ln"></b><b class="fl"></b>' + items.map((x, i) => { const k = all.length; all.push({ fn, i, x, n: secs.length });
-          return '<button type="button" class="dw-s' + (x.aid === curAid ? ' cur' : '') + (ci >= 0 && i <= ci ? ' done' : '') + (x.ph ? ' soon' : '') + '" data-aid="' + x.aid + '" data-k="' + k + '"><i></i><span>' + esc(x.name) + '</span>' + (FAVS.indexOf(fn + '#' + x.sid) >= 0 ? STAR : '') + '</button>'; }).join('') + '</div></div>';
-    }).join('');
-    const m = document.createElement('div'); m.className = 'dw'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Menu');
+    const SVG_STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>';
+    const PENI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5-4-4L4 16z M13.5 6.5l4 4"/></svg>';
+    const m = document.createElement('div'); m.className = 'dw' + (opts.edit ? ' edit' : ''); m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Menu');
     m.innerHTML = '<div class="dw-scrim"></div><div class="dw-panel"><div class="dw-head">'
       + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
-      + '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + (FLOW ? 'Edit custom flow' : 'Custom flow') + '</button></div>'
-      + '<div class="dw-in"><div class="dw-main"><div class="dw-list">' + listHTML + '</div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
+      + '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow</button></div>'
+      + '<div class="dw-in"><div class="dw-tools"><div class="dw-seg" role="tablist" aria-label="Show"><button type="button" data-f="all">All</button><button type="button" data-f="fav" aria-label="Custom flow only">' + SVG_STAR + '<span class="dw-n"></span></button></div>'
+      + '<button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
+      + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
       + '<div class="dw-foot"><button type="button" class="dw-u dw-social" title="Social media" aria-label="Social media">' + DW_ICON.social + '<span>Social media</span></button>'
       + (OFFL.can() ? '<button type="button" class="dw-u dw-dl" title="Save offline" aria-label="Save offline">' + DW_ICON.dl + '<span class="nm-dlt">' + OFFL.label() + '</span></button>' : '')
       + '<button type="button" class="dw-u dw-fb" title="Feedback" aria-label="Feedback">' + DW_ICON.fb + '<span>Feedback</span></button>'
@@ -3121,7 +3078,30 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       + '<i class="dw-grab" aria-hidden="true"></i></div>';
     const X = document.createElement('button'); X.type = 'button'; X.className = 'dw-x'; X.setAttribute('aria-label', 'Close menu'); X.innerHTML = '<i></i><i></i><i></i>';
     const pn = m.querySelector('.dw-panel'), head = m.querySelector('.dw-head'), inn = m.querySelector('.dw-in'), list = m.querySelector('.dw-list'), pv = m.querySelector('.dw-pv'), cap = pv.querySelector('.cap span'), bar = pv.querySelector('.bar');
-    const rows = [...list.querySelectorAll('.dw-s')], grps = [...list.querySelectorAll('.dw-grp')];
+    let all = [], rows = [], grps = [];
+    // ---- the list: pages (in your order), each with its sections on a progress line; a star on every section adds it to the flow
+    const render = () => {
+      const O = mord(), fav = MFILT === 'fav';
+      all = [];
+      const html = O.pages.map(fn => {
+        const B = P.boards[fn]; if (!B) return '';
+        const secs = B.sections, label = pageName(fn), ci = O.secs[fn].indexOf(((secs.find(x => x.aid === curAid) || {}).sid));
+        const ids = O.secs[fn].filter(sid => !fav || isFav(fn, sid)); if (!ids.length) return '';
+        return '<div class="dw-grp' + (fn === curFn ? ' here' : '') + '" data-fn="' + fn + '"><div class="dw-ph"><span class="dw-grip" data-kind="pg" aria-label="Drag to move this page">' + GRIP + '</span><button type="button" class="dw-pt" data-aid="' + secs[0].aid + '">' + (FOOTIC[fn] || '') + '<span>' + esc(label) + '</span><em>' + (fn === curFn ? 'Top' : 'Go') + DW_ICON.go + '</em></button></div>'
+          + '<div class="dw-rail"><b class="ln"></b><b class="fl"></b>' + ids.map(sid => { const x = secs.find(y => y.sid === sid), i = O.secs[fn].indexOf(sid), k = all.length, on = isFav(fn, sid); all.push({ fn, x, n: secs.length, ni: secs.indexOf(x) });
+            return '<div class="dw-row" data-sid="' + sid + '"><span class="dw-grip" data-kind="it" aria-label="Drag to move this section">' + GRIP + '</span>'
+              + '<button type="button" class="dw-s' + (x.aid === curAid ? ' cur' : '') + (fn === curFn && ci >= 0 && i <= ci ? ' done' : '') + (x.ph ? ' soon' : '') + '" data-aid="' + x.aid + '" data-k="' + k + '"><i></i><span>' + esc(x.name) + '</span></button>'
+              + '<button type="button" class="dw-st' + (on ? ' on' : '') + '" data-fk="' + favKey(fn, sid) + '" aria-pressed="' + on + '" aria-label="' + (on ? 'In your Custom flow' : 'Add to your Custom flow') + '">' + SVG_STAR + '</button></div>'; }).join('') + '</div></div>';
+      }).join('');
+      list.innerHTML = html || '<div class="dw-empty">' + SVG_STAR + '<b>Your Custom flow is empty</b><span>Tap the star on any section to add it.</span><button type="button" class="dw-showall">Show all sections</button></div>';
+      rows = [...list.querySelectorAll('.dw-s')]; grps = [...list.querySelectorAll('.dw-grp')];
+      rows.forEach((b, i) => b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; held = true; show(i); bar.classList.remove('run'); }));
+      m.querySelectorAll('.dw-seg button').forEach(b => { const on = b.dataset.f === MFILT; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+      const n = validFavs().length, nn = m.querySelector('.dw-n'); nn.textContent = n || ''; nn.style.display = n ? '' : 'none';
+      frames.forEach(f => f.remove()); frames.clear(); const kk = k; k = -1; pv.style.visibility = all.length ? '' : 'hidden';
+      if (all.length && kk >= 0) show(Math.min(kk, all.length - 1));
+      requestAnimationFrame(rails);
+    };
     // size and place: a slim card down the left, a little shorter than the page; the list scrolls, the preview sits under it
     const lay = () => {
       const Lr = current && current.layer ? current.layer.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight, right: innerWidth, bottom: innerHeight };
@@ -3134,62 +3114,89 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       Object.assign(X.style, { left: pad + 'px', top: pad + 'px', width: d + 'px', height: d + 'px' });
       Object.assign(head.style, { left: (pad + d + 10) + 'px', right: pad + 'px', top: (cy - hh / 2) + 'px', height: hh + 'px' });
       inn.style.top = Math.round(pad + d + (H < 500 ? 10 : 14)) + 'px';
-      // the preview: full width, but never more than about a third of the card's height (phones sideways)
-      const iw = inn.clientWidth - (small ? 28 : 44), ph = Math.min(iw * 9 / 16, (H - 2 * g) * (H < 500 ? 0.3 : 0.34));
+      const iw = inn.clientWidth - (small ? 28 : 44), ph = Math.min(iw * 9 / 16, (H - 2 * g) * (H < 500 ? 0.3 : 0.32));
       pv.style.width = Math.round(ph * 16 / 9) + 'px'; pv.style.height = Math.round(ph) + 'px';
       rails();
     };
     const rails = () => grps.forEach(gp => { const r = gp.querySelector('.dw-rail'), bs = [...r.querySelectorAll('.dw-s')]; if (!bs.length) return;
       const y = b => b.offsetTop + b.offsetHeight / 2, t0 = y(bs[0]), t1 = y(bs[bs.length - 1]), ci = bs.findIndex(b => b.classList.contains('cur'));
-      r.querySelector('.ln').style.cssText = 'top:' + t0 + 'px;height:' + (t1 - t0) + 'px';
-      r.querySelector('.fl').style.cssText = 'top:' + t0 + 'px;height:' + (ci > 0 ? y(bs[ci]) - t0 : 0) + 'px'; });
+      const dx = bs[0].querySelector('i').offsetLeft + 6;
+      r.querySelector('.ln').style.cssText = 'left:' + dx + 'px;top:' + t0 + 'px;height:' + (t1 - t0) + 'px';
+      r.querySelector('.fl').style.cssText = 'left:' + dx + 'px;top:' + t0 + 'px;height:' + (ci > 0 ? y(bs[ci]) - t0 : 0) + 'px'; });
     // preview: one picture strip per page (a frame per section, page order); frames made as they're needed
     const frames = new Map(); let k = -1, held = false;
     const frame = j => { if (frames.has(j)) return frames.get(j); const a = all[j], im = document.createElement('div'); im.className = 'fr';
-      im.style.backgroundImage = 'url("pv_' + a.fn.replace('.dc.html', '') + '.webp")'; im.style.backgroundSize = '100% ' + (a.n * 100) + '%'; im.style.backgroundPosition = '0 ' + (a.n > 1 ? ((a.i + 1) / (a.n - 1) * 100) : 0) + '%';
+      im.style.backgroundImage = 'url("pv_' + a.fn.replace('.dc.html', '') + '.webp")'; im.style.backgroundSize = '100% ' + (a.n * 100) + '%'; im.style.backgroundPosition = '0 ' + (a.n > 1 ? (a.ni / (a.n - 1) * 100) : 0) + '%';
       pv.insertBefore(im, bar); frames.set(j, im); return im; };
     const show = j => { if (!all.length) return; j = (j + all.length) % all.length; k = j; const f = frame(j); frames.forEach(x => x.classList.toggle('on', x === f));
       rows.forEach((b, i) => b.classList.toggle('hl', i === j)); cap.textContent = all[j].x.name;
       bar.classList.remove('run'); void bar.offsetWidth; if (!held) bar.classList.add('run'); };
-    // (it plays through the page you're looking at in the list: the one across the middle of the list as you scroll)
+    // (it plays through the page across the middle of the list as you scroll)
     let pageAt = null;
-    const range = fn => { const js = all.map((a, j) => a.fn === fn ? j : -1).filter(j => j >= 0); return [js[0], js[js.length - 1]]; };
-    const play = () => { clearInterval(m.__iv); m.__iv = setInterval(() => { if (held || menuEl !== m) return; const [a, b] = range(pageAt || all[Math.max(0, k)].fn); show(k >= a && k < b ? k + 1 : a); }, 2400); };
-    const topPage = () => { const lr = list.getBoundingClientRect(), t = lr.top + lr.height * 0.45; let fn = grps[0].dataset.fn; grps.forEach(gp => { if (gp.getBoundingClientRect().top <= t) fn = gp.dataset.fn; }); return fn; };
-    let scT = 0; list.addEventListener('scroll', () => { clearTimeout(scT); scT = setTimeout(() => { const fn = topPage(); if (fn !== pageAt) { pageAt = fn; if (!held) { const [a] = range(fn); show(a); } } }, 120); }, { passive: true });
-    rows.forEach((b, i) => b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; held = true; show(i); bar.classList.remove('run'); }));
+    const range = fn => { const js = all.map((a, j) => a.fn === fn ? j : -1).filter(j => j >= 0); return js.length ? [js[0], js[js.length - 1]] : [0, all.length - 1]; };
+    const play = () => { clearInterval(m.__iv); m.__iv = setInterval(() => { if (held || menuEl !== m || !all.length) return; const [a, b] = range(pageAt || all[Math.max(0, k)].fn); show(k >= a && k < b ? k + 1 : a); }, 2400); };
+    const midPage = () => { if (!grps.length) return null; const lr = list.getBoundingClientRect(), t = lr.top + lr.height * 0.45; let fn = grps[0].dataset.fn; grps.forEach(gp => { if (gp.getBoundingClientRect().top <= t) fn = gp.dataset.fn; }); return fn; };
+    let scT = 0; list.addEventListener('scroll', () => { clearTimeout(scT); scT = setTimeout(() => { const fn = midPage(); if (fn && fn !== pageAt) { pageAt = fn; if (!held) show(range(fn)[0]); } }, 120); }, { passive: true });
     list.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { held = false; bar.classList.add('run'); play(); } });
-    const goTo = aid => { closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); };
+    const start = () => { const c = list.querySelector('.dw-s.cur') || list.querySelector('.dw-grp.here .dw-pt'); if (c) list.scrollTop = Math.max(0, c.getBoundingClientRect().top - list.getBoundingClientRect().top - list.clientHeight * 0.35);
+      const ci = rows.findIndex(b => b.classList.contains('cur')); pageAt = ci >= 0 ? all[ci].fn : midPage(); if (all.length) show(ci >= 0 ? ci : range(pageAt)[0]); play(); };
+    const goTo = aid => { m.__changed = false; closeMenu(true); if (overlay) closeOverlay(true); go(aid, 'dissolve', 0.3, 'ease-out'); };
     m.addEventListener('click', e => {
       e.stopPropagation(); if (performance.now() - (m.__nc || 0) < 350) return;
       const t = e.target.closest('button, .dw-scrim, .dw-pv'); if (!t) return;
       if (t.classList.contains('dw-scrim')) { closeMenu(); return; }
+      if (t.classList.contains('dw-st')) { const [fn, sid] = [fnOf(t.dataset.fk), t.dataset.fk.slice(fnOf(t.dataset.fk).length + 1)]; toggleFav(fn, sid); m.__changed = true;
+        const on = isFav(fn, sid); t.classList.toggle('on', on); t.setAttribute('aria-pressed', on); t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+        const n = validFavs().length, nn = m.querySelector('.dw-n'); nn.textContent = n || ''; nn.style.display = n ? '' : 'none';
+        if (MFILT === 'fav' && !on) { const sy = list.scrollTop; render(); list.scrollTop = sy; if (all.length) show(0); } return; }
+      if (t.dataset.f) { if (t.dataset.f !== MFILT) { MFILT = t.dataset.f; try { localStorage.setItem('fr_mfilt', MFILT); } catch (er) {} haptic('select'); render(); list.classList.remove('sw'); void list.offsetWidth; list.classList.add('sw'); start(); } return; }
+      if (t.classList.contains('dw-showall')) { MFILT = 'all'; try { localStorage.setItem('fr_mfilt', MFILT); } catch (er) {} render(); start(); return; }
+      if (t.classList.contains('dw-ed')) { const on = !m.classList.contains('edit'); m.classList.toggle('edit', on); t.querySelector('span').textContent = on ? 'Done' : 'Edit'; haptic('select'); requestAnimationFrame(rails); setTimeout(rails, 300); return; }
+      if (m.classList.contains('edit') && (t.classList.contains('dw-s') || t.classList.contains('dw-pt'))) return;   // (editing: rows move, they don't open)
       if (t.classList.contains('dw-pv')) { if (all[k]) goTo(all[k].x.aid); return; }
       if (t.classList.contains('dw-home')) { const a = firstAid('Main.dc.html'); if (a) goTo(a); else closeMenu(); return; }
-      if (t.classList.contains('dw-flow')) { closeMenu(true); if (FLOW) openEdit(); else startFlow(); return; }
+      if (t.classList.contains('dw-flow')) { m.__changed = false; closeMenu(true); startFlow(); return; }
       if (t.classList.contains('dw-social')) { savePos(); location.href = 'social.html'; return; }
       if (t.classList.contains('dw-dl')) { OFFL.start(); return; }
       if (t.classList.contains('dw-fb')) { closeMenu(true); FB.feedback(); return; }
       if (t.classList.contains('dw-wn')) { closeMenu(true); FB.news(); return; }
       if (t.dataset.aid) goTo(t.dataset.aid);
     });
+    // ---- Edit: drag the six dots to move a page (among the pages) or a section (within its page)
+    let mv = null;
+    const sibOf = (el, dir) => { let n = dir > 0 ? el.nextElementSibling : el.previousElementSibling; while (n && !n.classList.contains(el.classList.contains('dw-grp') ? 'dw-grp' : 'dw-row')) n = dir > 0 ? n.nextElementSibling : n.previousElementSibling; return n; };
+    list.addEventListener('pointerdown', e => { const gp = e.target.closest('.dw-grip'); if (!gp || !m.classList.contains('edit')) return; e.preventDefault(); e.stopPropagation();
+      const el = gp.dataset.kind === 'pg' ? gp.closest('.dw-grp') : gp.closest('.dw-row'); mv = { el, y0: e.clientY, id: e.pointerId, moved: false }; el.classList.add('drag'); try { gp.setPointerCapture(e.pointerId); } catch (x) {} haptic('select'); });
+    const mvMove = e => { if (!mv || e.pointerId !== mv.id) return; e.stopPropagation(); const el = mv.el, par = el.parentElement; let dy = e.clientY - mv.y0;
+      const nx = sibOf(el, 1), pvv = sibOf(el, -1);
+      if (nx && dy > nx.offsetHeight / 2) { par.insertBefore(nx, el); mv.y0 += nx.offsetHeight; dy -= nx.offsetHeight; mv.moved = true; haptic('select'); }
+      else if (pvv && dy < -pvv.offsetHeight / 2) { par.insertBefore(el, pvv); mv.y0 -= pvv.offsetHeight; dy += pvv.offsetHeight; mv.moved = true; haptic('select'); }
+      el.style.transform = 'translateY(' + dy + 'px)';
+      const lr = list.getBoundingClientRect(); if (e.clientY < lr.top + 36) list.scrollTop -= 8; else if (e.clientY > lr.bottom - 36) list.scrollTop += 8; };
+    const drop = e => { if (!mv || (e && e.pointerId !== mv.id)) return; const d = mv; mv = null; d.el.style.transform = ''; d.el.classList.remove('drag'); if (!d.moved) return;
+      // the shown ones take the shown ones' places in your saved order (hidden ones, when filtering, stay put)
+      const O = mord(), slot = (arr, shown) => { const set = new Set(shown); let j = 0; return arr.map(x => set.has(x) ? shown[j++] : x); };
+      if (d.el.classList.contains('dw-grp')) O.pages = slot(O.pages, [...list.querySelectorAll('.dw-grp')].map(g => g.dataset.fn));
+      else { const fn = d.el.closest('.dw-grp').dataset.fn; O.secs[fn] = slot(O.secs[fn], [...d.el.parentElement.querySelectorAll('.dw-row')].map(r => r.dataset.sid)); }
+      saveMord(); groupFavs(); saveFavs(); m.__changed = true; const sy = list.scrollTop; render(); list.scrollTop = sy; };
+    // (followed on the whole window: the finger often leaves the list, and moving the row loses the pointer capture)
+    addEventListener('pointermove', mvMove, true); addEventListener('pointerup', drop, true); addEventListener('pointercancel', drop, true);
+    m.__off = () => { removeEventListener('pointermove', mvMove, true); removeEventListener('pointerup', drop, true); removeEventListener('pointercancel', drop, true); };
     X.addEventListener('click', e => { e.stopPropagation(); closeMenu(); });
     ['pointerdown', 'touchstart'].forEach(ev => m.addEventListener(ev, e => e.stopPropagation()));
     // slide it shut: drag the drawer to the left (anywhere on it, or on the dimmed page)
     let drag = null;
-    m.addEventListener('pointerdown', e => { if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return; drag = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, id: e.pointerId }; });
-    m.addEventListener('pointermove', e => { const d = drag; if (!d || e.pointerId !== d.id) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    m.addEventListener('pointerdown', e => { if (mv || !e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0)) return; drag = { x: e.clientX, y: e.clientY, t: performance.now(), on: null, id: e.pointerId }; });
+    m.addEventListener('pointermove', e => { const d = drag; if (!d || mv || e.pointerId !== d.id) return; const dx = e.clientX - d.x, dy = e.clientY - d.y;
       if (d.on === null && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) d.on = dx < 0 && Math.abs(dx) > Math.abs(dy) * 1.2;
       if (!d.on) return; d.dx = Math.min(0, dx); m.classList.add('drag'); pn.style.setProperty('--tx', d.dx + 'px'); m.querySelector('.dw-scrim').style.opacity = String(1 + d.dx / pn.offsetWidth); });
     const end = e => { const d = drag; if (!d || (e && e.pointerId !== d.id)) return; drag = null; if (!d.on) return; m.__nc = performance.now();
       const v = (d.dx || 0) / Math.max(1, performance.now() - d.t); m.querySelector('.dw-scrim').style.opacity = '';
       if ((d.dx || 0) < -Math.min(80, pn.offsetWidth * 0.28) || v < -0.4) { haptic('select'); closeMenu(); } else { m.classList.remove('drag'); pn.style.removeProperty('--tx'); } };
     m.addEventListener('pointerup', end); m.addEventListener('pointercancel', end);
+    if (opts.edit) m.querySelector('.dw-ed span').textContent = 'Done';
     pn.appendChild(X); document.body.appendChild(m); menuEl = m; menuX = null; m.__lay = lay;
-    lay(); uiSync();
-    // open on the section you're on (or the top), its page's preview playing
-    { const c = list.querySelector('.dw-s.cur') || list.querySelector('.dw-grp.here .dw-pt'); if (c) list.scrollTop = Math.max(0, c.getBoundingClientRect().top - list.getBoundingClientRect().top - list.clientHeight * 0.35);
-      const ci = rows.findIndex(b => b.classList.contains('cur')); pageAt = ci >= 0 ? all[ci].fn : topPage(); show(ci >= 0 ? ci : range(pageAt)[0]); play(); }
+    render(); lay(); uiSync(); start();
     if (!fromEdge) requestAnimationFrame(() => requestAnimationFrame(() => m.classList.add('on')));
     return m;
   }
@@ -3325,7 +3332,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const pill = q('Glass arrow pill'), labs = [...B.querySelectorAll('[data-name^="("]')];
     const G = { logo: [q('Vivint Logo')], title: ['Not', 'Like', 'Us'].map(q), menu: [q('Landing menu'), q('Home dot'), ...labs],
       hdr: ['Open FAQs', 'Open the recruiting guide', 'Open the onboarding tool'].map(l => B.querySelector('.ptop > [aria-label="' + l + '"]')), mbt: [B.querySelector('.ptop > [aria-label="Open menu"]')],
-      cta: [B.querySelector('[data-x="Custom flow"]'), ...['Glass arrow pill', 'Begin', 'Group 6502', 'Group 6504 hotspot'].map(q)], mem: [q('In memory')] };
+      cta: [B.querySelector('[data-x="All sections"]'), ...['Glass arrow pill', 'Begin', 'Group 6502', 'Group 6504 hotspot'].map(q)], mem: [q('In memory')] };
     if (pill && pill.nextElementSibling && pill.nextElementSibling.getAttribute('data-name')) G.cta.push(pill.nextElementSibling);
     Object.keys(G).forEach(n => G[n] = G[n].filter(e => e && (e.getAttribute('data-name') || e.getAttribute('data-x'))));
     const all = [].concat(...Object.values(G));
@@ -3360,7 +3367,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       place(G.title, tb, W - M - tb.w * st, cy - tb.h * st / 2, st);
     }
     // Custom flow + Begin: bigger, bottom right
-    const cf = G.cta.filter(e => e.getAttribute('data-x') === 'Custom flow'), beg = G.cta.filter(e => cf.indexOf(e) < 0);
+    const cf = G.cta.filter(e => e.getAttribute('data-x') === 'All sections'), beg = G.cta.filter(e => cf.indexOf(e) < 0);
     const cb = box(beg), pb = box([pill].filter(Boolean)), fb = box(cf); let mid = null, pl = W - M;
     if (cb && pb) { const s = 1.35, X = W - M - cb.w * s, Y = lr.bottom - Math.round(W * 0.045) - cb.h * s;
       place(beg, cb, X, Y, s); mid = Y + ((pb.y + pb.b) / 2 - cb.y) * s; pl = X + (pb.x - cb.x) * s;
@@ -3754,7 +3761,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // iPhone/iPad ignore "no selection" on a long press over the header links and the hold-to-edit buttons, and pop up
   // Copy / Translate. Holding those can't start a selection now: their touch is kept from the browser, and a plain tap is
   // passed on as a click (the hold menus run on pointer events, which still arrive).
-  const HOLDSEL = '.hot[data-name^="("], [data-x="Custom flow"], .fstar';
+  const HOLDSEL = '.hot[data-name^="("], [data-x="All sections"], .board [data-name="Group 6504 hotspot"], .fstar';
   let hold = null;
   document.addEventListener('touchstart', e => {
     const t = e.target.closest && e.target.closest(HOLDSEL); hold = null;
