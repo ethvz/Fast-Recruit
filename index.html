@@ -597,6 +597,15 @@
   .pmenu .pm-list button.cur { color: rgb(var(--acr)); font-weight: 600; }
   .pmenu .pm-list button.soon { opacity: .45 !important; }
   .pmenu .pm-list button.soon::after { content: 'Soon'; margin-left: auto; padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--acr)); border: 1px solid rgba(var(--acr),.5); }
+  .pmenu .pm-rail { position: relative; display: flex; flex-direction: column; gap: 1px; }
+  .pmenu .pm-rail .pm-ln, .pmenu .pm-rail .pm-fl { position: absolute; left: 15px; width: 2px; margin-left: -1px; border-radius: 1px; background: rgba(255,255,255,.18); }
+  .pmenu .pm-rail .pm-fl { background: rgb(var(--acr)); box-shadow: 0 0 10px rgba(var(--acr),.6); }
+  .pmenu .pm-list button i { position: relative; z-index: 1; width: 11px; height: 11px; margin-left: 0; box-sizing: border-box; border-radius: 50%; background: rgba(11,15,14,.95) !important; border: 1.5px solid rgba(255,255,255,.5); box-shadow: none !important; }
+  .pmenu .pm-list button.done i { background: rgb(var(--acr)) !important; border-color: rgb(var(--acr)); }
+  .pmenu .pm-list button.cur i { box-shadow: 0 0 0 4px rgba(var(--acr),.18), 0 0 14px rgba(var(--acr),.6) !important; transform: scale(1.15); }
+  .pmenu .pm-list button.hl i { border-color: rgb(var(--acr)); }
+  .pmenu .pm-star { flex: none; width: 13px; height: 13px; margin-left: auto; fill: rgb(var(--acr)); filter: drop-shadow(0 0 4px rgba(var(--acr),.5)); }
+  .pmenu .pm-list button.soon .pm-star { margin-left: 6px; }
   .pmenu .pm-pv { position: relative; flex: none; width: 400px; align-self: flex-start; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,.12); }
   .pmenu .pm-pv .pm-fr { position: absolute; inset: 0; background-repeat: no-repeat; opacity: 0; transform: scale(1.06); transition: opacity .6s ease, transform 3.2s ease-out; }
   .pmenu .pm-pv .pm-fr.on { opacity: 1; transform: scale(1); }
@@ -3233,7 +3242,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const items = secs.slice(1);
     m.innerHTML = '<div class="pm-list"><div class="pm-h">' + esc((el.firstChild && el.firstChild.textContent || '').trim()) + '</div>'
-      + items.map((x, i) => '<button type="button" role="menuitem" style="--i:' + i + '" data-k="' + i + '" class="' + (x.aid === cur ? 'cur' : '') + (x.ph ? ' soon' : '') + '"><i></i><span>' + esc(x.name) + '</span></button>').join('') + '</div>'
+      + '<div class="pm-rail"><b class="pm-ln"></b><b class="pm-fl"></b>'
+      + items.map((x, i) => '<button type="button" role="menuitem" style="--i:' + i + '" data-k="' + i + '" class="' + (x.aid === cur ? 'cur' : '') + (x.ph ? ' soon' : '') + '"><i></i><span>' + esc(x.name) + '</span>'
+        + (FAVS.indexOf(fn + '#' + x.sid) >= 0 ? '<svg class="pm-star" viewBox="0 0 24 24" aria-label="Favorite"><path d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>' : '') + '</button>').join('') + '</div></div>'
       + '<div class="pm-pv"><div class="pm-bar"></div><div class="pm-cap"></div></div>';
     const pv = m.querySelector('.pm-pv'), cap = m.querySelector('.pm-cap'), bar = m.querySelector('.pm-bar'), bs = [...m.querySelectorAll('.pm-list button')];
     // (one picture strip per page, a frame per section in page order; each preview shows its own frame of it)
@@ -3258,6 +3269,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     m.style.left = left + 'px'; m.style.top = top + 'px'; m.style.maxHeight = Math.max(180, vh - top - 12) + 'px';
     m.querySelector('.pm-list').style.maxHeight = (Math.max(180, vh - top - 12) - 28) + 'px';
     m.style.setProperty('--ax', (cx - left) + 'px');
+    // the progress line, like the page's own section menu: dots filled up to the section you're on (on this page)
+    { const rail = m.querySelector('.pm-rail'), ds = bs.map(b => b.querySelector('i')), ci0 = items.findIndex(x => x.aid === cur), y = d => d.offsetTop + d.offsetHeight / 2 + d.parentElement.offsetTop;
+      const t0 = y(ds[0]), t1 = y(ds[ds.length - 1]); rail.querySelector('.pm-ln').style.cssText = 'top:' + t0 + 'px;height:' + (t1 - t0) + 'px';
+      rail.querySelector('.pm-fl').style.cssText = 'top:' + t0 + 'px;height:' + (ci0 > 0 ? y(ds[ci0]) - t0 : 0) + 'px';
+      bs.forEach((b, j) => b.classList.toggle('done', ci0 >= 0 && j <= ci0)); }
     pmenu = m; pmFor = el; el.classList.add('pm-open'); uiSync();
     const ci = Math.max(0, items.findIndex(x => x.aid === cur));
     requestAnimationFrame(() => { m.classList.add('on'); show(ci); play(); });
