@@ -572,6 +572,7 @@
   .nm-ptitle .n { font-size: 11px; letter-spacing: .2em; color: rgb(var(--acr)); font-weight: 500; }
   .nm-page.on .nm-ptitle { color: rgb(var(--acr)); }
   #phdr .ph-prog b.ph { opacity: .35; }
+  .board button[data-soon] { opacity: .45; }   /* (Path to Progression levels still to be written) */
 
   /* header pills, every page, size and orientation: Onboard now is solid Vivint green with black text; Guide and FAQs are
      clear with a white outline and white text */
@@ -608,7 +609,7 @@
   .nm-sec.on::before { background: rgb(var(--acr)); border-color: rgb(var(--acr)); box-shadow: 0 0 0 4px rgba(var(--acr),0.18); }
   .nm-ptitle:active, .nm-sec:active { opacity: .6; }
   /* menu: Custom flow sits just left of Recruiting Guide in the top row */
-  .nm-quick .nm-guide.nm-flow { margin: 0 0 0 auto; }
+  .nm-quick .nm-guide.nm-flow { margin: 0; }
   .nm-quick .nm-flow + .nm-guide { margin-left: 0; }
   .nm-quick .nm-guide + .nm-guide { margin-left: 0; }   /* (Guide and FAQs sit together) */
   .nm-guide .nm-new { width: 8px; height: 8px; border-radius: 4px; background: rgb(var(--acr)); margin-left: -2px; }
@@ -953,7 +954,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   })();
   alive('1');
   let booted = false;
-  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} const j = JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)', st: FR.snapshot(), tr: FR.trail(8) }); ssSet('fr_pos', j); if (TOUCHDEV) lsSet('fr_lastpos', j); } catch (e) {} }
+  function savePos() { try { if (!P || !current || !current.layer.isConnected) return; const sc = scrollerOf(current.layer); let pg = '', sec = ''; try { const a = currentAid(), B = P.boards[current.board], sx = B.sections.find(x => x.aid === a); pg = pageName(current.board) || B.sections[0].name; sec = sx && sx !== B.sections[0] ? sx.name : ''; } catch (e) {} const j = JSON.stringify({ b: current.board, v: sc ? vScroll(sc) : 0, t: Date.now(), pg, sec, o: innerWidth > innerHeight ? 'Landscape (sideways)' : 'Portrait (upright)', st: FR.snapshot(), tr: FR.trail(8) }); ssSet('fr_pos', j); lsSet('fr_lastpos', j); } catch (e) {} }
   function hardReload() {
     const now = Date.now(), log = (ssGet('fr_reloads') || '').split(',').map(Number).filter(t => now - t < 60000);
     if (log.length >= 3) return;   // never loop: at most three automatic refreshes a minute
@@ -1169,7 +1170,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const html = pr.html.replace(/<img\b([^>]*?)\ssrc="(?![^"]*\{\{)/g, '<img$1 data-vsrc="');
     const host = document.createElement('div'); host.className = 'board';
     host.innerHTML = html;
-    host.querySelectorAll('section[id^="sec-"]').forEach(x => { if (x.querySelector('[data-name="Placeholder"]')) { x.dataset.ph = '1'; phAdd(x.id.slice(4)); } });
+    host.querySelectorAll('section[id^="sec-"]').forEach(x => { if (x.dataset.placeholder || x.querySelector('[data-name="Placeholder"]')) { x.dataset.ph = '1'; phAdd(x.id.slice(4)); } });
     const binds = bind(host, loops);
     let raf = 0;
     const render = () => { raf = 0; if (owner.__dead) return; withOwner(owner, () => apply(binds, inst.renderVals ? inst.renderVals() : {})); if (host.__onrender) host.__onrender(); };
@@ -1191,7 +1192,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   const PHS = new Set(); let phSt = null;
   function phAdd(sid) { if (!sid || PHS.has(sid)) return; PHS.add(sid);
     if (!phSt) { phSt = document.createElement('style'); phSt.id = 'phSecs'; document.head.appendChild(phSt); }
-    phSt.textContent = [...PHS].map(x => '.board nav a[href="#sec-' + x + '"] > span:last-child, .nm-sec[data-sid="' + x + '"]').join(', ') + ' { opacity: .38 !important; }'; }
+    const nv = [...PHS].map(x => '.board nav a[href="#sec-' + x + '"] > span:last-child').join(', '), nm = [...PHS].map(x => '.nm-sec[data-sid="' + x + '"]').join(', ');
+    // faded, with a small green "Coming soon" eyebrow over the name
+    phSt.textContent = nv + ', ' + nm + ' { opacity: .45 !important; }\n'
+      + [...PHS].map(x => '.board nav a[href="#sec-' + x + '"] > span:last-child::before').join(', ') + " { content: 'Coming soon'; display: block; font-size: 9px; line-height: 11px; font-weight: 600; letter-spacing: .2em; color: #05E5AF; }\n"
+      + [...PHS].map(x => '.nm-sec[data-sid="' + x + '"]::after').join(', ') + " { content: 'Soon'; margin-left: 6px; padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #05E5AF; border: 1px solid rgba(5,229,175,.5); }"; }
   const phFromProto = () => { if (P) Object.values(P.boards).forEach(b => (b.sections || []).forEach(x => { if (x.ph) phAdd(x.sid); })); };
   function syncSecs(fn, d) {
     const B = P && P.boards[fn], m = d && d.script && /this\.sections = (\[.*?\]);/.exec(d.script); if (!B || !B.sections || !m) return;
@@ -2646,7 +2651,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     // plain "key: value · key: value" text: raw JSON (braces and quotes) in a form gets treated as spam and never emailed
     const stateText = o => o ? Object.keys(o).filter(k => o[k] != null && o[k] !== '').map(k => k + ': ' + o[k]).join(' · ') : '(not recorded)';
-    const BUILD = '2026-11-24f';   // shows in every report, so an email tells which app version sent it
+    const BUILD = '2026-11-24g';   // shows in every report, so an email tells which app version sent it
     async function send(subject, fields) {
       const m = Object.assign({ _subject: subject, Sent: new Date().toLocaleString() }, fields);
       const ok = await post(m), saved = await keep(m, ok);
@@ -2875,7 +2880,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       guideB = '<button type="button" class="nm-guide nm-gd">' + (pphOn() ? 'Guide' : 'Recruiting Guide') + '</button><button type="button" class="nm-guide nm-faq">FAQs</button>';
     m.innerHTML = '<div class="nm-scrim"></div><div class="nm-panel"><div class="nm-top"><div><div class="nm-eye">Menu</div><div class="nm-title">Every page, every section.</div></div>'
       + '<button type="button" class="nm-x" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 14 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l10 10M12 2L2 12"/></svg></button></div>'
-      + '<div class="nm-quick">' + quick + (pphOn() ? guideB + flowB : flowB + guideB) + '</div>'
+      + '<div class="nm-quick">' + quick + flowB + '</div>'   // (Guide and FAQs have their own header pills)
       + '<div class="nm-cols">' + cols + '</div>'
       + '<div class="nm-bottom"><button type="button" class="nm-guide nm-social"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>Social Media Content</button>' + (OFFL.can() ? '<button type="button" class="nm-guide nm-dl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg><span class="nm-dlt">' + OFFL.label() + '</span></button>' : '') + '<button type="button" class="nm-guide nm-fb"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Send feedback</button><button type="button" class="nm-guide nm-wn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--acr))" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>What\'s New' + (FB.unseen() ? '<span class="nm-new" aria-label="new"></span>' : '') + '</button></div></div>';
     m.addEventListener('click', e => {
@@ -3813,6 +3818,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     try { await document.fonts.load("400 16px 'Vivint Sans'"); } catch (e) {}
     // coming back after a refresh / crash: same page, same scroll position
     let pos = null; try { pos = SIM ? null : JSON.parse(ssGet('fr_pos') || 'null'); } catch (e) {}
+    // opened fresh with no address (the Claude preview reloads the page whenever a new version is published): pick up where
+    // you were a few minutes ago, if it was recent
+    if (!SIM && !h) { try { const lp = JSON.parse(lsGet('fr_lastpos') || 'null'); if (lp && lp.b && P.boards[lp.b] && Date.now() - lp.t < 30 * 60e3 && (!pos || lp.t > pos.t)) pos = lp; } catch (e) {} }
+    if (pos && !h && P.boards[pos.b] && P.boards[pos.b].sections && P.boards[pos.b].sections[0] && Date.now() - pos.t < 6 * 3600e3) start = P.boards[pos.b].sections[0].aid;
     if (crashLoop) { start = home; pos = null; ssSet('fr_pos', null); ssSet('fr_crashes', null); }
     const back = pos && P.boards[pos.b] && P.artboards[start].board === pos.b && Date.now() - pos.t < 6 * 3600e3 ? { v: pos.v } : null;
     await go(start, 'none', 0, undefined, back);

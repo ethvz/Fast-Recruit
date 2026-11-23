@@ -14,7 +14,7 @@ def sync(proto_path):
         S = json.loads(m.group(1)); old = {x['sid']: x for x in B.get('sections', [])}
         # sections still showing only a "coming soon" placeholder are flagged (ph): faded in the menus, skipped when scrolling
         mk = json.load(open(src))['markup']; cuts = [(x.start(), x.group(1)) for x in re.finditer(r'<section id="sec-([^"]+)"', mk)] + [(len(mk), None)]
-        PH = {sid for (a, sid), (b, _) in zip(cuts, cuts[1:]) if 'data-name="Placeholder"' in mk[a:b]}
+        PH = {sid for (a, sid), (b, _) in zip(cuts, cuts[1:]) if 'data-name="Placeholder"' in mk[a:b] or 'data-placeholder="1"' in mk[a:a + 300]}
         new = []
         for i, s in enumerate(S):
             o = old.get(s['id']); aid = o['aid'] if o else str(uuid.uuid5(NS, fn + '#' + s['id']))
