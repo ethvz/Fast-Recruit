@@ -3461,6 +3461,23 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // page menu (same height, side by side), "In loving memory" bottom left beside a bigger Begin. Measured from where the
   // board puts things, then moved with a style sheet (re-renders rewrite inline styles, not this sheet).
   let phHomeSt = null;
+  // Home's logo sits in the header beside the menu button, where the header logo is on every other page (same gap and size,
+  // measured from the menu button: it scales with it). iPhone upright places it in phHome instead.
+  function homeLogo() {
+    const L = frame && frame.querySelector('.layer[data-fn="Main.dc.html"]'); if (!L) return;
+    const im = L.querySelector('.board img[data-name="Vivint Logo"]'); if (!im) return;
+    let c = L.querySelector(':scope > img.home-logo');
+    if (pphOn()) { if (c) c.remove(); im.style.visibility = ''; return; }
+    const mb = [...L.querySelectorAll('.board [aria-label="Open menu"]')].find(e => e.getBoundingClientRect().width > 0); if (!mb) return;
+    const r = mb.getBoundingClientRect(), lr = L.getBoundingClientRect(), m = r.width; if (!m || !lr.width) return;
+    if (!c) { c = document.createElement('img'); c.className = 'home-logo'; c.alt = 'Vivint'; c.draggable = false; c.src = 'a/c5cf5e5b726ee7bad5533a2bf3b59ee2.png';   /* (the header's own logo file, so it lines up exactly) */
+      c.style.cssText = 'position:absolute;z-index:60;height:auto;filter:brightness(0) invert(1);cursor:pointer;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none';
+      c.addEventListener('click', e => { e.stopPropagation(); im.click(); }); L.appendChild(c); }
+    const s = lr.width / L.offsetWidth || 1;   // (the layer may be mid-transition, scaled)
+    c.style.left = ((r.left - lr.left) / s + 1.23 * m / s) + 'px'; c.style.top = ((r.top - lr.top) / s + 0.22 * m / s) + 'px'; c.style.width = (2.82 * m / s) + 'px';
+    im.style.visibility = 'hidden';
+  }
+  setInterval(() => { try { homeLogo(); } catch (e) {} }, 500); addEventListener('resize', () => { try { homeLogo(); } catch (e) {} });
   function phHome() {
     { const L0 = frame.querySelector('.layer[data-fn="Main.dc.html"]'); if (L0 && !L0.__cf) { L0.__cf = 1; fitCF(L0); return; } }   // (size the Custom Flow button first)
     if (!phHomeSt) { phHomeSt = document.createElement('style'); phHomeSt.id = 'phHome'; document.head.appendChild(phHomeSt); }
@@ -3499,10 +3516,12 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const place = (els, g, X, Y, s) => els.filter(e => !all.some(o => o !== e && o.contains(e))).forEach(e => { const v = vis.get(e); if (v && v.w) put(e, X + (v.x - g.x) * s, Y + (v.y - g.y) * s, v.w * s); });
     // header: Guide + Onboard tucked into the top-right corner, a little smaller; the menu button level with them
     const hb = box(G.hdr); let hMid = null;
-    if (hb) { const s = Math.min(0.85, (W - Math.round(W * 0.03) - 56) / hb.w), Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }   // (FAQs, Guide and Onboard now, clear of the menu button)
+    // (room on the left for the menu button and the logo beside it)
+    const mb0 = box(G.mbt), lb0 = box(G.logo), leftUsed = Math.round(W * 0.01) + (mb0 ? mb0.w * 0.85 : 44) + 8 + (lb0 ? lb0.w * 21 / lb0.h : 90) + 12;
+    if (hb) { const s = Math.min(0.85, (W - Math.round(W * 0.03) - leftUsed) / hb.w), Y = lr.top + Math.round(W * 0.025); place(G.hdr, hb, W - Math.round(W * 0.03) - hb.w * s, Y, s); hMid = Y + hb.h * s / 2; }   // (FAQs, Guide and Onboard now, clear of the menu button)
     const mbb = box(G.mbt); if (mbb && hMid != null) { const s = 0.85; place(G.mbt, mbb, Math.round(W * 0.01), hMid - mbb.h * s / 2, s); }
-    // logo: on the left (lined up with the page menu), a quarter of the way down the screen
-    const lb = box(G.logo); if (lb) { const s = (W * 0.34) / lb.w; place(G.logo, lb, M, scH * 0.25 - lb.h * s / 2, s); }
+    // logo: in the header beside the menu button, the size the header logo is on every other page
+    const lb = box(G.logo); if (lb) { const s = 21 / lb.h, mR = mbb ? Math.round(W * 0.01) + mbb.w * 0.85 : M, cy = hMid != null ? hMid : lr.top + 30; place(G.logo, lb, mR + 8, cy - 10.5, s); }
     // page menu on the left, NOT LIKE US on the right: side by side, the same height, centred on each other
     const tb = box(G.title), mv = box([q('Home dot'), ...labs].filter(Boolean)), mb = box(G.menu);
     if (tb && mv && mb) {
