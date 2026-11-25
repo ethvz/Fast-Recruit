@@ -1507,7 +1507,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     layer.addEventListener('click', e => onTap(e, layer));
     // header logo = Home button. It has its own handler (finger lifted without moving far = go home), so it doesn't depend on
     // the general tap path, which can miss a tap on iOS (haptic switch, swipe detection, a page still settling)
-    layer.querySelectorAll('img.hot[data-name="Vivint Logo"]').forEach(im => {
+    // inside SmartHomePros Connect, Home's own logo (not a link on its own) also answers: it goes back to the app picker
+    layer.querySelectorAll(window.SHPC && layer.dataset.fn === 'Main.dc.html' ? 'img[data-name="Vivint Logo"]' : 'img.hot[data-name="Vivint Logo"]').forEach(im => {
+      if (!im.classList.contains('hot')) { im.style.pointerEvents = 'auto'; im.style.cursor = 'pointer'; }
       im.setAttribute('role', 'button'); im.setAttribute('aria-label', 'Home'); im.setAttribute('alt', 'Vivint – Home');
       let p0 = null;
       const home = () => {
@@ -1517,6 +1519,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
         if (overlay) closeOverlay(true);
         if (FLOW) { const S = segs(); if (S.length && (SEG > 0 || (sc && sc.scrollTop > 40))) { haptic('select'); flowGoSeg = 0; if (SEG > 0) go(aidOf(S[0].fn, S[0].ids[0]), 'dissolve', 0.3, 'ease-out'); else sc.scrollTo({ top: 0, behavior: 'smooth' }); return; } haptic('select'); endFlow(true); return; }
         if (sc && sc.scrollTop > 40) { haptic('select'); const inst = L._inst; if (inst && typeof inst.goTo === 'function') inst.goTo(0); else sc.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+        // already Home: inside SmartHomePros Connect the logo goes back to the app picker
+        if (window.SHPC && L && L.dataset.fn === 'Main.dc.html') { haptic('select'); location.href = window.SHPC.picker; return; }
         const aid = Object.keys(P.artboards).find(k => P.artboards[k].name === 'Recruiting Home'); if (!aid) return; if (overlay) closeOverlay(true); haptic('select'); go(aid, 'dissolve', 0.3, 'ease-out'); };
       im.addEventListener('pointerdown', e => { p0 = { x: e.clientX, y: e.clientY, t: Date.now() }; e.stopPropagation(); }, true);
       im.addEventListener('pointerup', e => { const q = p0; p0 = null; if (!q || Math.hypot(e.clientX - q.x, e.clientY - q.y) > 20) return; e.stopPropagation(); im.__fired = Date.now(); home(); }, true);
