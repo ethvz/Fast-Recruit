@@ -995,6 +995,65 @@
   .wn-ic svg { width: 12px; height: 12px; }
   .wn-it b { display: block; font-size: 12.5px; line-height: 1.25; font-weight: 600; }
   .wn-it span { display: block; font-size: 11px; line-height: 1.35; color: rgba(255,255,255,0.6); }
+  /* ---- Video Library (menu): full-screen sheet; the newest video big, the rest in a grid; a tap plays it full screen with sound ---- */
+  .dw-foot .dw-vid { grid-column: 1 / -1; order: -1; background: rgba(var(--acr),0.14); color: #fff; box-shadow: inset 0 0 0 1px rgba(var(--acr),0.32); }
+  .dw-foot .dw-vid svg { width: 18px; height: 18px; }
+  @media (hover: hover) { .dw-foot .dw-vid:hover { background: rgba(var(--acr),0.22); } }
+  .dw.short .dw-foot { grid-template-columns: repeat(5, minmax(0, 1fr)); } .dw.short .dw-foot .dw-vid { grid-column: auto; order: 0; height: 32px; }
+  .fsheet.vl .fs-card { left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); top: max(14px, env(safe-area-inset-top)); bottom: max(14px, env(safe-area-inset-bottom)); width: auto; max-height: none; margin: 0; border-radius: 28px; translate: 0 18px; scale: .985; transition: opacity .25s ease, translate .35s cubic-bezier(.2,.8,.2,1), scale .35s cubic-bezier(.2,.8,.2,1);
+    background: radial-gradient(120% 70% at 0% 0%, rgba(var(--acr),0.16), transparent 60%), linear-gradient(150deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02) 45%), rgba(6,9,8,0.94); }
+  .fsheet.vl.on .fs-card { translate: 0 0; scale: 1; }
+  .fsheet.vl .fs-scrim { background: rgba(0,0,0,0.6); }
+  .fsheet.vl .fs-h { padding: 22px 24px 16px; align-items: center; }
+  .fsheet.vl .fs-t { font-size: 30px; letter-spacing: -.03em; }
+  .fsheet.vl .fs-x { width: 44px; height: 44px; border-radius: 22px; }
+  .vl-body { flex: 1; min-height: 0; overflow: auto; padding: 22px 24px 28px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .vl-body::-webkit-scrollbar { display: none; }
+  .vl-body.solo { display: flex; } .vl-body.solo .vl-hero { margin: auto; justify-content: center; }   /* (one video: centred) */
+  .vl-hero { display: flex; align-items: center; gap: clamp(22px, 4vw, 54px); width: 100%; padding: 0; border: 0; background: none; color: #fff; text-align: left; font: inherit; cursor: pointer; }
+  .vl-pic { position: relative; flex: none; aspect-ratio: 9 / 16; border-radius: 22px; overflow: hidden; background: #0a0f0e; box-shadow: 0 0 0 1px rgba(255,255,255,0.14), 0 26px 60px rgba(0,0,0,0.55); transition: transform .25s ease; }
+  .vl-hero .vl-pic { height: clamp(260px, calc(100vh - 230px), 660px); }
+  .vl-pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .vl-pic::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.55)); }
+  .vl-play { position: absolute; left: 50%; top: 50%; z-index: 1; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; display: grid; place-items: center; background: rgba(20,24,23,0.5); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3); }
+  .vl-play svg { width: 22px; height: 22px; margin-left: 4px; fill: #fff; }
+  .vl-len { position: absolute; right: 10px; bottom: 10px; z-index: 1; height: 24px; padding: 0 9px; border-radius: 12px; background: rgba(0,0,0,0.6); font: 600 12px/24px 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .02em; }
+  .vl-info { min-width: 0; flex: 1; max-width: 480px; }
+  .vl-tag { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; background: rgba(var(--acr),0.16); color: rgb(var(--acr)); font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+  .vl-info h3 { margin: 14px 0 0; font-size: clamp(30px, 4.4vw, 52px); line-height: 1.02; font-weight: 600; letter-spacing: -.035em; }
+  .vl-go { margin-top: 26px; display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px 0 20px; border-radius: 26px; background: rgb(var(--acr)); color: #04140f; font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 10px 30px rgba(var(--acr),0.28); transition: transform .2s ease; }
+  .vl-go svg { width: 16px; height: 16px; fill: currentColor; }
+  .vl-hero:active .vl-pic, .vl-c:active .vl-pic { transform: scale(.97); } .vl-hero:active .vl-go { transform: scale(.95); }
+  .vl-sub { margin: 34px 0 14px; font-size: 11px; font-weight: 700; letter-spacing: .24em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .vl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 18px; }
+  .vl-c { padding: 0; border: 0; background: none; color: #fff; text-align: left; font: inherit; cursor: pointer; min-width: 0; }
+  .vl-c .vl-pic { width: 100%; border-radius: 18px; }
+  .vl-c .vl-play { width: 48px; height: 48px; margin: -24px 0 0 -24px; } .vl-c .vl-play svg { width: 17px; height: 17px; margin-left: 3px; }
+  .vl-c b { display: block; margin-top: 10px; font-size: 15px; font-weight: 600; line-height: 1.2; letter-spacing: -.01em; }
+  /* phones upright: the newest video sits on top of its title */
+  @media (max-width: 600px) {
+    .fsheet.vl .fs-card { left: 0; right: 0; top: 0; bottom: 0; border-radius: 0; border: 0; }
+    .fsheet.vl .fs-h { padding: max(16px, calc(env(safe-area-inset-top) + 8px)) 18px 12px; } .fsheet.vl .fs-t { font-size: 24px; }
+    .vl-body { padding: 18px 18px max(24px, env(safe-area-inset-bottom)); }
+    .vl-hero { flex-direction: column; align-items: stretch; gap: 18px; }
+    .vl-hero .vl-pic { height: auto; width: min(100%, calc((100vh - 330px) * 9 / 16)); min-width: 190px; align-self: center; }
+    .vl-info { max-width: none; text-align: center; } .vl-info h3 { font-size: 30px; margin-top: 12px; } .vl-go { margin-top: 18px; }
+    .vl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  }
+  /* phones sideways: compact header, picture fits the short screen */
+  @media (max-height: 520px) {
+    .fsheet.vl .fs-card { top: max(8px, env(safe-area-inset-top)); bottom: max(8px, env(safe-area-inset-bottom)); }
+    .fsheet.vl .fs-h { padding: 12px 18px 10px; } .fsheet.vl .fs-t { font-size: 20px; } .fsheet.vl .fs-x { width: 36px; height: 36px; }
+    .vl-body { padding: 14px 18px 18px; } .vl-hero .vl-pic { height: calc(100vh - 130px); } .vl-info h3 { font-size: 28px; } .vl-go { margin-top: 16px; height: 44px; }
+  }
+  html.lite .vl-play { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(20,24,23,0.75); }
+  /* the player: fills the screen, black, the phone's own controls, sound on */
+  .vl-pl { position: fixed; inset: 0; z-index: 3; background: #000; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .25s ease; }
+  .vl-pl.on { opacity: 1; }
+  .vl-pl video { width: 100%; height: 100%; object-fit: contain; background: #000; display: block; }
+  .vl-pl .vl-px { position: absolute; top: max(16px, calc(env(safe-area-inset-top) + 10px)); right: max(16px, calc(env(safe-area-inset-right) + 10px)); z-index: 2; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 24px; display: grid; place-items: center; cursor: pointer;
+    background: rgba(40,40,42,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); }
+  .vl-pl .vl-px svg { width: 15px; height: 15px; }
   .nm-guide { margin-top: 6px; height: 46px; padding: 0 22px; border-radius: 23px; display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: .04em; }
 
   /* ---- favorites: Liquid Glass star on every section ---- */
@@ -3038,6 +3097,50 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     return { feedback, crash, news, unseen };
   })();
+  // ---- Video Library (menu button). To add a video, put it at the top of this list (newest first): the first one shows big.
+  // Files go in the repo root as vid_<md5 of the file>.mp4 and a_<md5>.webp (poster), are written here as vid/<md5>.mp4 and
+  // a/<md5>.webp (rebuild_index.py turns them into vid_ / a_), and go in sw.js too (poster in PRE, video in MEDIA).
+  const VIDEOS = [
+    { title: 'Home Opener 2026 Recap', tag: 'Home Opener', src: 'vid_32072b8a3d31b8dd8343d4812f4bff0d.mp4', poster: 'a_d4ceb4790aa580d6969f4f80cfdc678d.webp', len: '1:10' }
+  ];
+  const VL = (() => {
+    const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.4-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>';
+    const pic = (v, big) => '<div class="vl-pic"><img src="' + esc(v.poster) + '" alt="" decoding="async"' + (big ? '' : ' loading="lazy"') + '><i class="vl-play">' + PLAY + '</i>' + (v.len ? '<span class="vl-len">' + esc(v.len) + '</span>' : '') + '</div>';
+    let pl = null;
+    const closePlayer = () => { if (!pl) return; const p = pl; pl = null; const v = p.querySelector('video'); try { v.pause(); } catch (e) {} p.classList.remove('on');
+      setTimeout(() => { try { v.removeAttribute('src'); v.load(); } catch (e) {} p.remove(); }, 260); };
+    addEventListener('keydown', e => { if (e.key === 'Escape' && pl) { e.stopImmediatePropagation(); closePlayer(); } }, true);   // (Escape closes the video first, then the library)
+    function play(sh, v) {
+      closePlayer();
+      const p = document.createElement('div'); p.className = 'vl-pl'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', v.title);
+      p.innerHTML = '<video playsinline controls autoplay preload="auto" poster="' + esc(v.poster) + '"></video><button type="button" class="vl-px" aria-label="Close video">' + XIC + '</button>';
+      const el = p.querySelector('video'); el.src = v.src; el.muted = false; el.volume = 1;
+      p.querySelector('.vl-px').addEventListener('click', closePlayer);
+      el.addEventListener('ended', closePlayer);
+      sh.appendChild(p); pl = p;   // (on the sheet itself, not the card: the card's glass would hold it inside its own box)
+      requestAnimationFrame(() => p.classList.add('on'));
+      const go = el.play(); if (go && go.catch) go.catch(() => {});   // (started by the tap, so sound is allowed)
+    }
+    function open() {
+      if (menuEl) closeMenu(true);
+      const [first, ...rest] = VIDEOS;
+      const sh = sheet('<div class="fs-h"><div><div class="fs-eye">Fast Recruit</div><div class="fs-t">Video Library</div></div><button type="button" class="fs-x" aria-label="Close">' + XIC + '</button></div>'
+        + '<div class="vl-body' + (rest.length ? '' : ' solo') + '">' + (first ? '<button type="button" class="vl-hero" data-i="0" aria-label="Play ' + esc(first.title) + '">' + pic(first, true)
+          + '<div class="vl-info"><span class="vl-tag">' + esc(first.tag || 'Newest') + '</span><h3>' + esc(first.title) + '</h3>'
+          + '<span class="vl-go">' + PLAY + 'Play</span></div></button>' : '')
+        + (rest.length ? '<div class="vl-sub">More videos</div><div class="vl-grid">' + rest.map((v, i) => '<button type="button" class="vl-c" data-i="' + (i + 1) + '" aria-label="Play ' + esc(v.title) + '">' + pic(v) + '<b>' + esc(v.title) + '</b></button>').join('') + '</div>' : '')
+        + '</div>');
+      sh.classList.add('vl');
+      ['touchmove', 'keyup', 'keypress'].forEach(ev => sh.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
+      sh.addEventListener('click', e => {
+        if (e.target.closest('.vl-pl')) return;
+        if (e.target.closest('.fs-x') || e.target.classList.contains('fs-scrim')) { closePlayer(); closeSheet(); return; }
+        const b = e.target.closest('[data-i]'); if (b && VIDEOS[+b.dataset.i]) { try { haptic('select'); } catch (er) {} play(sh, VIDEOS[+b.dataset.i]); }
+      });
+    }
+    return { open };
+  })();
   // ---- portrait v2 header (screen-sized, outside the scaled page): menu + logo fixed, page links + Guide/Onboard scroll ----
   // footer page icons (24 grid, drawn in the button's colour); Why Vivint is the Vivint house mark
   const FOOTIC = {
@@ -3169,6 +3272,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="rgb(var(--acr))" d="M12 3.3l2.65 5.45 6 .85-4.35 4.2 1.05 5.95L12 16.9l-5.35 2.85 1.05-5.95-4.35-4.2 6-.85z"/></svg>',
     go: '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6.5 2.5 10 6l-3.5 3.5"/></svg>',
     social: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="0.6" fill="rgb(var(--acr))"/></svg>',
+    vid: '<svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="15" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="rgb(var(--acr))"/></svg>',
     dl: '<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 20h16"/></svg>',
     fb: '<svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
     wn: '<svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>'
@@ -3199,6 +3303,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       + '<button type="button" class="dw-reset">Reset</button><button type="button" class="dw-ed">' + PENI + '<span>Edit</span></button></div>'
       + '<div class="dw-main"><div class="dw-list"></div><div class="dw-pv" role="button" aria-label="Open this section"><div class="bar"></div><div class="cap"><span></span><b>Open' + DW_ICON.go + '</b></div></div></div>'
       + '<div class="dw-foot"><button type="button" class="dw-u dw-social" title="Social media" aria-label="Social media">' + DW_ICON.social + '<span>Social media</span></button>'
+      + '<button type="button" class="dw-u dw-vid" title="Video Library" aria-label="Video Library">' + DW_ICON.vid + '<span>Video Library</span></button>'
       + (OFFL.can() ? '<button type="button" class="dw-u dw-dl" title="Save offline" aria-label="Save offline">' + DW_ICON.dl + '<span class="nm-dlt">' + OFFL.label() + '</span></button>' : '')
       + '<button type="button" class="dw-u dw-fb" title="Feedback" aria-label="Feedback">' + DW_ICON.fb + '<span>Feedback</span></button>'
       + '<button type="button" class="dw-u dw-wn" title="What’s new" aria-label="What’s new">' + DW_ICON.wn + '<span>What’s new</span>' + (FB.unseen() ? '<i class="nw" aria-label="new"></i>' : '') + '</button></div></div>'
@@ -3298,6 +3403,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (t.classList.contains('dw-allsec')) { m.__changed = false; closeMenu(true); exitFlowHere(); return; }
       if (t.classList.contains('dw-flow')) { m.__changed = false; closeMenu(true); startFlow(); return; }
       if (t.classList.contains('dw-social')) { savePos(); location.href = 'social.html'; return; }
+      if (t.classList.contains('dw-vid')) { m.__changed = false; closeMenu(true); VL.open(); return; }
       if (t.classList.contains('dw-dl')) { OFFL.start(); return; }
       if (t.classList.contains('dw-fb')) { closeMenu(true); FB.feedback(); return; }
       if (t.classList.contains('dw-wn')) { closeMenu(true); FB.news(); return; }
