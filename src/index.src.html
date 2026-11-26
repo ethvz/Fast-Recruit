@@ -92,6 +92,35 @@
   /* scroll reveal for copy */
   .board .rv { opacity: 0; transform: translateY(38px); transition: opacity .9s cubic-bezier(.2,.75,.2,1), transform 1.05s cubic-bezier(.2,.75,.2,1); transition-delay: var(--rvd, 0ms); }
   .board .rv.rv-in { opacity: 1; transform: none; }
+  /* side-rail fast scroller (frDock): dark pill with a bulge, green circle under the finger, dock-style magnify */
+  .board nav.frscrub, #phdr .ph-prog.frscrub { touch-action: none; }
+  .board nav.frscrub > div, #phdr .ph-prog.frscrub > i { opacity: 0; transition: opacity .2s ease; }
+  .frscrub > .scrubBg { position: absolute; left: 0; top: 0; pointer-events: none; z-index: -1; overflow: visible; filter: drop-shadow(0 6px 18px rgba(0,0,0,.45)); }
+  .scrubDot { position: absolute; left: 6px; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; background: rgba(5,229,175,.24); box-shadow: 0 0 0 1px rgba(5,229,175,.35), 0 0 24px rgba(5,229,175,.25); pointer-events: none; z-index: -1; }
+  #phdr .ph-prog .scrubDot { z-index: 0; }
+  #phdr .ph-prog.frscrub { z-index: 2; isolation: isolate; }
+  #phdr .ph-prog.frscrub b { z-index: 1; }
+  .board nav.frscrub a { transform-origin: 36px 50%; }
+  .board nav.frsettle a, #phdr .ph-prog.frsettle b { transition: translate .3s cubic-bezier(.22,.9,.2,1), scale .3s cubic-bezier(.22,.9,.2,1); }
+  /* the header dots: the whole line is a grip for the scrubber (a tap between dots does nothing) */
+  #phdr .ph-prog::before { content: ''; position: absolute; left: -12px; width: calc(100% + 24px); top: -20px; height: 40px; pointer-events: auto; }
+  /* pinned section backgrounds: one fixed layer of section photos behind the scrolling page (setupPin) */
+  .pinbg { position: absolute; left: 0; top: 0; z-index: 0; isolation: isolate; width: var(--FW, 1466px); height: var(--H, 1024px); overflow: hidden; pointer-events: none; background: #000; }
+  .pinbg > .pbsec { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background: #000; opacity: 0; visibility: hidden; transform: scale(1.05);
+    transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform 1.2s cubic-bezier(.2,.8,.2,1), visibility 0s linear .8s; }
+  .pinbg > .pbsec.on { opacity: 1; visibility: visible; transform: none; transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform 1.2s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+  .pinbg > .pbsec.was { opacity: 1; visibility: visible; transform: none; transition: none; }
+  .pinbg > .pbsec.now { transition: none !important; }
+  .pinbg .pbsec > [data-name^="Background (stays"] { position: absolute !important; left: 0 !important; top: 0 !important; height: var(--H, 1024px) !important; opacity: 1 !important; visibility: visible !important; transform: none !important; margin: 0 !important; }
+  @media (prefers-reduced-motion: reduce) { .pinbg > .pbsec, .pinbg > .pbsec.on { transform: none; transition-duration: .35s, 0s, 0s; } }
+  /* the sections themselves go see-through and their own copy of the photo is skipped (not drawn, not decoded) */
+  .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
+  .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
+  html.safe .pinbg { display: none !important; }
+  /* iPad upright: like iPad landscape, the section photo fills the whole screen behind the content (not just the top) */
+  html.tport.pstack .board .pinbg > .pbsec[data-sid] [data-name^="Background"] > :is([data-pb], [data-pf]) { top: 0 !important; height: 100% !important; }
+  html.tport.pstack .board .pinbg > .pbsec[data-sid] [data-pb]::before { background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.6) 84%, rgba(0,0,0,.9) 100%) !important; }
+  html.tport.pstack .board .pinbg > .pbsec[data-sid] [data-pf="g"] { background: linear-gradient(180deg, rgba(0,0,0,.18) 0%, rgba(0,0,0,.18) 60%, rgba(0,0,0,.55) 85%, rgba(0,0,0,.85) 100%) !important; }
   /* phones: only render the sections near the screen */
   .board section[id^="sec-"] { content-visibility: auto; }
   .stk-in > section[id^="sec-"] { content-visibility: visible; }   /* (inside the scaled holder browsers misjudge which sections are on screen) */
@@ -102,7 +131,7 @@
   input, textarea, [contenteditable="true"], [contenteditable="true"] * { -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important; }
   /* portrait: the canvas grows taller (--H); bottom controls ride down with it, fixed-size screens sit centred */
   #frame, .layer, .board { height: var(--H, 1024px) !important; }
-  .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(var(--dy, 0px)); }
+  .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(calc(var(--dy, 0px) - var(--sabd, 0px))); }
   .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
   .pmid.pass { pointer-events: none; }
   .ptop { position: absolute; left: 0; top: 0; width: 1466px; height: 0; pointer-events: none; }
@@ -430,9 +459,9 @@
   html.pph #sec-us-annual-salaries [data-name="Income chart"] > div[style*="width: 1px; height: 532px"] { display: none !important; }   /* (the chart/list divider from the side-by-side layout) */
   html.pph #sec-us-annual-salaries [data-name="Income list"] { left: 18px !important; top: 560px !important; width: calc(100% - 36px) !important; height: auto !important; bottom: 16px; }
   /* iPhone upright, FAQs: the questions at phone size, full width, spread over the screen between header and footer */
-  html.pph #sec-faqs { min-height: calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) * var(--isc, 1)) !important; display: flex; flex-direction: column; }
+  html.pph #sec-faqs { min-height: calc((100dvh - var(--sat, 0px)) * var(--isc, 1)) !important; display: flex; flex-direction: column; }
   html.pph #sec-faqs > div[style*="width: 1000px"] { zoom: 0.42; zoom: calc(0.42 * var(--isc, 1)); width: calc((1466px - 32px * var(--isc, 1)) / (0.42 * var(--isc, 1))) !important; margin: 0 auto !important;
-    padding: 236px 0 270px; box-sizing: border-box; flex: none; height: calc((100dvh - var(--sat, 0px) - var(--sab, 0px)) / 0.42); min-height: max-content; display: flex; flex-direction: column; }
+    padding: 236px 0 270px; box-sizing: border-box; flex: none; height: calc((100dvh - var(--sat, 0px)) / 0.42); min-height: max-content; display: flex; flex-direction: column; }
   @media (max-height: 760px) { html.pph #sec-faqs > div[style*="width: 1000px"] { padding-top: 220px; } }
   html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 64px"] { flex: 1; display: flex; flex-direction: column; margin-top: 36px !important; }
   html.pph #sec-faqs > div[style*="width: 1000px"] > div[style*="margin-top: 64px"] > div { flex: 1 0 auto; display: flex; flex-direction: column; justify-content: center; }
@@ -1331,9 +1360,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     let safeTop = 0, full = 0, safeL = 0, safeR = 0; try { if (!fit.probe) { fit.probe = document.createElement('div'); fit.probe.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);box-sizing:content-box;visibility:hidden;pointer-events:none'; document.body.appendChild(fit.probe); }
       const pcs = getComputedStyle(fit.probe); safeTop = Math.round(parseFloat(pcs.paddingTop)) || 0; safeL = Math.round(parseFloat(pcs.paddingLeft)) || 0; safeR = Math.round(parseFloat(pcs.paddingRight)) || 0; full = Math.round(fit.probe.getBoundingClientRect().height - safeTop) || 0; } catch (e) {}
     if (SIM) { safeTop = SIM.t; safeL = SIM.l; safeR = SIM.r; }
-    // iPadOS draws an opaque strip behind the home indicator in Home Screen apps, so the app stops above it
-    const safeBot = botInset();
-    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop - safeBot;
+    // the page runs right down to the bottom edge, under the home indicator (no black band there); the bottom controls are
+    // lifted clear of the indicator instead (--sab on screen, --sabd in design pixels)
+    const safeBot = botInset(); fit.sat = safeTop; fit.sab = safeBot;
+    const vv = window.visualViewport, vw = Math.round((vv && vv.width) || innerWidth || st.clientWidth), vh = Math.round(innerHeight || (vv && vv.height) || st.clientHeight) - safeTop;
     st.style.top = safeTop + 'px'; st.style.height = vh + 'px';
     // upright: same landscape content, on a canvas with iPad-portrait proportions (fills an iPad; letterboxed on a phone)
     const portrait = vh > vw * 1.02, oldH = H, ar = vw / vh;
@@ -1355,14 +1385,14 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     document.documentElement.classList.toggle('port', H !== 1024 && !stk);
     document.documentElement.classList.toggle('fill', (H !== 1024 && !stk) || FW !== W);
     document.documentElement.classList.toggle('stack', stk); document.documentElement.classList.toggle('phone', PHONE);
-    document.documentElement.classList.toggle('pstack', pstackOn()); document.documentElement.classList.toggle('pph', pphOn()); document.documentElement.classList.toggle('noreveal', portrait && H !== 1024 && !stk);   // upright: what's on screen is simply shown (no scroll-in animations) try { if (typeof phdrSync === 'function') phdrSync(); } catch (e) {}
+    document.documentElement.classList.toggle('pstack', pstackOn()); document.documentElement.classList.toggle('pph', pphOn()); document.documentElement.classList.toggle('tport', pstackOn() && !PHONE); document.documentElement.classList.toggle('noreveal', portrait && H !== 1024 && !stk);   // upright: what's on screen is simply shown (no scroll-in animations) try { if (typeof phdrSync === 'function') phdrSync(); } catch (e) {}
     // phone held sideways: photos on the right three quarters; header, menu and arrows kept clear of the screen edges and notch
     const pland = PHONE && !portrait && FW > W; document.documentElement.classList.toggle('pland', pland);
     { const k = 1 / scale, f = frame.style; f.setProperty('--MXL', pland ? Math.round((safeL + 16) * k) + 'px' : '0px'); f.setProperty('--MXR', pland ? Math.round((safeR + 16) * k) + 'px' : '0px'); f.setProperty('--MY', pland ? Math.round(12 * k) + 'px' : '0px'); }
     const ncs = pphOn() ? Math.max(1, Math.min(2.2, 0.54 / scale)) : PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
-    document.documentElement.style.setProperty('--sat', safeTop + 'px');
+    document.documentElement.style.setProperty('--sat', safeTop + 'px'); document.documentElement.style.setProperty('--sab', safeBot + 'px');
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
-    const st2 = frame.style; st2.setProperty('--isc', (1 / scale).toFixed(4)); st2.setProperty('--SH', H + 'px'); st2.setProperty('--fsc', scale.toFixed(5)); st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px');
+    const st2 = frame.style; st2.setProperty('--isc', (1 / scale).toFixed(4)); st2.setProperty('--SH', H + 'px'); st2.setProperty('--fsc', scale.toFixed(5)); st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px'); st2.setProperty('--sabd', Math.round(safeBot / scale) + 'px');
     // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
     // growing/shrinking while you scroll change the height many times a second: then only the sizes above update
     // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
@@ -3165,8 +3195,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     }
     if (!pfoot) { pfoot = document.createElement('div'); pfoot.id = 'pfoot'; pfoot.setAttribute('role', 'navigation'); document.body.appendChild(pfoot); }
     phdr.classList.toggle('on', !!on); pfoot.classList.toggle('on', !!on); if (!on) return;
-    document.documentElement.style.setProperty('--sab', (SIM ? SIM.b : 0) + 'px');
-    phdr.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px'); document.documentElement.style.setProperty('--sat', (SIM ? SIM.t : 0) + 'px');
+    // the header sits below the status bar / Dynamic Island, the footer above the home indicator (the real safe areas)
+    document.documentElement.style.setProperty('--sab', (fit.sab || 0) + 'px');
+    phdr.style.setProperty('--sat', (fit.sat || 0) + 'px'); document.documentElement.style.setProperty('--sat', (fit.sat || 0) + 'px');
     phdr.classList.toggle('idle', L.classList.contains('fav-idle')); phdr.classList.toggle('navopen', L.classList.contains('pnav-open')); phdr.querySelector('.ph-sec').hidden = !L.querySelector('.board nav');
     const logo = L.querySelector('.board img[data-name="Vivint Logo"]'); if (logo) { const im = phdr.querySelector('.ph-logo'), src = logo.getAttribute('src') || logo.dataset.vsrc;   // (an unloaded page keeps its picture's address in data-vsrc)
       if (src && im.getAttribute('src') !== src) im.setAttribute('src', src); }
@@ -3186,7 +3217,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           if (bs.length === n) { pg.querySelector('i:not(.f)').style.width = w + 'px'; bs.forEach((b, i) => { b.style.left = (i * step).toFixed(1) + 'px'; }); }   // (same page shape: the line slides to its new length)
           else pg.innerHTML = '<i style="width:' + w + 'px"></i><i class="f"></i>' + st.map((x, i) => '<b data-i="' + i + '" style="left:' + (i * step).toFixed(1) + 'px"></b>').join('');
           pg.querySelectorAll('b').forEach((b, i) => b.classList.toggle('ph', !!as[i] && PHS.has((as[i].getAttribute('href') || '').replace('#sec-', ''))));
-          if (!pg.__click) { pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const CL = current && current.layer, a = CL && [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5))).sort((p, q) => (parseFloat(p.style.top) || 0) - (parseFloat(q.style.top) || 0))[+b.dataset.i]; if (a) a.click(); }); } }
+          if (!pg.__click) { try { phDock(pg); } catch (e) {} pg.__click = 1; pg.addEventListener('click', e => { const b = e.target.closest('b'); if (!b) return; e.stopPropagation(); const CL = current && current.layer, a = CL && [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5))).sort((p, q) => (parseFloat(p.style.top) || 0) - (parseFloat(q.style.top) || 0))[+b.dataset.i]; if (a) a.click(); }); } }
         // green fill: where the page's own (vertical) fill ends, mapped between the dots on either side
         const fillEl = [...nav.querySelectorAll(':scope > div')].find(d => /box-shadow/.test(d.getAttribute('style') || '')), fy = L._fperm && L.__fxfy != null ? L.__fxfy : fillEl ? parseFloat(fillEl.style.top) + parseFloat(fillEl.style.height) : 0;   // (a reordered Custom flow: where you really are)
         let fx = 0; for (let i = 0; i < n; i++) { if (fy >= st[i].y) fx = i * step; if (i < n - 1 && fy > st[i].y && fy < st[i + 1].y) { fx = (i + (fy - st[i].y) / (st[i + 1].y - st[i].y)) * step; break; } }
@@ -3676,7 +3707,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // bottom only (the old fades on the left, top and right are taken away). Upright photos instead fill the right half of the
   // screen to its edge, fading in from the left. (Portrait screens keep their own layout.)
   const LBG_HALF = new Set(['opportunity', 'environment', 'swag', 'rookie-scenarios', 'preseason-projections', 'six-streams', 'pay-scales', 'override-calculator', 'positions']);
-  const LBG_SKIP = new Set(['awards', 'nrg', 'marketing', 'products', 'package-costs', 'sales-tools', 'schedule', 'vs-pest-control', 'vs-solar', 'vs-life-insurance']);
+  const LBG_SKIP = new Set(['awards', 'nrg', 'marketing', 'products', 'package-costs', 'sales-tools', 'schedule', 'vs-pest-control', 'vs-life-insurance']);
   const LBG_KEEP = new Set(['incentive-trips']);   // (its own sliding destination photos: only the fades change)
   const LBG_OV = /^(Scrim|Fade to black|Blend to black|Sky shade|Photo fade|Seam)$/;
   function landSec(sec) {
@@ -3701,6 +3732,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     startVideos(layer);
     setupReveal(layer);
     setupSnap(layer);
+    try { setupPin(layer); } catch (e) {}
+    try { frDock(layer); } catch (e) {}
     setupDownArrow(layer);
     fitSideNav(layer); setTimeout(() => fitSideNav(layer), 700);
     (P.boards[layer._fn].ia || []).filter(x => x.t === 'time').forEach(x => setTimeout(() => {
@@ -4041,6 +4074,177 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       secs.forEach(el => { const i = ord.indexOf(el); if (i < 0 || i > 1) park(el); else load(el); }); }
   }
 
+  // ---------------- pinned section backgrounds ----------------
+  // Each section's photo lives on one fixed layer behind the page (.pinbg, first in the board): the content scrolls over a
+  // background that stays put, and when you settle on the next section its photo crossfades in (with a slight zoom-out).
+  // iOS ignores background-attachment: fixed, so this is a plain stack of copies driven by the scroll position, moving
+  // opacity and transform only. Only the photo on screen and the next one hold an image; the rest have no src at all, and
+  // a fast flick or a scrub through the side rail changes nothing until the scroll rests on a section.
+  const PIN_OWN = new Set(['sec-incentive-trips']);   // (its backdrop slides with its own carousel: it stays in the section)
+  let pinCssOn = false;
+  // the section-photo rules (portrait fades, landscape crops, per-section tweaks) are copied once for the copies on the layer
+  function pinCss() {
+    if (pinCssOn) return; pinCssOn = true;
+    const want = /Background|data-pb|data-pf|lbg|pbx|pfade/, sect = /section\[id\^="sec-"\]|#sec-|section:not\(/;
+    const map = x => x.replace(/section\[id\^="sec-"\]/g, '.pbsec').replace(/section:not\(#(sec-[\w-]+)\)/g, '.pbsec:not([data-sid="$1"])').replace(/#(sec-[\w-]+)/g, '.pbsec[data-sid="$1"]');
+    let out = '';
+    const walk = (rules, pre, post) => { for (const r of rules) { try {
+      if (r.media && r.cssRules) { walk(r.cssRules, pre + '@media ' + r.media.mediaText + '{', '}' + post); continue; }
+      const x = r.selectorText; if (!x || !want.test(x) || !sect.test(x)) continue;
+      out += pre + map(x) + '{' + r.style.cssText + '}' + post + '\n'; } catch (e) {} } };
+    [...document.styleSheets].forEach(sh => { try { if (!sh.href && sh.ownerNode && sh.ownerNode.id !== 'pinCss') walk(sh.cssRules, '', ''); } catch (e) {} });
+    const st = document.createElement('style'); st.id = 'pinCss'; st.textContent = out; document.head.appendChild(st);
+  }
+  function pinSlot(P, sec) {
+    if (P.slots.has(sec)) return P.slots.get(sec);
+    if (PIN_OWN.has(sec.id)) { P.slots.set(sec, null); return null; }
+    if (sec.__vout) return undefined;   // (parked off screen: copied once it is loaded)
+    const bg = [...sec.children].find(c => ((c.dataset && c.dataset.name) || '').startsWith('Background (stays'));
+    if (!bg) { P.slots.set(sec, null); return null; }
+    try { landSec(sec); } catch (e) {}
+    const cl = bg.cloneNode(true); cl.removeAttribute('id'); cl.querySelectorAll('[id]').forEach(e => e.removeAttribute('id'));
+    cl.querySelectorAll('video, script').forEach(v => v.remove());
+    cl.querySelectorAll('img').forEach(im => { const u = im.dataset.vsrc || im.getAttribute('src'); im.removeAttribute('data-vsrc'); im.removeAttribute('loading'); im.removeAttribute('src');
+      if (u && u !== BLANK) im.dataset.psrc = u; im.decoding = 'async'; });
+    const slot = document.createElement('section'); slot.className = 'pbsec'; slot.dataset.sid = sec.id; slot.appendChild(cl);
+    P.box.appendChild(slot); P.slots.set(sec, slot); sec.classList.add('pinned'); return slot;
+  }
+  function setupPin(layer) {
+    if (layer.__pin || SAFE) return; const sc = scrollerOf(layer); if (!sc || !sc.parentElement) return;
+    const secs = () => [...sc.querySelectorAll('section[id^="sec-"]')].filter(x => x.parentElement === (sc.__in || sc) && x.offsetHeight > 0);
+    if (secs().length < 2) return;
+    pinCss();
+    const root = sc.parentElement, box = document.createElement('div'); box.className = 'pinbg'; box.setAttribute('aria-hidden', 'true'); root.insertBefore(box, root.firstChild);
+    const P = layer.__pin = { box, slots: new Map(), cur: undefined, next: null, want: null, t: 0, ft: 0, raf: 0, seq: 0 };
+    layer.classList.add('pinon');
+    const imgs = (x, on) => { if (x) x.querySelectorAll('img[data-psrc]').forEach(im => { if (on) { if (im.getAttribute('src') !== im.dataset.psrc) im.setAttribute('src', im.dataset.psrc); } else if (im.hasAttribute('src')) im.removeAttribute('src'); }); };
+    const ready = x => Promise.race([Promise.all([...x.querySelectorAll('img[data-psrc]')].map(im => im.decode ? im.decode().catch(() => {}) : null)), new Promise(r => setTimeout(r, 450))]);
+    // let go of every photo except the one on screen, the one fading out and the next one down
+    const trim = () => P.slots.forEach(x => { if (x && x !== P.cur && x !== P.next && !x.classList.contains('was')) imgs(x, false); });
+    const pick = () => { const L = secs(); if (!L.length) return null; const r = sc.getBoundingClientRect(), mid = r.top + r.height * 0.5;
+      let lo = 0, hi = L.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (L[m].getBoundingClientRect().top <= mid) lo = m; else hi = m - 1; } return L[lo]; };
+    const show = (sec, instant) => {
+      const x = sec ? pinSlot(P, sec) : null; if (x === undefined) return false;
+      const L = secs(), i = L.indexOf(sec), nx = i >= 0 ? L[i + 1] : null; const nslot = nx ? pinSlot(P, nx) : null; P.next = nslot || null;
+      if (x === P.cur) { imgs(P.next, true); return true; }
+      const prev = P.cur; P.cur = x; const tok = ++P.seq;
+      if (x) imgs(x, true);
+      const go = () => { if (tok !== P.seq || !layer.isConnected) return;
+        if (x) { x.style.zIndex = String(tok); x.classList.toggle('now', !!instant); x.classList.remove('was'); x.classList.add('on'); }
+        if (prev) { prev.classList.remove('on', 'now'); if (x && !instant) prev.classList.add('was'); }
+        clearTimeout(P.ft); P.ft = setTimeout(() => { P.box.querySelectorAll('.pbsec.was').forEach(w => { if (w !== P.cur) w.classList.remove('was'); }); imgs(P.next, true); trim(); }, instant ? 0 : 1250);
+      };
+      if (x && !instant) ready(x).then(go); else go();
+      return true; };
+    const upd = () => { P.raf = 0; if (!layer.isConnected || layer.__gone) return; const sec = pick(); if (!sec || sec === P.want) return;
+      P.want = sec; clearTimeout(P.t);
+      P.t = setTimeout(() => { if (P.want !== sec) return; if (!show(sec)) { P.want = null; P.t = setTimeout(() => { if (!P.raf) P.raf = requestAnimationFrame(upd); }, 220); } }, 140); };
+    const onScroll = () => { if (!P.raf) P.raf = requestAnimationFrame(upd); };
+    sc.addEventListener('scroll', onScroll, { passive: true });
+    layer._pinUpd = () => { P.want = null; onScroll(); };
+    (layer._off = layer._off || []).push(() => { sc.removeEventListener('scroll', onScroll); clearTimeout(P.t); clearTimeout(P.ft); cancelAnimationFrame(P.raf); });
+    { const first = pick(); P.want = first; if (!show(first, true)) { P.want = null; setTimeout(onScroll, 200); } }
+  }
+
+  // ---------------- side rail fast scroller (same as Fast Pitch's fpDock) ----------------
+  // Press and hold (or just drag) on a page's section rail: a green circle rides exactly under the finger, the page flies
+  // through its sections to match, and the rail magnifies like the macOS Dock on a dark pill with a soft bulge on its outer
+  // edge. Letting go settles on the nearest section. A tap is still just a tap (the dock wakes once the finger moves 6px).
+  // Used for the side rail (iPad, and the opened section menu on iPhone) and for the iPhone header's sideways progress dots.
+  // o: rail, items() (elements on the rail, in order), link(el) (its section link), sel(i) (CSS selector of item i), ax ('y' rail
+  //    standing up / 'x' lying down: the pill then bulges downwards), c0 (centre of the dots across the rail), s (size), mag
+  //    (how much the dots grow), layer() (the page it scrolls), active()
+  function dock(o) {
+    const rail = o.rail; if (!rail || rail.__dock) return; rail.__dock = 1;
+    const X = o.ax === 'x', s = o.s || 1; let S = null, A = 0, raf = 0, lastEnd = 0, sc = null;
+    const css = document.createElement('style'); document.head.appendChild(css);
+    const along = e => X ? e.clientX : e.clientY;
+    const local = e => { const r = rail.getBoundingClientRect(), L = X ? rail.offsetWidth : rail.offsetHeight, k = (X ? r.width : r.height) / (L || 1) || 1; return (along(e) - (X ? r.left : r.top)) / k; };
+    const mid = b => X ? b.offsetLeft + b.offsetWidth / 2 : b.offsetTop + b.offsetHeight / 2;
+    const G = 6 * s, RMAX = 41 * s, RMIN = 22 * s, PW = 72 * s;
+    const geo = () => { const W = PW, k = A / 26, r = RMIN + (RMAX - RMIN) * k; return { W, k, r, cx: G + r, cy: S && S.ly !== undefined ? S.ly : 0 }; };
+    const smax = (a, b, k) => { const m = Math.max(a, b); return m + k * Math.log(Math.exp((a - m) / k) + Math.exp((b - m) / k)); };
+    const span = () => { const its = o.items(); if (!its.length) return [0, 1]; return [mid(its[0]) - (PW / 2 - G), mid(its[its.length - 1]) + (PW / 2 - G)]; };
+    function draw() { const [t0, t1] = span(), Hh = t1 - t0, { W, k, r, cx } = geo(), cy = geo().cy - t0, R = Math.min(W / 2, 34 * s), Rg = r + G; let svg = rail.querySelector(':scope > .scrubBg');
+      if (!svg) { svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'scrubBg'); svg.innerHTML = '<path fill="#1c1c1c" stroke="rgba(255,255,255,.08)" stroke-width="1"/>'; rail.prepend(svg); }
+      const pad = 90 * s, e0 = 40 * s; svg.setAttribute('width', W + pad); svg.setAttribute('height', Hh + 2 * e0); svg.setAttribute('viewBox', `0 ${-e0} ${W + pad} ${Hh + 2 * e0}`);
+      if (X) { svg.style.left = (t0 - e0) + 'px'; svg.style.top = (o.c0 - W / 2) + 'px'; svg.style.transformOrigin = '0 0'; svg.style.transform = 'matrix(0,1,1,0,0,0)'; }
+      else { svg.style.left = (o.c0 - W / 2) + 'px'; svg.style.top = (t0 - e0) + 'px'; }
+      const edge = y => { const dy = y - cy, c = Math.abs(dy) < Rg ? cx + Math.sqrt(Rg * Rg - dy * dy) : cx - Rg, sh = W + (cx + Rg - W) * .55 * Math.exp(-Math.pow(dy / (Rg * 1.35), 2)); return smax(W, smax(c, sh, 5 * s), 6 * s) - W; };
+      const eT = Math.max(0, Rg - cy) * Math.min(1, k * 1.4), eB = Math.max(0, cy + Rg - Hh) * Math.min(1, k * 1.4), pts = [];
+      const arc = (ax, ay, a0, a1) => { for (let i = 0; i <= 16; i++) { const t = a0 + (a1 - a0) * i / 16; pts.push([ax + R * Math.cos(t), ay + R * Math.sin(t)]); } };
+      arc(W - R, R, -Math.PI / 2, 0); for (let y = R + 2; y < Hh - R; y += 2) pts.push([W, y]); arc(W - R, Hh - R, 0, Math.PI / 2); arc(R, Hh - R, Math.PI / 2, Math.PI); arc(R, R, Math.PI, Math.PI * 1.5);
+      const d = pts.map(([x, y], i) => { const yy = y - eT * Math.max(0, 1 - y / (Rg * 2.2)) + eB * Math.max(0, 1 - (Hh - y) / (Rg * 2.2)), w = Math.max(0, x - W / 2) / (W / 2); return `${i ? 'L' : 'M'} ${(x + edge(yy) * w * w).toFixed(2)} ${yy.toFixed(2)}`; }).join(' ') + ' Z';
+      svg.firstChild.setAttribute('d', d); }
+    // dock magnify: dots near the finger grow and are pulled to the circle's centre; neighbours part to make room
+    // (one small stylesheet: the page re-draws its rail while it scrolls, which would wipe inline styles)
+    function magnify() { const { W, k, r, cx, cy } = geo(), its = o.items(), sp = its.length > 1 ? (mid(its[its.length - 1]) - mid(its[0])) / (its.length - 1) : 52 * s, sg = sp * .58, sq = sp * .46, M = o.mag || .5;
+      let out = ''; its.forEach((b, i) => { const c = mid(b), dd = cy - c, g = S ? Math.exp(-Math.pow(dd / sg, 2)) : 0, scl = 1 + M * g * k, pull = dd * Math.exp(-Math.pow(dd / sq, 2)), push = Math.tanh(-dd / (60 * s)) * 16 * s * k * (1 - g);
+        const ac = ((cx - W / 2) * g).toFixed(1), al = (pull * k + push).toFixed(1);
+        if (S) out += `${o.sel(i)}{translate:${X ? al + 'px ' + ac : ac + 'px ' + al}px !important;scale:${scl.toFixed(3)} !important}` + (g > .5 ? `${o.sel(i)} span{color:#fff !important}` : ''); });
+      if (css.textContent !== out) css.textContent = out;
+      const dot = S && S.dot; if (dot) { const D = 2 * r; dot.style.width = dot.style.height = D + 'px'; dot.style.borderRadius = r + 'px';
+        if (X) { dot.style.marginLeft = (-r) + 'px'; dot.style.marginTop = '0px'; dot.style.top = (o.c0 - W / 2 + G) + 'px'; dot.style.left = cy + 'px'; }
+        else { dot.style.marginTop = (-r) + 'px'; dot.style.left = (o.c0 - W / 2 + G) + 'px'; dot.style.top = cy + 'px'; } } }
+    function animA(to, done) { cancelAnimationFrame(raf); const a0 = A, t0 = performance.now();
+      const step = now => { const k = Math.min(1, (now - t0) / 260), e = 1 - Math.pow(1 - k, 3); A = a0 + (to - a0) * e; draw(); magnify(); if (k < 1) raf = requestAnimationFrame(step); else if (done) done(); };
+      raf = requestAnimationFrame(step); }
+    // where each section starts, in the scroller's own units (phones draw the scroller at screen size, iPads inside the scaled page)
+    function begin(e) { const L = o.layer(); sc = scrollerOf(L); if (!sc) { S = null; return; } const r0 = sc.getBoundingClientRect(), u = sc.offsetHeight / (r0.height || 1), map = [];
+      o.items().forEach(b => { const a = o.link(b), sec = a && sc.querySelector((a.getAttribute('href') || '').replace(/[^#\w-]/g, '')); if (!sec || !sec.offsetHeight) return;
+        map.push({ b, a, c: mid(b), top: Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, sc.scrollTop + (sec.getBoundingClientRect().top - r0.top) * u)) }); });
+      if (map.length < 2) { S = null; return; }
+      S.on = true; S.map = map; start(e); }
+    function start(e) { rail.classList.add('frscrub'); sc.__scrub = true; try { if (e.pointerId != null) rail.setPointerCapture(e.pointerId); } catch (_) {}
+      if (sc.__stopSpring) sc.__stopSpring();
+      let dot = rail.querySelector(':scope > .scrubDot'); if (!dot) { dot = document.createElement('em'); dot.className = 'scrubDot'; rail.prepend(dot); } S.dot = dot; dot.style.opacity = '1'; dot.style.transition = 'none';
+      update(e, true); animA(26); try { haptic('select'); } catch (_) {} }
+    function update(e, first) { const M = S.map, ly = Math.max(M[0].c, Math.min(M[M.length - 1].c, local(e))); S.ly = ly;
+      let i = 0; while (i < M.length - 2 && ly > M[i + 1].c) i++; const a = M[i], b = M[i + 1], t = Math.max(0, Math.min(1, (ly - a.c) / (b.c - a.c)));
+      const y = a.top + (b.top - a.top) * t, near = t < .5 ? a : b; if (S.near && S.near !== near) { try { haptic('select'); } catch (_) {} } S.near = near;
+      sc.style.scrollBehavior = 'auto'; sc.scrollTop = y; sc.style.scrollBehavior = '';
+      if (!first && !S.rq) S.rq = requestAnimationFrame(() => { if (S) { S.rq = 0; draw(); magnify(); } }); }
+    function end() { const st = S; S = null; if (!st || !st.on) return; lastEnd = Date.now(); const near = st.near, w0 = 28 * s, d = st.dot;
+      d.style.transition = 'top .3s cubic-bezier(.22,.9,.2,1), left .3s cubic-bezier(.22,.9,.2,1), width .3s, height .3s, margin .3s, opacity .25s .2s'; d.style.width = d.style.height = w0 + 'px';
+      if (X) { d.style.left = near.c + 'px'; d.style.marginLeft = (-w0 / 2) + 'px'; d.style.top = (o.c0 - w0 / 2) + 'px'; } else { d.style.top = near.c + 'px'; d.style.marginTop = (-w0 / 2) + 'px'; d.style.left = (o.c0 - w0 / 2) + 'px'; }
+      d.style.opacity = '0'; rail.classList.add('frsettle');
+      S = { ly: near.c, dot: null, fin: 1 }; animA(0, () => { S = null; rail.classList.remove('frscrub', 'frsettle'); css.textContent = ''; const g = rail.querySelector(':scope > .scrubBg'); if (g) g.remove(); d.remove(); });
+      sc.__scrub = false; near.a.click(); }
+    // moves are read from both pointer and touch events at window level, so iPad Safari can't swallow them on the way to the rail
+    const p0 = e => X ? e.clientX : e.clientY;
+    const mv = e => { if (!S || S.fin) return; if (!S.on) { S.ev = e; if (Math.abs(p0(e) - S.y0) > 6) begin(e); return; } update(e); };
+    const pd = e => { if (!o.active() || S && !S.fin) return; S = { on: false, y0: p0(e), ev: e, pid: e.pointerId }; };
+    const ts = e => { if (S && !S.fin || !o.active()) return; const t = e.touches[0]; S = { on: false, y0: p0(t), ev: { clientX: t.clientX, clientY: t.clientY }, pid: null }; };
+    const pm = e => { if (S && (S.pid == null || S.pid === e.pointerId)) mv(e); };
+    const tm = e => { if (!S) return; const t = e.touches[0]; mv({ clientX: t.clientX, clientY: t.clientY, pointerId: S.pid }); if (S && S.on) e.preventDefault(); };
+    const up = () => { if (!S || S.fin) return; if (S.on) end(); else S = null; };
+    const pu = e => { if (S && (S.pid == null || S.pid === e.pointerId)) up(); };
+    const pc = e => { if (S && S.on && S.pid != null) return; if (S && !S.on) S = null; };
+    const ck = e => { if (e.isTrusted && Date.now() - lastEnd < 450 && e.target.closest && rail.contains(e.target)) { e.stopPropagation(); e.preventDefault(); } };   // (the finger's own click after a scrub)
+    rail.addEventListener('pointerdown', pd); rail.addEventListener('touchstart', ts, { passive: true }); rail.addEventListener('touchmove', tm, { passive: false });
+    rail.addEventListener('touchend', up); rail.addEventListener('touchcancel', up);
+    addEventListener('pointermove', pm, { capture: true, passive: true }); addEventListener('pointerup', pu, true); addEventListener('pointercancel', pc, true); addEventListener('click', ck, true);
+    return () => { removeEventListener('pointermove', pm, { capture: true }); removeEventListener('pointerup', pu, true); removeEventListener('pointercancel', pc, true); removeEventListener('click', ck, true); css.remove(); if (sc) sc.__scrub = false; };
+  }
+  // the page's own side rail (its section links)
+  function frDock(layer) {
+    const rail = layer.querySelector('.board nav'); if (!rail || rail.__dock) return;
+    const its = () => [...rail.querySelectorAll('a[href^="#sec-"]')].filter(a => a.offsetHeight);
+    const off = dock({ rail, ax: 'y', c0: 36, s: 1, layer: () => layer,
+      items: () => { const L = its(); L.forEach((a, i) => { if (a.dataset.fdi !== String(i)) a.dataset.fdi = String(i); }); return L; },
+      link: a => a, sel: i => `.board nav.frscrub a[data-fdi="${i}"]`,
+      active: () => { if (!layer.isConnected || (current && current.layer !== layer)) return false; const r = rail.getBoundingClientRect(), g = getComputedStyle(rail);
+        return r.height > 40 && g.visibility !== 'hidden' && parseFloat(g.opacity) > 0.5 && FR.get('ui') === 'none'; } });
+    if (off) (layer._off = layer._off || []).push(off);
+  }
+  // iPhone upright: the header's sideways progress dots (one per section) work the same way, lying down
+  function phDock(pg) {
+    const links = () => { const CL = current && current.layer; return CL ? [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5))).sort((p, q) => (parseFloat(p.style.top) || 0) - (parseFloat(q.style.top) || 0)) : []; };
+    dock({ rail: pg, ax: 'x', c0: 0, s: 0.56, mag: 1.1, layer: () => current && current.layer,
+      items: () => [...pg.querySelectorAll('b')], link: b => links()[+b.dataset.i], sel: i => `#phdr .ph-prog.frscrub b[data-i="${i}"]`,
+      active: () => pphOn() && !pg.hidden && !!phdr && !phdr.classList.contains('idle') && !phdr.classList.contains('navopen') && FR.get('ui') === 'none' });
+  }
+
   // ---------------- springy section snapping ----------------
   // Pages snap: release between two sections and it springs onto one of them.
   // Sections taller than the screen scroll freely inside; only their edges snap.
@@ -4065,7 +4269,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const onPh = y => { const sp = SP(); return secs.some(el => el.dataset.ph && el.isConnected && Math.abs(el.offsetTop - sp - y) < 3); };
     const zoneAt = y => { if (phHold || onPh(y)) return null; build(); for (const z of Z) if (y > z[0] + 1 && y < z[1] - 1) return z; return null; };
     let anim = 0, touching = false, last = { y: sc.scrollTop, t: performance.now() }, vel = 0, dir = 1, idleT = 0, springing = false; let lastZ = null, relT = 0;
-    const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; sc.style.overflowY = ''; };
+    const stopSpring = () => { if (anim) cancelAnimationFrame(anim); anim = 0; springing = false; sc.style.overflowY = ''; }; sc.__stopSpring = stopSpring;
     const spring = (to, v0) => {
       stopSpring(); springing = true;
       // kill native momentum (iOS) before driving the scroll ourselves
@@ -4099,7 +4303,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const now = performance.now(), y = sc.scrollTop, dt = now - last.t;
       if (!springing && dt > 0) { const nv = (y - last.y) / dt; vel = vel * 0.6 + nv * 0.4; if (Math.abs(y - last.y) > 0.5) dir = Math.sign(y - last.y); }
       last = { y, t: now };
-      if (springing || touching || layer.__gone) return;
+      if (springing || touching || layer.__gone || sc.__scrub) return;   // (the side-rail scrubber drives the scroll itself)
       // a long section scrolls freely, but momentum that glides into the edge between two sections is caught there:
       // it snaps to the next section only when it's still moving fast, otherwise it settles back at the edge it came from
       const zNow = zoneAt(y);
