@@ -92,16 +92,22 @@
   /* scroll reveal for copy */
   .board .rv { opacity: 0; transform: translateY(38px); transition: opacity .9s cubic-bezier(.2,.75,.2,1), transform 1.05s cubic-bezier(.2,.75,.2,1); transition-delay: var(--rvd, 0ms); }
   .board .rv.rv-in { opacity: 1; transform: none; }
-  /* side-rail fast scroller (frDock): dark pill with a bulge, green circle under the finger, dock-style magnify */
+  /* side-rail fast scroller (dock): the title nearest the finger grows; the rail itself stays put */
   .board nav.frscrub, #phdr .ph-prog.frscrub { touch-action: none; }
-  .board nav.frscrub > div, #phdr .ph-prog.frscrub > i { opacity: 0; transition: opacity .2s ease; }
-  .frscrub > .scrubBg { position: absolute; left: 0; top: 0; pointer-events: none; z-index: -1; overflow: visible; filter: drop-shadow(0 6px 18px rgba(0,0,0,.45)); }
-  .scrubDot { position: absolute; left: 6px; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; background: rgba(5,229,175,.24); box-shadow: 0 0 0 1px rgba(5,229,175,.35), 0 0 24px rgba(5,229,175,.25); pointer-events: none; z-index: -1; }
-  #phdr .ph-prog .scrubDot { z-index: 0; }
-  #phdr .ph-prog.frscrub { z-index: 2; isolation: isolate; }
-  #phdr .ph-prog.frscrub b { z-index: 1; }
-  .board nav.frscrub a { transform-origin: 36px 50%; }
-  .board nav.frsettle a, #phdr .ph-prog.frsettle b { transition: translate .3s cubic-bezier(.22,.9,.2,1), scale .3s cubic-bezier(.22,.9,.2,1); }
+  /* while scrubbing, the side rail holds still where the finger found it, with every title showing (a collapsed rail opens up) */
+  .board nav.frscrub { transform: var(--frT) !important; top: var(--frTop) !important; left: var(--frLeft) !important; opacity: 1 !important; visibility: visible !important; transition: none !important; }
+  .board nav.frscrub a > span:last-child { max-width: 420px !important; opacity: 1 !important; }
+  /* ...on a dark panel of its own, so the titles read over whatever the page shows behind them */
+  .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: 30px; width: 250px; bottom: 26px; border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
+  html.pph .board nav.frscrub::before { display: none; }   /* (the iPhone section menu has its own panel) */
+  @keyframes frPanel { from { opacity: 0; } to { opacity: 1; } }
+  .board nav.frscrub a, .board nav.frscrub a > span, #phdr .ph-prog.frscrub b { transition: translate .12s cubic-bezier(.2,.8,.2,1), scale .12s cubic-bezier(.2,.8,.2,1), color .15s ease !important; }
+  .board nav.frsettle a, .board nav.frsettle a > span, #phdr .ph-prog.frsettle b { transition: translate .35s cubic-bezier(.2,.8,.2,1), scale .35s cubic-bezier(.2,.8,.2,1), color .3s ease !important; }
+  #phdr .ph-prog .frtip { position: absolute; top: 16px; left: 0; translate: -50% 0; padding: 7px 13px; border-radius: 15px; background: rgba(20,22,22,.92); border: 1px solid rgba(5,229,175,.45);
+    color: #05E5AF; font: 700 15px/1 'Vivint Sans', Helvetica, Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5); opacity: 0; scale: .8; transform-origin: 50% 0; transition: opacity .18s ease, scale .22s cubic-bezier(.2,.8,.2,1); z-index: 3; }
+  #phdr .ph-prog .frtip.on { opacity: 1; scale: 1; }
+  @media (prefers-reduced-motion: reduce) { #phdr .ph-prog .frtip { scale: 1; transition: opacity .18s ease; } }
   /* the header dots: the whole line is a grip for the scrubber (a tap between dots does nothing) */
   #phdr .ph-prog::before { content: ''; position: absolute; left: -12px; width: calc(100% + 24px); top: -20px; height: 40px; pointer-events: auto; }
   /* pinned section backgrounds: one fixed layer of section photos behind the scrolling page (setupPin) */
@@ -117,6 +123,12 @@
   .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
   .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
   html.safe .pinbg { display: none !important; }
+  /* a full-section dim inside the content (History) scrolls over the pinned photo: its edges are feathered, not hard */
+  .layer.pinon .board [data-name="Wheel backdrop"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.72) 16%, rgba(0,0,0,.72) 84%, rgba(0,0,0,0) 100%) !important; }
+  /* iPad upright: the Hourly comparison rep's face stays on screen */
+  html.tport .pinbg .pbsec[data-sid="sec-hourly-comparison"] img { object-position: 82% 30% !important; }
+  /* iPads: the last section ends above the shared corner menu */
+  html:not(.pph) .layer .board section[id^="sec-"]:last-child { margin-bottom: calc(var(--shpn-foot, 0px) * var(--isc, 1)); }
   /* iPad upright: like iPad landscape, the section photo fills the whole screen behind the content (not just the top) */
   html.tport.pstack .board .pinbg > .pbsec[data-sid] [data-name^="Background"] > :is([data-pb], [data-pf]) { top: 0 !important; height: 100% !important; }
   html.tport.pstack .board .pinbg > .pbsec[data-sid] [data-pb]::before { background: linear-gradient(180deg, rgba(0,0,0,.12) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,.6) 84%, rgba(0,0,0,.9) 100%) !important; }
@@ -1402,6 +1414,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     frame.querySelectorAll('section[id^="sec-"]').forEach(x => applyHr(x));
     if (relayout) frame.querySelectorAll('section[id^="sec-"]').forEach(x => { if (!x.__vout) fitSection(x); });
     if (relayout) frame.querySelectorAll('.layer').forEach(l => { navFor(l); if (l._sdim) l._sdim(); });
+    if (relayout) setTimeout(() => frame.querySelectorAll('.layer').forEach(l => { if (l._pinReset) l._pinReset(); }), 0);   // (a new layout mode: the pinned photos are copied again with its crop)
     if (relayout) saved.forEach(([l, sc, v]) => { if (sc) { sc.__map = null; sc.style.scrollBehavior = 'auto'; sc.scrollTop = rScroll(sc, v); sc.style.scrollBehavior = ''; sc.dispatchEvent(new Event('scroll')); } if (l._vupdate) l._vupdate(true); });
     viewport.style.width = Math.round(FW * scale) + 'px';
     viewport.style.height = Math.round(H * scale) + 'px';
@@ -1583,6 +1596,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (inst && typeof inst.setState === 'function') { const ss = inst.setState; inst.setState = function (u, ...rest) {
       // the header, footer and arrows stay on screen all the time (they no longer fade away when the page is still)
       if (u && typeof u === 'object' && u.hdrHide === true) { u = Object.assign({}, u); delete u.hdrHide; if (!Object.keys(u).length) return; }
+      if (u && typeof u === 'object' && layer.__scrubbing && 'navOpen' in u) { u = Object.assign({}, u); delete u.navOpen; if (!Object.keys(u).length) return; }   // (the side-rail scrubber holds the section menu open)
       return ss.call(this, u, ...rest); }; }
     // upright: a page re-draws itself on scroll at most every 90 ms (plus once when scrolling stops). Every re-draw rebuilds the
     // whole page, and a fast flick fired dozens a second — iPhones ran out of memory and closed the page.
@@ -3327,7 +3341,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const PENI = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4l10.5-10.5-4-4L4 16z M13.5 6.5l4 4"/></svg>';
     const m = document.createElement('div'); m.className = 'dw' + (opts.edit ? ' edit' : ''); m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', 'Menu');
     m.innerHTML = '<div class="dw-scrim"></div><div class="dw-panel"><div class="dw-head">'
-      + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Home</button>'
+      + '<button type="button" class="dw-pill dw-home' + (curFn === 'Main.dc.html' ? ' on' : '') + '">' + DW_ICON.home + 'Recruit home</button>'
       + (FLOW ? '<button type="button" class="dw-pill dw-flow dw-allsec">All Sections' + '<svg class="dw-chev" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg>' + '</button></div>'   // (in the flow: back to every page, staying where you are)
               : validFavs().length ? '<button type="button" class="dw-pill dw-flow">' + DW_ICON.star + 'Custom flow' + '<svg class="dw-chev" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg>' + '</button></div>'
               : '<button type="button" class="dw-pill dw-flow dw-create">Create Custom Flow<svg class="dw-plus" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></button></div>')
@@ -3376,8 +3390,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       m.classList.add('port'); m.classList.toggle('sm', small); m.classList.toggle('short', H < 500);
       Object.assign(pn.style, { left: left0 + g + 'px', top: top0 + g + 'px', width: Math.round(w) + 'px', height: (H - 2 * g) + 'px' });
       const d = small ? 38 : 42, pad = H < 500 ? 12 : small ? 14 : 18, hh = small ? 32 : 36, cy = pad + d / 2;
-      Object.assign(X.style, { left: pad + 'px', top: pad + 'px', width: d + 'px', height: d + 'px' });
-      Object.assign(head.style, { left: (pad + d + 10) + 'px', right: pad + 'px', top: (cy - hh / 2) + 'px', height: hh + 'px' });
+      // close button on the right (the shared corner menu sits on the left), the pills to its left
+      Object.assign(X.style, { left: 'auto', right: pad + 'px', top: pad + 'px', width: d + 'px', height: d + 'px' });
+      Object.assign(head.style, { left: pad + 'px', right: (pad + d + 10) + 'px', top: (cy - hh / 2) + 'px', height: hh + 'px' });
       inn.style.top = Math.round(pad + d + (H < 500 ? 10 : 14)) + 'px';
       const iw = inn.clientWidth - (small ? 28 : 44), ph = Math.min(iw * 9 / 16, (H - 2 * g) * (H < 500 ? 0.3 : 0.32));
       pv.style.width = Math.round(ph * 16 / 9) + 'px'; pv.style.height = Math.round(ph) + 'px';
@@ -4128,6 +4143,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const show = (sec, instant) => {
       const x = sec ? pinSlot(P, sec) : null; if (x === undefined) return false;
       const L = secs(), i = L.indexOf(sec), nx = i >= 0 ? L[i + 1] : null; const nslot = nx ? pinSlot(P, nx) : null; P.next = nslot || null;
+      if (nx && nslot === undefined && nx.__frag) [...nx.__frag.querySelectorAll('[data-name^="Background (stays"] img')].slice(0, 3).forEach(im => { const u = im.dataset.vsrc || im.getAttribute('src'); if (u && u !== BLANK) { const q = new Image(); q.decoding = 'async'; q.src = u; } });   // (next section still parked: warm its photo)
       if (x === P.cur) { imgs(P.next, true); return true; }
       const prev = P.cur; P.cur = x; const tok = ++P.seq;
       if (x) imgs(x, true);
@@ -4144,82 +4160,72 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const onScroll = () => { if (!P.raf) P.raf = requestAnimationFrame(upd); };
     sc.addEventListener('scroll', onScroll, { passive: true });
     layer._pinUpd = () => { P.want = null; onScroll(); };
+    layer._pinReset = () => { P.slots.forEach((x, sec) => { if (x) x.remove(); sec.classList.remove('pinned'); }); P.slots.clear(); P.cur = undefined; P.next = null; P.want = null; P.seq++;
+      const f = pick(); P.want = f; if (!show(f, true)) { P.want = null; setTimeout(onScroll, 200); } };
     (layer._off = layer._off || []).push(() => { sc.removeEventListener('scroll', onScroll); clearTimeout(P.t); clearTimeout(P.ft); cancelAnimationFrame(P.raf); });
     { const first = pick(); P.want = first; if (!show(first, true)) { P.want = null; setTimeout(onScroll, 200); } }
   }
 
-  // ---------------- side rail fast scroller (same as Fast Pitch's fpDock) ----------------
-  // Press and hold (or just drag) on a page's section rail: a green circle rides exactly under the finger, the page flies
-  // through its sections to match, and the rail magnifies like the macOS Dock on a dark pill with a soft bulge on its outer
-  // edge. Letting go settles on the nearest section. A tap is still just a tap (the dock wakes once the finger moves 6px).
-  // Used for the side rail (iPad, and the opened section menu on iPhone) and for the iPhone header's sideways progress dots.
-  // o: rail, items() (elements on the rail, in order), link(el) (its section link), sel(i) (CSS selector of item i), ax ('y' rail
-  //    standing up / 'x' lying down: the pill then bulges downwards), c0 (centre of the dots across the rail), s (size), mag
-  //    (how much the dots grow), layer() (the page it scrolls), active()
+  // ---------------- side rail fast scroller ----------------
+  // Press and drag along a page's section rail: the page flies through its sections to follow the finger, and the section
+  // title nearest the finger grows (green, about 1.45x), its neighbours a little, the rest stay as they are; neighbours are
+  // eased apart so the bigger titles never overlap, and the rail itself doesn't move. A light haptic tick marks each new
+  // section; letting go lands on it and the title eases back. A tap is still just a tap (it wakes after 6px of movement).
+  // Reduced motion: the nearest title is only highlighted, nothing grows or moves.
+  // o: rail, items() (elements along the rail, in order), link(el) (its section link), sel(el) (CSS selector of that item),
+  //    ax ('y' standing up / 'x' lying down: the dots in the iPhone header, which show the nearest title in a small label
+  //    under the finger instead), layer() (the page it scrolls), active()
   function dock(o) {
     const rail = o.rail; if (!rail || rail.__dock) return; rail.__dock = 1;
-    const X = o.ax === 'x', s = o.s || 1; let S = null, A = 0, raf = 0, lastEnd = 0, sc = null;
+    const X = o.ax === 'x'; let S = null, lastEnd = 0, sc = null, tip = null;
     const css = document.createElement('style'); document.head.appendChild(css);
+    const RM = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const along = e => X ? e.clientX : e.clientY;
-    const local = e => { const r = rail.getBoundingClientRect(), L = X ? rail.offsetWidth : rail.offsetHeight, k = (X ? r.width : r.height) / (L || 1) || 1; return (along(e) - (X ? r.left : r.top)) / k; };
-    const mid = b => X ? b.offsetLeft + b.offsetWidth / 2 : b.offsetTop + b.offsetHeight / 2;
-    const G = 6 * s, RMAX = 41 * s, RMIN = 22 * s, PW = 72 * s;
-    const geo = () => { const W = PW, k = A / 26, r = RMIN + (RMAX - RMIN) * k; return { W, k, r, cx: G + r, cy: S && S.ly !== undefined ? S.ly : 0 }; };
-    const smax = (a, b, k) => { const m = Math.max(a, b); return m + k * Math.log(Math.exp((a - m) / k) + Math.exp((b - m) / k)); };
-    const span = () => { const its = o.items(); if (!its.length) return [0, 1]; return [mid(its[0]) - (PW / 2 - G), mid(its[its.length - 1]) + (PW / 2 - G)]; };
-    function draw() { const [t0, t1] = span(), Hh = t1 - t0, { W, k, r, cx } = geo(), cy = geo().cy - t0, R = Math.min(W / 2, 34 * s), Rg = r + G; let svg = rail.querySelector(':scope > .scrubBg');
-      if (!svg) { svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'scrubBg'); svg.innerHTML = '<path fill="#1c1c1c" stroke="rgba(255,255,255,.08)" stroke-width="1"/>'; rail.prepend(svg); }
-      const pad = 90 * s, e0 = 40 * s; svg.setAttribute('width', W + pad); svg.setAttribute('height', Hh + 2 * e0); svg.setAttribute('viewBox', `0 ${-e0} ${W + pad} ${Hh + 2 * e0}`);
-      if (X) { svg.style.left = (t0 - e0) + 'px'; svg.style.top = (o.c0 - W / 2) + 'px'; svg.style.transformOrigin = '0 0'; svg.style.transform = 'matrix(0,1,1,0,0,0)'; }
-      else { svg.style.left = (o.c0 - W / 2) + 'px'; svg.style.top = (t0 - e0) + 'px'; }
-      const edge = y => { const dy = y - cy, c = Math.abs(dy) < Rg ? cx + Math.sqrt(Rg * Rg - dy * dy) : cx - Rg, sh = W + (cx + Rg - W) * .55 * Math.exp(-Math.pow(dy / (Rg * 1.35), 2)); return smax(W, smax(c, sh, 5 * s), 6 * s) - W; };
-      const eT = Math.max(0, Rg - cy) * Math.min(1, k * 1.4), eB = Math.max(0, cy + Rg - Hh) * Math.min(1, k * 1.4), pts = [];
-      const arc = (ax, ay, a0, a1) => { for (let i = 0; i <= 16; i++) { const t = a0 + (a1 - a0) * i / 16; pts.push([ax + R * Math.cos(t), ay + R * Math.sin(t)]); } };
-      arc(W - R, R, -Math.PI / 2, 0); for (let y = R + 2; y < Hh - R; y += 2) pts.push([W, y]); arc(W - R, Hh - R, 0, Math.PI / 2); arc(R, Hh - R, Math.PI / 2, Math.PI); arc(R, R, Math.PI, Math.PI * 1.5);
-      const d = pts.map(([x, y], i) => { const yy = y - eT * Math.max(0, 1 - y / (Rg * 2.2)) + eB * Math.max(0, 1 - (Hh - y) / (Rg * 2.2)), w = Math.max(0, x - W / 2) / (W / 2); return `${i ? 'L' : 'M'} ${(x + edge(yy) * w * w).toFixed(2)} ${yy.toFixed(2)}`; }).join(' ') + ' Z';
-      svg.firstChild.setAttribute('d', d); }
-    // dock magnify: dots near the finger grow and are pulled to the circle's centre; neighbours part to make room
-    // (one small stylesheet: the page re-draws its rail while it scrolls, which would wipe inline styles)
-    function magnify() { const { W, k, r, cx, cy } = geo(), its = o.items(), sp = its.length > 1 ? (mid(its[its.length - 1]) - mid(its[0])) / (its.length - 1) : 52 * s, sg = sp * .58, sq = sp * .46, M = o.mag || .5;
-      let out = ''; its.forEach((b, i) => { const c = mid(b), dd = cy - c, g = S ? Math.exp(-Math.pow(dd / sg, 2)) : 0, scl = 1 + M * g * k, pull = dd * Math.exp(-Math.pow(dd / sq, 2)), push = Math.tanh(-dd / (60 * s)) * 16 * s * k * (1 - g);
-        const ac = ((cx - W / 2) * g).toFixed(1), al = (pull * k + push).toFixed(1);
-        if (S) out += `${o.sel(i)}{translate:${X ? al + 'px ' + ac : ac + 'px ' + al}px !important;scale:${scl.toFixed(3)} !important}` + (g > .5 ? `${o.sel(i)} span{color:#fff !important}` : ''); });
+    const mid = b => { const r = b.getBoundingClientRect(); return X ? r.left + r.width / 2 : r.top + r.height / 2; };   // (screen px, read once when the drag starts)
+    const title = a => { const sp = a && a.querySelector(':scope > span:last-child'); return ((sp || a || {}).textContent || '').replace(/coming soon/i, '').trim(); };
+    // titles near the finger grow with a smooth falloff; the ones around them are eased apart to make room
+    function paint() { if (!S || !S.map) { if (css.textContent) css.textContent = ''; return; }
+      const M = S.map, sp = M.length > 1 ? (M[M.length - 1].c - M[0].c) / (M.length - 1) : 50, rm = RM(), kk = S.k || 1; let out = '';
+      M.forEach((m, i) => { const dd = m.c - S.ly, g = Math.exp(-Math.pow(dd / (sp * 0.7), 2)), near = m === S.near;
+        if (X) { out += `${o.sel(m.b)}{scale:${rm ? 1 : (1 + 0.9 * g).toFixed(3)} !important;${near ? 'background:#05E5AF !important;border-color:#05E5AF !important;' : ''}}`; return; }
+        const k = rm ? 0 : 1, scl = 1 + 0.45 * g * k, push = k * Math.tanh(dd / sp) * 0.18 * (sp / kk) * (1 - g);   // (push: neighbours move away from the grown title)
+        out += `${o.sel(m.b)}{translate:0 ${push.toFixed(1)}px !important}`
+          + `${o.sel(m.b)} > span:last-child{transform-origin:0 50% !important;scale:${scl.toFixed(3)} !important;${near ? 'color:#05E5AF !important;opacity:1 !important;max-width:420px !important;' : g > .3 ? 'color:#fff !important;opacity:1 !important;max-width:420px !important;' : ''}}`   // (a collapsed rail shows the titles near the finger too)
+          + (near && !rm ? `${o.sel(m.b)} > span:first-child{scale:1.2 !important}` : ''); });
       if (css.textContent !== out) css.textContent = out;
-      const dot = S && S.dot; if (dot) { const D = 2 * r; dot.style.width = dot.style.height = D + 'px'; dot.style.borderRadius = r + 'px';
-        if (X) { dot.style.marginLeft = (-r) + 'px'; dot.style.marginTop = '0px'; dot.style.top = (o.c0 - W / 2 + G) + 'px'; dot.style.left = cy + 'px'; }
-        else { dot.style.marginTop = (-r) + 'px'; dot.style.left = (o.c0 - W / 2 + G) + 'px'; dot.style.top = cy + 'px'; } } }
-    function animA(to, done) { cancelAnimationFrame(raf); const a0 = A, t0 = performance.now();
-      const step = now => { const k = Math.min(1, (now - t0) / 260), e = 1 - Math.pow(1 - k, 3); A = a0 + (to - a0) * e; draw(); magnify(); if (k < 1) raf = requestAnimationFrame(step); else if (done) done(); };
-      raf = requestAnimationFrame(step); }
+      if (X && tip) { const n = S.near; if (tip.textContent !== title(n.a)) tip.textContent = title(n.a); tip.style.left = ((S.ly - S.r0) / kk) + 'px'; } }
     // where each section starts, in the scroller's own units (phones draw the scroller at screen size, iPads inside the scaled page)
     function begin(e) { const L = o.layer(); sc = scrollerOf(L); if (!sc) { S = null; return; } const r0 = sc.getBoundingClientRect(), u = sc.offsetHeight / (r0.height || 1), map = [];
-      o.items().forEach(b => { const a = o.link(b), sec = a && sc.querySelector((a.getAttribute('href') || '').replace(/[^#\w-]/g, '')); if (!sec || !sec.offsetHeight) return;
-        map.push({ b, a, c: mid(b), top: Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, sc.scrollTop + (sec.getBoundingClientRect().top - r0.top) * u)) }); });
+      o.items().forEach((b, i) => { const a = o.link(b), sec = a && sc.querySelector((a.getAttribute('href') || '').replace(/[^#\w-]/g, '')); if (!sec || !sec.offsetHeight) return;
+        map.push({ b, a, i, c: mid(b), top: Math.max(0, Math.min(sc.scrollHeight - sc.clientHeight, sc.scrollTop + (sec.getBoundingClientRect().top - r0.top) * u)) }); });
       if (map.length < 2) { S = null; return; }
-      S.on = true; S.map = map; start(e); }
-    function start(e) { rail.classList.add('frscrub'); sc.__scrub = true; try { if (e.pointerId != null) rail.setPointerCapture(e.pointerId); } catch (_) {}
+      S.on = true; S.map = map; { const rr = rail.getBoundingClientRect(); S.r0 = X ? rr.left : rr.top; S.k = (X ? rr.width / (rail.offsetWidth || 1) : rr.height / (rail.offsetHeight || 1)) || 1; }
+      // the rail is held as it is while the finger is on it: its position and size are pinned (the page may re-draw it as it scrolls)
+      { const g = getComputedStyle(rail); rail.style.setProperty('--frT', g.transform === 'none' ? 'none' : g.transform); rail.style.setProperty('--frTop', g.top); rail.style.setProperty('--frLeft', g.left); }
+      rail.classList.remove('frsettle'); rail.classList.add('frscrub'); sc.__scrub = true; if (L) L.__scrubbing = true;
+      try { if (e.pointerId != null) rail.setPointerCapture(e.pointerId); } catch (_) {}
       if (sc.__stopSpring) sc.__stopSpring();
-      let dot = rail.querySelector(':scope > .scrubDot'); if (!dot) { dot = document.createElement('em'); dot.className = 'scrubDot'; rail.prepend(dot); } S.dot = dot; dot.style.opacity = '1'; dot.style.transition = 'none';
-      update(e, true); animA(26); try { haptic('select'); } catch (_) {} }
-    function update(e, first) { const M = S.map, ly = Math.max(M[0].c, Math.min(M[M.length - 1].c, local(e))); S.ly = ly;
+      if (X) { tip = rail.querySelector(':scope > .frtip') || rail.appendChild(Object.assign(document.createElement('span'), { className: 'frtip' })); tip.classList.add('on'); }
+      update(e); }
+    function update(e) { const M = S.map, ly = Math.max(M[0].c, Math.min(M[M.length - 1].c, along(e))); S.ly = ly;
       let i = 0; while (i < M.length - 2 && ly > M[i + 1].c) i++; const a = M[i], b = M[i + 1], t = Math.max(0, Math.min(1, (ly - a.c) / (b.c - a.c)));
-      const y = a.top + (b.top - a.top) * t, near = t < .5 ? a : b; if (S.near && S.near !== near) { try { haptic('select'); } catch (_) {} } S.near = near;
-      sc.style.scrollBehavior = 'auto'; sc.scrollTop = y; sc.style.scrollBehavior = '';
-      if (!first && !S.rq) S.rq = requestAnimationFrame(() => { if (S) { S.rq = 0; draw(); magnify(); } }); }
-    function end() { const st = S; S = null; if (!st || !st.on) return; lastEnd = Date.now(); const near = st.near, w0 = 28 * s, d = st.dot;
-      d.style.transition = 'top .3s cubic-bezier(.22,.9,.2,1), left .3s cubic-bezier(.22,.9,.2,1), width .3s, height .3s, margin .3s, opacity .25s .2s'; d.style.width = d.style.height = w0 + 'px';
-      if (X) { d.style.left = near.c + 'px'; d.style.marginLeft = (-w0 / 2) + 'px'; d.style.top = (o.c0 - w0 / 2) + 'px'; } else { d.style.top = near.c + 'px'; d.style.marginTop = (-w0 / 2) + 'px'; d.style.left = (o.c0 - w0 / 2) + 'px'; }
-      d.style.opacity = '0'; rail.classList.add('frsettle');
-      S = { ly: near.c, dot: null, fin: 1 }; animA(0, () => { S = null; rail.classList.remove('frscrub', 'frsettle'); css.textContent = ''; const g = rail.querySelector(':scope > .scrubBg'); if (g) g.remove(); d.remove(); });
-      sc.__scrub = false; near.a.click(); }
+      const near = t < .5 ? a : b; if (S.near !== near) { if (S.near) { try { haptic('select'); } catch (_) {} } S.near = near; }
+      S.y = a.top + (b.top - a.top) * t;
+      // one scroll write and one style write per frame, however many moves arrive in between
+      if (!S.rq) S.rq = requestAnimationFrame(() => { if (!S) return; S.rq = 0; if (Math.abs(sc.scrollTop - S.y) > 0.5) { sc.style.scrollBehavior = 'auto'; sc.scrollTop = S.y; sc.style.scrollBehavior = ''; } paint(); }); }
+    function end() { const st = S; S = null; if (!st || !st.on) return; lastEnd = Date.now(); if (st.rq) cancelAnimationFrame(st.rq);
+      rail.classList.add('frsettle'); css.textContent = ''; if (tip) tip.classList.remove('on');
+      if (Math.abs(sc.scrollTop - st.y) > 0.5) sc.scrollTop = st.y;
+      setTimeout(() => { if (!S) rail.classList.remove('frscrub', 'frsettle'); }, 380);
+      sc.__scrub = false; const L = o.layer(); if (L) L.__scrubbing = false; st.near.a.click(); }
     // moves are read from both pointer and touch events at window level, so iPad Safari can't swallow them on the way to the rail
     const p0 = e => X ? e.clientX : e.clientY;
-    const mv = e => { if (!S || S.fin) return; if (!S.on) { S.ev = e; if (Math.abs(p0(e) - S.y0) > 6) begin(e); return; } update(e); };
-    const pd = e => { if (!o.active() || S && !S.fin) return; S = { on: false, y0: p0(e), ev: e, pid: e.pointerId }; };
-    const ts = e => { if (S && !S.fin || !o.active()) return; const t = e.touches[0]; S = { on: false, y0: p0(t), ev: { clientX: t.clientX, clientY: t.clientY }, pid: null }; };
+    const mv = e => { if (!S) return; if (!S.on) { if (Math.abs(p0(e) - S.y0) > 6) begin(e); return; } update(e); };
+    const pd = e => { if (!o.active() || S) return; S = { on: false, y0: p0(e), pid: e.pointerId }; };
+    const ts = e => { if (S || !o.active()) return; const t = e.touches[0]; S = { on: false, y0: p0(t), pid: null }; };
     const pm = e => { if (S && (S.pid == null || S.pid === e.pointerId)) mv(e); };
     const tm = e => { if (!S) return; const t = e.touches[0]; mv({ clientX: t.clientX, clientY: t.clientY, pointerId: S.pid }); if (S && S.on) e.preventDefault(); };
-    const up = () => { if (!S || S.fin) return; if (S.on) end(); else S = null; };
+    const up = () => { if (!S) return; if (S.on) end(); else S = null; };
     const pu = e => { if (S && (S.pid == null || S.pid === e.pointerId)) up(); };
     const pc = e => { if (S && S.on && S.pid != null) return; if (S && !S.on) S = null; };
     const ck = e => { if (e.isTrusted && Date.now() - lastEnd < 450 && e.target.closest && rail.contains(e.target)) { e.stopPropagation(); e.preventDefault(); } };   // (the finger's own click after a scrub)
@@ -4232,9 +4238,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function frDock(layer) {
     const rail = layer.querySelector('.board nav'); if (!rail || rail.__dock) return;
     const its = () => [...rail.querySelectorAll('a[href^="#sec-"]')].filter(a => a.offsetHeight);
-    const off = dock({ rail, ax: 'y', c0: 36, s: 1, layer: () => layer,
-      items: () => { const L = its(); L.forEach((a, i) => { if (a.dataset.fdi !== String(i)) a.dataset.fdi = String(i); }); return L; },
-      link: a => a, sel: i => `.board nav.frscrub a[data-fdi="${i}"]`,
+    const off = dock({ rail, ax: 'y', layer: () => layer,
+      items: its, link: a => a, sel: a => `.board nav.frscrub a[href="${a.getAttribute('href')}"]`,   // (by its link: the page re-draws the rail and drops added attributes)
       active: () => { if (!layer.isConnected || (current && current.layer !== layer)) return false; const r = rail.getBoundingClientRect(), g = getComputedStyle(rail);
         return r.height > 40 && g.visibility !== 'hidden' && parseFloat(g.opacity) > 0.5 && FR.get('ui') === 'none'; } });
     if (off) (layer._off = layer._off || []).push(off);
@@ -4242,8 +4247,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   // iPhone upright: the header's sideways progress dots (one per section) work the same way, lying down
   function phDock(pg) {
     const links = () => { const CL = current && current.layer; return CL ? [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5))).sort((p, q) => (parseFloat(p.style.top) || 0) - (parseFloat(q.style.top) || 0)) : []; };
-    dock({ rail: pg, ax: 'x', c0: 0, s: 0.56, mag: 1.1, layer: () => current && current.layer,
-      items: () => [...pg.querySelectorAll('b')], link: b => links()[+b.dataset.i], sel: i => `#phdr .ph-prog.frscrub b[data-i="${i}"]`,
+    dock({ rail: pg, ax: 'x', layer: () => current && current.layer,
+      items: () => [...pg.querySelectorAll('b')], link: b => links()[+b.dataset.i], sel: b => `#phdr .ph-prog.frscrub b[data-i="${b.dataset.i}"]`,
       active: () => pphOn() && !pg.hidden && !!phdr && !phdr.classList.contains('idle') && !phdr.classList.contains('navopen') && FR.get('ui') === 'none' });
   }
 
