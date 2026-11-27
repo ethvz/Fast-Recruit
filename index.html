@@ -101,6 +101,10 @@
   /* ...on a dark panel of its own, so the titles read over whatever the page shows behind them */
   .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: var(--frPT, 30px); width: var(--frPW, 340px); height: var(--frPH, 600px); border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
   @keyframes frPanel { from { opacity: 0; } to { opacity: 1; } }
+  /* an opened section menu (upright screens) already has its box: while scrubbing it keeps its own top and bottom (it covers
+     the whole list) and only grows wide enough for the grown titles; on an iPad's title screen it shows too */
+  html.pstack .layer.pnav-open .board nav.frscrub::before { height: auto; right: auto; width: calc(var(--frPW, 340px) + 28px); }
+  html.pstack:not(.pph) .layer.pnav-open.at-title .board nav.frscrub::before { display: block; }
   .board nav.frscrub a, .board nav.frscrub a > span, #phdr .ph-prog.frscrub b { transition: translate .12s cubic-bezier(.2,.8,.2,1), scale .12s cubic-bezier(.2,.8,.2,1), color .15s ease !important; }
   .board nav.frsettle a, .board nav.frsettle a > span, #phdr .ph-prog.frsettle b { transition: translate .35s cubic-bezier(.2,.8,.2,1), scale .35s cubic-bezier(.2,.8,.2,1), color .3s ease !important; }
   #phdr .ph-prog .frtip { position: absolute; top: 16px; left: 0; translate: -50% 0; padding: 7px 13px; border-radius: 15px; background: rgba(20,22,22,.92); border: 1px solid rgba(5,229,175,.45);
@@ -127,6 +131,10 @@
   .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
   .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
   html.safe .pinbg { display: none !important; }
+  .frband { display: none; }
+  html:not(.pph) .layer.pinon .board .frband { display: block; position: absolute; left: 0; width: var(--FW, 1466px); pointer-events: none; }
+  html:not(.pph) .layer.pinon .board .frband-t { top: 0; height: 150px; background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.82) 45%, rgba(0,0,0,.35) 78%, rgba(0,0,0,0) 100%); }
+  html:not(.pph) .layer.pinon .board .frband-b { top: calc(var(--H, 1024px) - 190px - var(--sabd, 0px)); height: calc(190px + var(--sabd, 0px)); background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 30%, rgba(0,0,0,.9) 62%, rgba(0,0,0,.96) 100%); }
   /* only the section on screen shows its star / Sales rules (a neighbour's pinned buttons never stack under them) */
   .layer.pinon .board section[id^="sec-"]:not(.frcur) > .favpin { opacity: 0 !important; pointer-events: none !important; }
   .layer.pinon .board section[id^="sec-"] > .favpin { transition: opacity .2s ease; }
@@ -1613,6 +1621,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (inst && typeof inst.onScroll === 'function' && PSTACK) { const orig = inst.onScroll; let last = 0, tm = 0, tgt = null;
       const fire = () => { tm = 0; last = Date.now(); if (tgt) orig.call(inst, { currentTarget: tgt, target: tgt }); };
       inst.onScroll = function (e) { tgt = e.currentTarget || e.target; if (!pstackOn()) return orig.call(inst, e);
+        if (layer.__scrubbing && PHONE) { clearTimeout(tm); tm = setTimeout(fire, 140); return; }   // (side-rail scrub on a phone: re-draw once the finger rests)
         const now = Date.now(); clearTimeout(tm); if (now - last >= 90) fire(); else tm = setTimeout(fire, 90 - (now - last)); }; }
     portraitize(host, inst);
     const map = {};
@@ -4157,6 +4166,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (secs().length < 2) return;
     pinCss();
     const root = sc.parentElement, box = document.createElement('div'); box.className = 'pinbg'; box.setAttribute('aria-hidden', 'true'); root.insertBefore(box, root.firstChild);
+    // content scrolling under the header or the bottom row fades into a dark band instead of running into the buttons
+    ['frband-t', 'frband-b'].forEach(c => { const d = document.createElement('div'); d.className = 'frband ' + c; d.setAttribute('aria-hidden', 'true'); sc.after(d); });
     const P = layer.__pin = { box, slots: new Map(), cur: undefined, next: null, want: null, t: 0, ft: 0, raf: 0, seq: 0 };
     layer.classList.add('pinon');
     const imgs = (x, on) => { if (x) x.querySelectorAll('img[data-psrc]').forEach(im => { if (on) { if (im.getAttribute('src') !== im.dataset.psrc) im.setAttribute('src', im.dataset.psrc); } else if (im.hasAttribute('src')) im.removeAttribute('src'); }); };
@@ -4219,7 +4230,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           + `${o.sel(m.b)} > span:last-child{transform-origin:0 50% !important;scale:${scl.toFixed(3)} !important;${near ? 'color:#05E5AF !important;opacity:1 !important;max-width:420px !important;' : g > .3 ? 'color:#fff !important;opacity:1 !important;max-width:420px !important;' : ''}}`   // (a collapsed rail shows the titles near the finger too)
           + (near && !rm ? `${o.sel(m.b)} > span:first-child{scale:1.2 !important}` : ''); });
       if (css.textContent !== out) css.textContent = out;
-      if (PHONE && S.near !== S.cardOff) { let cd = document.getElementById('frcard'); if (!cd) { cd = document.createElement('div'); cd.id = 'frcard'; cd.setAttribute('aria-hidden', 'true'); document.body.appendChild(cd); }
+      if (PHONE && X && S.near !== S.cardOff) { let cd = document.getElementById('frcard'); if (!cd) { cd = document.createElement('div'); cd.id = 'frcard'; cd.setAttribute('aria-hidden', 'true'); document.body.appendChild(cd); }
         const tt = title(S.near.a); if (cd.textContent !== tt) cd.textContent = tt; if (!cd.classList.contains('on')) cd.classList.add('on'); }
       if (X && tip) { const n = S.near; if (tip.textContent !== title(n.a)) { tip.textContent = title(n.a); S.tw = tip.offsetWidth; }
         const hw = (S.tw || 0) / 2 + 8, x = Math.max(hw, Math.min(innerWidth - hw, S.ly)); tip.style.left = ((x - S.r0) / kk) + 'px'; } }
@@ -4232,7 +4243,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       // the rail is held as it is while the finger is on it: its position and size are pinned (the page may re-draw it as it scrolls)
       rail.classList.remove('frsettle'); rail.classList.add('frscrub'); sc.__scrub = true; if (L) L.__scrubbing = true;
       // the panel behind the titles is as wide as the longest title will grow (measured with the titles open)
-      if (!X) { const rr = rail.getBoundingClientRect(); let w = 0, t = 1e9, b = -1e9; S.map.forEach(m => { const q0 = m.a.getBoundingClientRect(); t = Math.min(t, (q0.top - rr.top) / S.k); b = Math.max(b, (q0.bottom - rr.top) / S.k); const sp = m.a.querySelector(':scope > span:last-child'); if (!sp) return; const q = sp.getBoundingClientRect(); w = Math.max(w, (q.left - rr.left) / S.k + (q.width / S.k) * 1.55); });
+      if (!X) { const rr = rail.getBoundingClientRect(); let w = 0, t = 1e9, b = -1e9; [...rail.querySelectorAll('a')].filter(a => a.offsetHeight).forEach(a => { const q0 = a.getBoundingClientRect(); t = Math.min(t, (q0.top - rr.top) / S.k); b = Math.max(b, (q0.bottom - rr.top) / S.k); const sp = a.querySelector(':scope > span:last-child'); if (!sp) return; const q = sp.getBoundingClientRect(); w = Math.max(w, (q.left - rr.left) / S.k + (q.width / S.k) * 1.45 * 1.3); });   // (x1.3: the page also draws the current title larger)
         rail.style.setProperty('--frPW', Math.round(w + 40) + 'px'); rail.style.setProperty('--frPT', Math.round(t - 22) + 'px'); rail.style.setProperty('--frPH', Math.round(b - t + 44) + 'px'); }
       S.a0 = mid(S.map[0].b); S.title0 = !!(L && L._inst && L._inst.state && L._inst.state.navOpen !== false);
       try { if (e.pointerId != null) rail.setPointerCapture(e.pointerId); } catch (_) {}
