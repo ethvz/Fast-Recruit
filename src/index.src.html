@@ -130,6 +130,8 @@
   .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
   .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
   html.safe .pinbg { display: none !important; }
+  /* iPad upright: the bottom row (page pills, Create Custom Flow) at a proper touch size, each pill growing from its own corner */
+  html.tport .layer.pinon .board .pdown > * { scale: var(--pk, 1); }
   /* iPads: while a long section's content runs past the bottom of the screen, the bottom row (page pills, Create Custom
      Flow) steps away; it comes back on the section's last screen and on one-screen sections */
   html:not(.pph) .layer.pinon .board :is(.pdown, .pgflow) { transition: opacity .25s ease; }
@@ -1435,7 +1437,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const ncs = pphOn() ? Math.max(1, Math.min(2.2, 0.54 / scale)) : PHONE && (!portrait || stk) ? Math.max(1, Math.min(2.4, 0.6 / scale)) : 1;
     document.documentElement.style.setProperty('--sat', safeTop + 'px'); document.documentElement.style.setProperty('--sab', safeBot + 'px');
     if (ncs !== CS || (oldH !== H && !(stk && wasStk && Math.abs(oldH - H) < 400))) { CS = ncs; frame.querySelectorAll('.layer').forEach(phoneChrome); }
-    const st2 = frame.style; st2.setProperty('--isc', (1 / scale).toFixed(4)); st2.setProperty('--SH', H + 'px'); st2.setProperty('--fsc', scale.toFixed(5)); st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px'); st2.setProperty('--sabd', Math.round(safeBot / scale) + 'px');
+    const st2 = frame.style; st2.setProperty('--isc', (1 / scale).toFixed(4)); st2.setProperty('--SH', H + 'px'); st2.setProperty('--fsc', scale.toFixed(5)); st2.setProperty('--H', H + 'px'); st2.setProperty('--E', (stk ? 0 : H - 1024) + 'px'); st2.setProperty('--CS', CS); st2.setProperty('--SP', SP() + 'px'); st2.setProperty('--dy', (H - 1024) + 'px'); st2.setProperty('--dyh', ((H - 1024) / 2) + 'px'); st2.setProperty('--sabd', Math.round(safeBot / scale) + 'px'); st2.setProperty('--pk', (pstackOn() && !PHONE ? Math.min(1.9, 1 / scale) : 1).toFixed(3));   // (iPad upright: bottom row at full touch size)
     // Re-laying out every page is only needed when the layout mode changes. On an upright iPhone, Safari's toolbars
     // growing/shrinking while you scroll change the height many times a second: then only the sizes above update
     // (sections keep their size in that mode), otherwise the whole page was rebuilt mid-scroll and Safari ran out of memory.
@@ -2029,7 +2031,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const key = scale.toFixed(4) + ':' + H; if (S.key === key) return S.res;
     const RC = PGRID[sec.id] && PGRID[sec.id](PHONE);
     const pfit = PHONE && !!PFIT[sec.id]; let one = S.h <= 1100 || !!(RC && RC.fit) || pfit; const PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
-    const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 130, GAP = PHONE ? 26 / scale : 70;
+    const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 245,   // (iPads upright: room for the full-size bottom row)
+      GAP = PHONE ? 26 / scale : 70;
     // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
     const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
     const cw = c => c.x1 - c.x0, ok = w => !PHONE || !!PSPLIT[sec.id] || CW / Math.max(1, w) * scale >= READ;
@@ -4206,8 +4209,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (P.curSec !== sec) { if (P.curSec) P.curSec.classList.remove('frcur'); sec.classList.add('frcur'); P.curSec = sec; try { navSec(layer, sec); } catch (e) {} }   // (only this section's star shows)
       P.want = sec; clearTimeout(P.t);
       P.t = setTimeout(() => { if (P.want !== sec) return; if (!show(sec)) { P.want = null; P.t = setTimeout(() => { if (!P.raf) P.raf = requestAnimationFrame(upd); }, 220); } }, 140); };
-    const rowChk = () => { if (PHONE || upright) { if (layer.classList.contains('rowoff')) layer.classList.remove('rowoff'); return; } const sec = P.curSec; let off = false;
-      if (sec && (+sec.dataset.h || 1024) > 1100) { const r = sec.getBoundingClientRect(), v = sc.getBoundingClientRect(); off = r.bottom > v.bottom + 8; }
+    const rowChk = () => { if (PHONE) { if (layer.classList.contains('rowoff')) layer.classList.remove('rowoff'); return; } const sec = P.curSec; let off = false;
+      if (sec && ((+sec.dataset.h || 1024) > 1100 || upright)) { const r = sec.getBoundingClientRect(), v = sc.getBoundingClientRect(); off = r.bottom > v.bottom + 8; }
       if (layer.classList.contains('rowoff') !== off) layer.classList.toggle('rowoff', off); };
     const onScroll = () => { if (!P.raf) P.raf = requestAnimationFrame(() => { upd(); rowChk(); }); };
     sc.addEventListener('scroll', onScroll, { passive: true });
@@ -4216,6 +4219,11 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const f = pick(); P.want = f; if (!show(f, true)) { P.want = null; setTimeout(onScroll, 200); } };
     (layer._off = layer._off || []).push(() => { sc.removeEventListener('scroll', onScroll); clearTimeout(P.t); clearTimeout(P.ft); cancelAnimationFrame(P.raf); });
     setTimeout(rowChk, 300);
+    const pillOrigins = () => { const kids = [...layer.querySelectorAll('.board .pdown > *')].filter(e => e.offsetWidth || e.offsetHeight); if (!kids.length) return;
+      [false, true].forEach(right => { const g = kids.filter(e => e.classList.contains('fx-r') === right), pills = g.filter(e => e.dataset.name === 'Glass arrow pill'); if (!g.length) return;
+        const ref = pills.length ? pills : g, ax = right ? Math.max(...ref.map(e => e.offsetLeft + e.offsetWidth)) : Math.min(...ref.map(e => e.offsetLeft)), ay = Math.max(...ref.map(e => e.offsetTop + e.offsetHeight));
+        g.forEach(e => { e.style.transformOrigin = (ax - e.offsetLeft) + 'px ' + (ay - e.offsetTop) + 'px'; }); }); };
+    pillOrigins(); setTimeout(pillOrigins, 600);
     { const first = pick(); P.want = first; if (first) { first.classList.add('frcur'); P.curSec = first; } if (!show(first, true)) { P.want = null; setTimeout(onScroll, 200); } }
   }
 
@@ -4505,7 +4513,10 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const size = r ? Math.max(34, Math.min(54, Math.round(r.height * 0.96))) : 44;
       b.style.width = b.style.height = size + 'px'; b.style.marginLeft = (-size / 2) + 'px';
       b.firstChild.style.width = b.firstChild.style.height = Math.round(size * 0.66) + 'px';
-      if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
+      // (iPad upright: the full-size page pills leave no room between them, so the arrow sits level with Create Custom Flow)
+      const cf = document.documentElement.classList.contains('tport') && host.querySelector('.pgflow'), cr = cf && cf.getBoundingClientRect();
+      if (cr && cr.width > 0) { b.style.top = (cr.top + cr.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
+      else if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
       else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(var(--sab, 0px) + 70px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
