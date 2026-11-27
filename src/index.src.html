@@ -130,6 +130,15 @@
   .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
   .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
   html.safe .pinbg { display: none !important; }
+  /* iPads: while a long section's content runs past the bottom of the screen, the bottom row (page pills, Create Custom
+     Flow) steps away; it comes back on the section's last screen and on one-screen sections */
+  html:not(.pph) .layer.pinon .board :is(.pdown, .pgflow) { transition: opacity .25s ease; }
+  html:not(.pph) .layer.pinon.rowoff .board :is(.pdown, .pgflow) { opacity: 0 !important; pointer-events: none !important; }
+  /* iPhone: content scrolling under the header (corner menu, FAQs, Guide, section dots) or the tab bar fades into black */
+  html.pph #phdr.on::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: calc(var(--sat, 0px) + 185px); z-index: -1; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,.96) 0%, rgba(0,0,0,.93) 62%, rgba(0,0,0,.6) 82%, rgba(0,0,0,0) 100%); }
+  html.pph #pfoot.on::before { content: ''; position: absolute; left: -12px; right: -12px; bottom: calc(-10px - var(--sab, 0px)); height: calc(var(--sab, 0px) + 130px); z-index: -1; pointer-events: none;
+    background: linear-gradient(0deg, rgba(0,0,0,.94) 0%, rgba(0,0,0,.85) 50%, rgba(0,0,0,0) 100%); }
   .frband { display: none; }
   html:not(.pph) .layer.pinon .board .frband { display: block; position: absolute; left: 0; width: var(--FW, 1466px); pointer-events: none; }
   html:not(.pph) .layer.pinon .board .frband-t { top: 0; height: 150px; background: linear-gradient(180deg, rgba(0,0,0,.92) 0%, rgba(0,0,0,.82) 45%, rgba(0,0,0,.35) 78%, rgba(0,0,0,0) 100%); }
@@ -1894,7 +1903,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (!on && !upright && !PHONE) { const RB = rowTopOf(layer); if (RB) {
       const ck = 'rsv:' + (layer._fn || '') + '#' + sec.id; if (!spanCache.has(ck)) { const pt = w.style.translate, ps = w.style.scale; w.style.translate = ''; w.style.scale = ''; const sp = contentSpan(w); w.style.translate = pt; w.style.scale = ps; if (sp && sp[3] > sp[2]) spanCache.set(ck, sp); }
       const sp = spanCache.get(ck);
-      if (sp) { const T = sp[2], B = sp[3], lim = (+sec.dataset.h || 1024) - 1024 + RB - 18; /* (a long section: its last screen ends above the row) */ if (B > lim) { const k = Math.max(0.78, (lim - T) / (B - T)); w.style.transformOrigin = '733px ' + T.toFixed(0) + 'px'; w.style.scale = k.toFixed(3); } } } }
+      if (sp) { const T = sp[2], B = sp[3], lim = (+sec.dataset.h || 1024) - H + RB - 18; /* (a long section: its last screen ends above the row) */ if (B > lim) { const k = Math.max(0.78, (lim - T) / (B - T)); w.style.transformOrigin = '733px ' + T.toFixed(0) + 'px'; w.style.scale = k.toFixed(3); } } } }
   }
   // top of the bottom row (page pills, Create Custom Flow) in design pixels
   function rowTopOf(layer) {
@@ -4193,12 +4202,16 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (P.curSec !== sec) { if (P.curSec) P.curSec.classList.remove('frcur'); sec.classList.add('frcur'); P.curSec = sec; try { navSec(layer, sec); } catch (e) {} }   // (only this section's star shows)
       P.want = sec; clearTimeout(P.t);
       P.t = setTimeout(() => { if (P.want !== sec) return; if (!show(sec)) { P.want = null; P.t = setTimeout(() => { if (!P.raf) P.raf = requestAnimationFrame(upd); }, 220); } }, 140); };
-    const onScroll = () => { if (!P.raf) P.raf = requestAnimationFrame(upd); };
+    const rowChk = () => { if (PHONE || upright) { if (layer.classList.contains('rowoff')) layer.classList.remove('rowoff'); return; } const sec = P.curSec; let off = false;
+      if (sec && (+sec.dataset.h || 1024) > 1100) { const r = sec.getBoundingClientRect(), v = sc.getBoundingClientRect(); off = r.bottom > v.bottom + 8; }
+      if (layer.classList.contains('rowoff') !== off) layer.classList.toggle('rowoff', off); };
+    const onScroll = () => { if (!P.raf) P.raf = requestAnimationFrame(() => { upd(); rowChk(); }); };
     sc.addEventListener('scroll', onScroll, { passive: true });
     layer._pinUpd = () => { P.want = null; onScroll(); };
     layer._pinReset = () => { P.slots.forEach((x, sec) => { if (x) x.remove(); sec.classList.remove('pinned'); }); P.slots.clear(); P.cur = undefined; P.next = null; P.want = null; P.seq++;
       const f = pick(); P.want = f; if (!show(f, true)) { P.want = null; setTimeout(onScroll, 200); } };
     (layer._off = layer._off || []).push(() => { sc.removeEventListener('scroll', onScroll); clearTimeout(P.t); clearTimeout(P.ft); cancelAnimationFrame(P.raf); });
+    setTimeout(rowChk, 300);
     { const first = pick(); P.want = first; if (first) { first.classList.add('frcur'); P.curSec = first; } if (!show(first, true)) { P.want = null; setTimeout(onScroll, 200); } }
   }
 
