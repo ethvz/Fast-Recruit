@@ -60,6 +60,14 @@
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > p { color: #16191a !important; }
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > svg:not([data-name^="Ellipse"]) :is(path, line, polyline) { fill: #16191a !important; stroke-opacity: 1; }
   .layer:not([data-fn="Main.dc.html"]) .board :has(> [data-name="Glass arrow pill"]) > svg[data-name^="Ellipse"] { display: none !important; }
+  /* (owner) no back / next page buttons on the pages: each pill, its arrow, label and tap area is never seen or tapped. They keep their
+     place in the layout because other parts measure them (the next-section arrow, the side nav fit); swipes, the trackpad and the
+     arrow keys still change pages, and the menu lists every page */
+  .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"],
+  .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"] + svg,
+  .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"] + svg + p,
+  .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"] + svg + p + svg,
+  .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"] + svg + p + svg + .hot { visibility: hidden !important; pointer-events: none !important; }
   /* the home page's theme is yellow: its page pill follows it */
   /* Home's Begin: the same frosted white button as the back / next buttons on the other pages (same spot, same size) */
   .layer[data-fn="Main.dc.html"] .board [data-name="Glass arrow pill"] { border-color: transparent !important; background: #DFFF1A !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: 0 0 0 6px rgba(223,255,26,.16), 0 0 34px rgba(223,255,26,.5), 0 10px 26px rgba(0,0,0,.3) !important; animation: cfGlow 2.8s ease-in-out infinite; }
@@ -1584,9 +1592,9 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     if (PHONE || (TOUCH && upright)) mk = mk.replace(/\b(?:a|img)([\/_])([0-9a-f]{32})\.(?:webp|png|jpg)/g, (m, sep, h) => PM.has(h) ? 'am' + sep + h + '.webp' : m);
     // header page titles: a small down arrow that opens that page's section menu
     mk = mk.replace(/(<p id="\w+" class="hot" data-name="\((?!FAQs\))[^)"]+\)"[^>]*>)([^<]+)<\/p>/g, (m, open, t) => open + t + '<span class="hchev" role="button" aria-label="' + t + ' sections"><svg viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></p>');
-    // pages: the Custom flow / All Sections link just above the next-page button (as on Home); syncPgFlow sets its words
+    // pages: the Custom flow / All Sections link in the bottom row, in the (hidden) next-page button's place, right edges lined up; syncPgFlow sets its words
     mk = mk.replace(/<div data-name="Glass arrow pill" aria-hidden="true" style="position: absolute; left: (1[2-4]\d\d)px; top: (\d+)px;([^"]*)">/, (m, l, t, rest) =>
-      '<div class="pgflow" data-x="Page flow" role="button" tabindex="0" style="position: absolute; left: ' + (+l + 190 - 16 - 300) + 'px; top: ' + (+t - 58) + 'px; width: 300px; height: 50px; z-index: 5;' + (/\{\{pillStyle\}\}/.test(rest) ? ' {{pillStyle}}' : '') + '"><span class="pgf-t"></span><svg class="pgf-c" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg><svg class="pgf-p" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></div>' + m);
+      '<div class="pgflow" data-x="Page flow" role="button" tabindex="0" style="position: absolute; left: ' + (+l + 190 - 300) + 'px; top: ' + (+t) + 'px; width: 300px; height: 50px; z-index: 5;' + (/\{\{pillStyle\}\}/.test(rest) ? ' {{pillStyle}}' : '') + '"><span class="pgf-t"></span><svg class="pgf-c" viewBox="0 0 9 15" aria-hidden="true"><path d="M1.6 1.6 7.4 7.5 1.6 13.4"/></svg><svg class="pgf-p" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.8v8.4M1.8 6h8.4"/></svg></div>' + m);
     // FAQs pill: a copy of the Guide pill, just to its left (it opens the FAQs pop-over)
     mk = mk.replace(/<div id="\w+" class="hot" data-x="Guide button" role="button" aria-label="Open the recruiting guide" style="position: absolute; left: (\d+)px;([^"]*)">GUIDE<\/div>/g,
       (m, l, rest) => '<div class="faqp" data-x="FAQs button" role="button" aria-label="Open FAQs" style="position: absolute; left: ' + (+l - 112) + 'px;' + rest + '">FAQS</div>' + m);
