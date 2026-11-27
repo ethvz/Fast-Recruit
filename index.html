@@ -1942,7 +1942,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (c.offsetParent === wrap && c.offsetWidth != null) { x = c.offsetLeft; y = c.offsetTop; w = c.offsetWidth; h = c.offsetHeight; }
       else { x = (b.left - r0.left) / k0; y = (b.top - r0.top) / k0; w = b.width / k0; h = b.height / k0; }
       if ((w < 2 && !c.matches('[data-name="Ladder"]')) || h < 2) return;
-      const rot = PHONE && c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = 1100; x += (w0 - w) / 2; y += 30; }   // (laid out a little shorter than it is: its ends fade out anyway)   // History wheel: stands upright in portrait
+      const rot = PHONE && c.classList.contains('tlw'), w0 = w, h0 = h; const X0 = x, Y0 = y; if (rot) { w = h0; h = Math.max(1100, w0 - 60); x += (w0 - w) / 2; y += 30; }   /* (nearly its full length: its faded ends and last year label stay above the tab bar) */   // (laid out a little shorter than it is: its ends fade out anyway)   // History wheel: stands upright in portrait
       { const g = getComputedStyle(c);   // a plain holder of several boxes (a grid of cards): its boxes are laid out one by one
         if (!rot && h >= 240 && c.children.length >= 2 && c.children.length <= 30 && g.visibility !== 'hidden' && g.overflowX === 'visible' && g.backgroundImage === 'none' && /rgba\(0, 0, 0, 0\)|transparent/.test(g.backgroundColor) && parseFloat(g.borderTopWidth) === 0
           && (PSPLIT[sec.id] && c.tagName === 'DIV' && !c.dataset.name || c.children.length <= 16 && [...c.children].every(k => { const kb = k.getBoundingClientRect(); return kb.width / k0 >= 120 && kb.height / k0 >= 60; }))) { take(c); return; } }
