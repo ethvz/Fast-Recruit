@@ -99,7 +99,7 @@
   .board nav.frscrub { transform: var(--frT) !important; top: var(--frTop) !important; left: var(--frLeft) !important; opacity: 1 !important; visibility: visible !important; transition: none !important; }
   .board nav.frscrub a > span:last-child { max-width: 420px !important; opacity: 1 !important; }
   /* ...on a dark panel of its own, so the titles read over whatever the page shows behind them */
-  .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: 30px; width: 250px; bottom: 26px; border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
+  .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: 30px; width: 340px; bottom: 26px; border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
   html.pph .board nav.frscrub::before { display: none; }   /* (the iPhone section menu has its own panel) */
   @keyframes frPanel { from { opacity: 0; } to { opacity: 1; } }
   .board nav.frscrub a, .board nav.frscrub a > span, #phdr .ph-prog.frscrub b { transition: translate .12s cubic-bezier(.2,.8,.2,1), scale .12s cubic-bezier(.2,.8,.2,1), color .15s ease !important; }
