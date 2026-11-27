@@ -297,7 +297,7 @@
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open the onboarding tool"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 188px 0; }
   html.pph .layer[data-fn="Main.dc.html"] .board .ptop > [aria-label="Open FAQs"] { scale: calc(var(--isc, 1) * 1.08); transform-origin: 412px 0; }
   /* iPhone upright Home: the photo fades to black at the top and bottom, so it meets the black status-bar and home-bar strips without a hard edge */
-  html.pph .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"]::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.55) 4%, rgba(0,0,0,0) 13%, rgba(0,0,0,0) 80%, rgba(0,0,0,.6) 93%, #000 100%); }
+  html.pph .layer[data-fn="Main.dc.html"] .board [data-name="Background shade"]::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #000 0%, rgba(0,0,0,.55) 4%, rgba(0,0,0,0) 13%, rgba(0,0,0,0) 84%, rgba(0,0,0,.35) 100%); }
   html.pph .favw { right: calc(var(--isc, 1) * 12px) !important; transform-origin: 100% 0; }
   /* product tiles re-cut shorter in portrait: their pictures shrink to fit */
   html.pstack .pdtile img { height: auto !important; max-height: 100% !important; }
@@ -529,7 +529,7 @@
   html.pph .layer:not([data-fn="Main.dc.html"]) .board [data-name="Glass arrow pill"], html.pph .layer:not([data-fn="Main.dc.html"]) .board .pdown { display: none !important; }
   /* iPhone upright: the page buttons sit in a frosted white bar along the bottom (Instagram style, no border); five equal
      buttons, icon over a small label; icons are outlines, and the page you're on is filled on a soft grey bubble */
-  #pfoot { position: fixed; left: 12px; right: 12px; bottom: calc(var(--sab, 0px) + 10px); z-index: 70; display: none; box-sizing: border-box; padding: 5px; border-radius: 30px;
+  #pfoot { position: fixed; left: 12px; right: 12px; bottom: max(8px, calc(4px + var(--sab, 0px) * .42)); z-index: 70; display: none; box-sizing: border-box; padding: 5px; border-radius: 30px;
     grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);   /* (one equal column per page button, however many pages there are) */ gap: 2px; background: rgba(250,250,250,.86);
     -webkit-backdrop-filter: blur(22px) saturate(1.8); backdrop-filter: blur(22px) saturate(1.8); box-shadow: 0 8px 28px rgba(0,0,0,.22);
     transform-origin: 50% 100%; transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s ease; }
@@ -2031,7 +2031,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const key = scale.toFixed(4) + ':' + H; if (S.key === key) return S.res;
     const RC = PGRID[sec.id] && PGRID[sec.id](PHONE);
     const pfit = PHONE && !!PFIT[sec.id]; let one = S.h <= 1100 || !!(RC && RC.fit) || pfit; const PADX = PHONE ? 50 : 84, CW = 1466 - 2 * PADX, READ = one ? 0.4 : 0.33;
-    const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? 104 / scale : 245,   // (iPads upright: room for the full-size bottom row)
+    const TOP = PHONE ? 120 / scale : 150, BOT = PHONE ? (Math.max(8, 4 + 0.42 * (fit.sab || 0)) + 60 + 16) / scale : 245,   // (phones: above the tab bar)   // (iPads upright: room for the full-size bottom row)
       GAP = PHONE ? 26 / scale : 70;
     // tablets: every iPad gets the same arrangement (worked out for the squarest one), only centred on its own screen
     const HL = PHONE ? H : 2110, KS = PHONE ? scale : 0.56;
@@ -4518,7 +4518,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const cf = document.documentElement.classList.contains('tport') && host.querySelector('.pgflow'), cr = cf && cf.getBoundingClientRect();
       if (cr && cr.width > 0) { b.style.top = (cr.top + cr.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
       else if (r) { b.style.top = (r.top + r.height / 2 - size / 2) + 'px'; b.style.bottom = ''; }
-      else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(var(--sab, 0px) + 70px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
+      else { b.style.top = 'auto'; b.style.bottom = pphOn() ? 'calc(max(8px, calc(4px + var(--sab, 0px) * .42)) + 66px)' : 'calc(env(safe-area-inset-bottom) + 22px)'; }
     };
     // the footer strip: between the two page arrows, from a little above them to the bottom of the screen
     const inStrip = (x, y) => {
