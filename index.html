@@ -4194,6 +4194,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       let lo = 0, hi = L.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (L[m].getBoundingClientRect().top <= mid) lo = m; else hi = m - 1; } return L[lo]; };
     const show = (sec, instant) => {
       const x = sec ? pinSlot(P, sec) : null; if (x === undefined) return false;
+      if (sec && !sc.__scrub) { try { navSec(layer, sec); } catch (e) {} }
       const L = secs(), i = L.indexOf(sec), nx = i >= 0 ? L[i + 1] : null; const nslot = nx ? pinSlot(P, nx) : null; P.next = nslot || null;
       if (nx && nslot === undefined && nx.__frag) [...nx.__frag.querySelectorAll('[data-name^="Background (stays"] img')].slice(0, 3).forEach(im => { const u = im.dataset.vsrc || im.getAttribute('src'); if (u && u !== BLANK) { const q = new Image(); q.decoding = 'async'; q.src = u; } });   // (next section still parked: warm its photo)
       if (x === P.cur) { imgs(P.next, true); return true; }
@@ -4207,7 +4208,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (x && !instant) ready(x).then(go); else go();
       return true; };
     const upd = () => { P.raf = 0; if (!layer.isConnected || layer.__gone) return; const sec = pick(); if (!sec || sec === P.want) return;
-      if (P.curSec !== sec) { if (P.curSec) P.curSec.classList.remove('frcur'); sec.classList.add('frcur'); P.curSec = sec; try { navSec(layer, sec); } catch (e) {} }   // (only this section's star shows)
+      if (P.curSec !== sec) { if (P.curSec) P.curSec.classList.remove('frcur'); sec.classList.add('frcur'); P.curSec = sec; if (!sc.__scrub) { try { navSec(layer, sec); } catch (e) {} } }   // (only this section's star shows; its fit is checked when not flying past)
       P.want = sec; clearTimeout(P.t);
       P.t = setTimeout(() => { if (P.want !== sec) return; if (!show(sec)) { P.want = null; P.t = setTimeout(() => { if (!P.raf) P.raf = requestAnimationFrame(upd); }, 220); } }, 140); };
     const rowChk = () => { if (PHONE) { if (layer.classList.contains('rowoff')) layer.classList.remove('rowoff'); return; } const sec = P.curSec; let off = false;
