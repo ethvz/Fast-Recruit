@@ -95,11 +95,10 @@
   /* side-rail fast scroller (dock): the title nearest the finger grows; the rail itself stays put */
   .board nav.frscrub, #phdr .ph-prog.frscrub { touch-action: none; }
   /* while scrubbing, the side rail holds still where the finger found it, with every title showing (a collapsed rail opens up) */
-  .board nav.frscrub { transform: var(--frT) !important; top: var(--frTop) !important; left: var(--frLeft) !important; opacity: 1 !important; visibility: visible !important; transition: none !important; }
+  .board nav.frscrub { opacity: 1 !important; visibility: visible !important; }
   .board nav.frscrub a > span:last-child { max-width: 420px !important; opacity: 1 !important; }
   /* ...on a dark panel of its own, so the titles read over whatever the page shows behind them */
-  .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: 30px; width: 340px; bottom: 26px; border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
-  html.pph .board nav.frscrub::before { display: none; }   /* (the iPhone section menu has its own panel) */
+  .board nav.frscrub::before { content: ''; position: absolute; left: 6px; top: 30px; width: var(--frPW, 340px); bottom: 26px; border-radius: 26px; background: rgba(12,14,14,.88); box-shadow: 0 18px 50px rgba(0,0,0,.55); z-index: -1; pointer-events: none; animation: frPanel .18s ease-out both; }
   @keyframes frPanel { from { opacity: 0; } to { opacity: 1; } }
   .board nav.frscrub a, .board nav.frscrub a > span, #phdr .ph-prog.frscrub b { transition: translate .12s cubic-bezier(.2,.8,.2,1), scale .12s cubic-bezier(.2,.8,.2,1), color .15s ease !important; }
   .board nav.frsettle a, .board nav.frsettle a > span, #phdr .ph-prog.frsettle b { transition: translate .35s cubic-bezier(.2,.8,.2,1), scale .35s cubic-bezier(.2,.8,.2,1), color .3s ease !important; }
@@ -123,6 +122,8 @@
   .layer.pinon .board section[id^="sec-"] { background: transparent !important; }
   .layer.pinon .board section.pinned[id^="sec-"] > [data-name^="Background (stays"] { visibility: hidden !important; content-visibility: hidden; }
   html.safe .pinbg { display: none !important; }
+  /* a full-screen player (the commercials) hides the phone header and tab bar while it is open */
+  html.frplay #phdr, html.frplay #pfoot { opacity: 0 !important; pointer-events: none !important; transition: opacity .2s ease; }
   /* a full-section dim inside the content (History) scrolls over the pinned photo: its edges are feathered, not hard */
   .layer.pinon .board [data-name="Wheel backdrop"] { background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.72) 16%, rgba(0,0,0,.72) 84%, rgba(0,0,0,0) 100%) !important; }
   /* iPad upright: the Hourly comparison rep's face stays on screen */
@@ -144,8 +145,9 @@
   /* portrait: the canvas grows taller (--H); bottom controls ride down with it, fixed-size screens sit centred */
   #frame, .layer, .board { height: var(--H, 1024px) !important; }
   .pdown { position: absolute; left: 0; top: 0; width: 0; height: 0; transform: translateY(calc(var(--dy, 0px) - var(--sabd, 0px))); }
-  /* iPads: the bottom row (page pills, Create custom flow) sits above the shared corner menu (--shpn-foot, screen px, from nav/shpnav.css) */
-  html:not(.pph) .pdown { transform: translateY(calc(var(--dy, 0px) - max(var(--sabd, 0px), var(--shpn-foot, 0px) * var(--isc, 1)))); }
+  /* iPads: the bottom row stays where it was designed (above the cards); only the left page pill steps to the right of the
+     shared corner menu (logo + hamburger, about 146px wide, bottom left) */
+  html:not(.pph) .layer.pinon .board .pdown > :not(.fx-r):not(.fx-c) { translate: calc((var(--shpn-l, 12px) + 154px) * var(--isc, 1) - 28px) 0 !important; }
   .pmid { position: absolute; left: 0; top: 0; width: 1466px; height: 1024px; transform: translateY(var(--dyh, 0px)); pointer-events: none; }
   .pmid.pass { pointer-events: none; }
   .ptop { position: absolute; left: 0; top: 0; width: 1466px; height: 0; pointer-events: none; }
@@ -1650,7 +1652,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       inst.setState({ hdrHide: false }); if (typeof inst.hdrKick === 'function') inst.hdrKick();
     }, true);
     layer.addEventListener('click', e => { if (Date.now() - wokeAt < 700) { e.preventDefault(); e.stopPropagation(); wokeAt = 0; } }, true);
-    host.__onrender = () => { navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); layer.classList.toggle('pnav-open', !!(st && st.navOpen !== false)); try { navFitBox(layer); } catch (e) {} try { dnRefresh(); } catch (e) {} try { if (phdr && current && current.layer === layer) phdrSync(); } catch (e) {} };
+    host.__onrender = () => { { const st0 = layer._inst && layer._inst.state, pl = !!(st0 && st0.mkVid != null) && (!current || current.layer === layer); if (document.documentElement.classList.contains('frplay') !== pl) document.documentElement.classList.toggle('frplay', pl); } navShift(layer); const st = layer._inst && layer._inst.state; layer.classList.toggle('fav-idle', !!(st && st.hdrHide)); layer.classList.toggle('pnav-open', !!(st && st.navOpen !== false)); try { navFitBox(layer); } catch (e) {} try { dnRefresh(); } catch (e) {} try { if (phdr && current && current.layer === layer) phdrSync(); } catch (e) {} };
     flowCompact(layer);   // before the phone layout, so it lays out the trimmed header
     phoneChrome(layer); stackDim(layer);
     addStars(layer); setupFlowBtn(layer); buildFlowNav(layer);
@@ -2688,7 +2690,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const fn = layer._fn, sc = scrollerOf(layer), flow = !!layer.dataset.flow;
     if (fn === 'Main.dc.html' || ORDER.indexOf(fn) < 0) return;
     (sc ? [...(sc.__in || sc).querySelectorAll(':scope > section[id^="sec-"]')] : [...layer.querySelectorAll('section[id^="sec-"]')]).forEach(sec => {
-      const id = sec.id.slice(4); if (sec.querySelector(':scope > .favpin')) return;
+      const id = sec.id.slice(4); if (sec.querySelector(':scope > .favpin') || (sec.__frag && sec.__frag.querySelector('.favpin'))) return;   // (a parked section keeps its star in its stored content: never add a second)
       if (!flow && isTitle(fn, secIdx(fn, id))) return;
       const w = document.createElement('div'); w.className = 'favw';
       if (FP[fn + '#' + id]) {   // this section has fine print
@@ -4081,7 +4083,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       const y = sc.scrollTop - SP(), inA = y - VH * M, inB = y + H + VH * M, outA = y - VH * O, outB = y + H + VH * O;
       // upright phone mid-fling: several sections fly past each second; building each one (and decoding its photos) only
       // to tear it down a moment later is what ran Safari out of memory — so nothing new loads until the scroll slows
-      const hold = fast && stk;
+      const hold = (fast && stk) || sc.__scrub;   // (the side-rail scrubber flying past: nothing loads until the finger lets go)
       secs.forEach((el, i) => { const [a, b] = tops[i]; if (b > inA && a < inB) { if (!hold) load(el); } else if (b < outA || a > outB) park(el); });
     };
     layer._vupdate = (re) => { if (re) tops = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } update(); };
@@ -4193,7 +4195,8 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
           + `${o.sel(m.b)} > span:last-child{transform-origin:0 50% !important;scale:${scl.toFixed(3)} !important;${near ? 'color:#05E5AF !important;opacity:1 !important;max-width:420px !important;' : g > .3 ? 'color:#fff !important;opacity:1 !important;max-width:420px !important;' : ''}}`   // (a collapsed rail shows the titles near the finger too)
           + (near && !rm ? `${o.sel(m.b)} > span:first-child{scale:1.2 !important}` : ''); });
       if (css.textContent !== out) css.textContent = out;
-      if (X && tip) { const n = S.near; if (tip.textContent !== title(n.a)) tip.textContent = title(n.a); tip.style.left = ((S.ly - S.r0) / kk) + 'px'; } }
+      if (X && tip) { const n = S.near; if (tip.textContent !== title(n.a)) { tip.textContent = title(n.a); S.tw = tip.offsetWidth; }
+        const hw = (S.tw || 0) / 2 + 8, x = Math.max(hw, Math.min(innerWidth - hw, S.ly)); tip.style.left = ((x - S.r0) / kk) + 'px'; } }
     // where each section starts, in the scroller's own units (phones draw the scroller at screen size, iPads inside the scaled page)
     function begin(e) { const L = o.layer(); sc = scrollerOf(L); if (!sc) { S = null; return; } const r0 = sc.getBoundingClientRect(), u = sc.offsetHeight / (r0.height || 1), map = [];
       o.items().forEach((b, i) => { const a = o.link(b), sec = a && sc.querySelector((a.getAttribute('href') || '').replace(/[^#\w-]/g, '')); if (!sec || !sec.offsetHeight) return;
@@ -4201,23 +4204,32 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
       if (map.length < 2) { S = null; return; }
       S.on = true; S.map = map; { const rr = rail.getBoundingClientRect(); S.r0 = X ? rr.left : rr.top; S.k = (X ? rr.width / (rail.offsetWidth || 1) : rr.height / (rail.offsetHeight || 1)) || 1; }
       // the rail is held as it is while the finger is on it: its position and size are pinned (the page may re-draw it as it scrolls)
-      { const g = getComputedStyle(rail); rail.style.setProperty('--frT', g.transform === 'none' ? 'none' : g.transform); rail.style.setProperty('--frTop', g.top); rail.style.setProperty('--frLeft', g.left); }
       rail.classList.remove('frsettle'); rail.classList.add('frscrub'); sc.__scrub = true; if (L) L.__scrubbing = true;
+      // the panel behind the titles is as wide as the longest title will grow (measured with the titles open)
+      if (!X) { const rr = rail.getBoundingClientRect(); let w = 0; S.map.forEach(m => { const sp = m.a.querySelector(':scope > span:last-child'); if (!sp) return; const q = sp.getBoundingClientRect(); w = Math.max(w, (q.left - rr.left) / S.k + (q.width / S.k) * 1.5); }); rail.style.setProperty('--frPW', Math.round(w + 26) + 'px'); }
+      S.a0 = mid(S.map[0].b); S.title0 = !!(L && L._inst && L._inst.state && L._inst.state.navOpen !== false);
       try { if (e.pointerId != null) rail.setPointerCapture(e.pointerId); } catch (_) {}
       if (sc.__stopSpring) sc.__stopSpring();
       if (X) { tip = rail.querySelector(':scope > .frtip') || rail.appendChild(Object.assign(document.createElement('span'), { className: 'frtip' })); tip.classList.add('on'); }
       update(e); }
-    function update(e) { const M = S.map, ly = Math.max(M[0].c, Math.min(M[M.length - 1].c, along(e))); S.ly = ly;
+    // (the page may re-draw its rail while scrolling: items are found again by their link, and if the rail itself moved the
+    // finger mapping moves with it)
+    const fresh = b => (o.fresh && o.fresh(b)) || b;
+    function update(e) { const M = S.map; { const f = fresh(M[0].b); if (f && f.isConnected) { M[0].b = f; const d = mid(f) - S.a0; if (Math.abs(d) > 1 && Math.abs(d) < 400) { M.forEach(m => { m.c += d; }); S.a0 += d; S.r0 += d; } } }
+      const ly = Math.max(M[0].c, Math.min(M[M.length - 1].c, along(e))); S.ly = ly;
       let i = 0; while (i < M.length - 2 && ly > M[i + 1].c) i++; const a = M[i], b = M[i + 1], t = Math.max(0, Math.min(1, (ly - a.c) / (b.c - a.c)));
       const near = t < .5 ? a : b; if (S.near !== near) { if (S.near) { try { haptic('select'); } catch (_) {} } S.near = near; }
       S.y = a.top + (b.top - a.top) * t;
+      clearTimeout(S.rt); S.rt = setTimeout(() => { if (S && S.on) { const L = o.layer(); sc.__scrub = false; try { if (L && L._vupdate) L._vupdate(); } catch (_) {} sc.__scrub = true; } }, 180);   // (resting on a section: it loads)
       // one scroll write and one style write per frame, however many moves arrive in between
       if (!S.rq) S.rq = requestAnimationFrame(() => { if (!S) return; S.rq = 0; if (Math.abs(sc.scrollTop - S.y) > 0.5) { sc.style.scrollBehavior = 'auto'; sc.scrollTop = S.y; sc.style.scrollBehavior = ''; } paint(); }); }
-    function end() { const st = S; S = null; if (!st || !st.on) return; lastEnd = Date.now(); if (st.rq) cancelAnimationFrame(st.rq);
+    function end() { const st = S; S = null; if (!st || !st.on) return; lastEnd = Date.now(); if (st.rq) cancelAnimationFrame(st.rq); clearTimeout(st.rt);
       rail.classList.add('frsettle'); css.textContent = ''; if (tip) tip.classList.remove('on');
       if (Math.abs(sc.scrollTop - st.y) > 0.5) sc.scrollTop = st.y;
       setTimeout(() => { if (!S) rail.classList.remove('frscrub', 'frsettle'); }, 380);
-      sc.__scrub = false; const L = o.layer(); if (L) L.__scrubbing = false; st.near.a.click(); }
+      sc.__scrub = false; const L = o.layer(); if (L) L.__scrubbing = false; { const la = st.near.a, live = (la && la.isConnected) ? la : (o.fresh && o.fresh(la)) || (o.link && o.link(fresh(st.near.b))) || la; live.click(); }
+      if (L && L._vupdate) setTimeout(() => L._vupdate(), 60);   // (sections flown past load now, once the finger is off)
+      if (L && L._inst && pstackOn() && !PHONE && st.map.indexOf(st.near) >= 0) { const i = L._inst; setTimeout(() => { try { if (i.state.navOpen !== false) withOwner(null, () => i.setState({ navOpen: false })); } catch (_) {} }, 250); } }
     // moves are read from both pointer and touch events at window level, so iPad Safari can't swallow them on the way to the rail
     const p0 = e => X ? e.clientX : e.clientY;
     const mv = e => { if (!S) return; if (!S.on) { if (Math.abs(p0(e) - S.y0) > 6) begin(e); return; } update(e); };
@@ -4239,7 +4251,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
     const rail = layer.querySelector('.board nav'); if (!rail || rail.__dock) return;
     const its = () => [...rail.querySelectorAll('a[href^="#sec-"]')].filter(a => a.offsetHeight);
     const off = dock({ rail, ax: 'y', layer: () => layer,
-      items: its, link: a => a, sel: a => `.board nav.frscrub a[href="${a.getAttribute('href')}"]`,   // (by its link: the page re-draws the rail and drops added attributes)
+      items: its, link: a => a, fresh: a => rail.querySelector(`a[href="${a.getAttribute('href')}"]`), sel: a => `.board nav.frscrub a[href="${a.getAttribute('href')}"]`,   // (by its link: the page re-draws the rail and drops added attributes)
       active: () => { if (!layer.isConnected || (current && current.layer !== layer)) return false; const r = rail.getBoundingClientRect(), g = getComputedStyle(rail);
         return r.height > 40 && g.visibility !== 'hidden' && parseFloat(g.opacity) > 0.5 && FR.get('ui') === 'none'; } });
     if (off) (layer._off = layer._off || []).push(off);
@@ -4248,7 +4260,7 @@ try { const sim = new URLSearchParams(location.search).get('sim'); if (sim ? sim
   function phDock(pg) {
     const links = () => { const CL = current && current.layer; return CL ? [...CL.querySelectorAll('.board nav a')].filter(x => !CL._keep || CL._keep.has((x.getAttribute('href') || '').slice(5))).sort((p, q) => (parseFloat(p.style.top) || 0) - (parseFloat(q.style.top) || 0)) : []; };
     dock({ rail: pg, ax: 'x', layer: () => current && current.layer,
-      items: () => [...pg.querySelectorAll('b')], link: b => links()[+b.dataset.i], sel: b => `#phdr .ph-prog.frscrub b[data-i="${b.dataset.i}"]`,
+      items: () => [...pg.querySelectorAll('b')], link: b => links()[+b.dataset.i], fresh: b => pg.querySelector(`b[data-i="${b.dataset.i}"]`), sel: b => `#phdr .ph-prog.frscrub b[data-i="${b.dataset.i}"]`,
       active: () => pphOn() && !pg.hidden && !!phdr && !phdr.classList.contains('idle') && !phdr.classList.contains('navopen') && FR.get('ui') === 'none' });
   }
 
